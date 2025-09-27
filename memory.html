@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>George's Fortnite Memory Match</title>
+  <link rel="stylesheet" href="memory.css" />
+</head>
+<body>
+
+  <h1>🧠 George's Fortnite Memory Match</h1>
+  <p>Choose your difficulty and start flipping!</p>
+
+  <!-- Difficulty Buttons -->
+  <div class="difficulty-container">
+    <button onclick="startGame('easy')">Easy</button>
+    <button onclick="startGame('medium')">Medium</button>
+    <button onclick="startGame('hard')">Hard</button>
+    <button onclick="startGame('legendary')">Legendary</button>
+  </div>
+
+  <!-- Timer -->
+  <div class="timer-container hidden">
+    Time Left: <span id="timer">60</span> seconds
+  </div>
+
+  <!-- Game Board -->
+  <div id="gameBoard" class="game-board"></div>
+
+  <!-- Win / Lose Messages -->
+  <div id="winMessage" class="hidden">🎉 You Won! Great job, George! 🎉</div>
+  <!-- <div id="loseMessage" class="hidden">⏰ Time’s up! You lost!</div>-->
+
+  <!-- Restart Button 
+  <button id="restartBtn" class="hidden" onclick="restartGame()">Restart</button>-->
+
+<!-- Chicken Animation -->
+<div id="chickenAnim" class="hidden">
+  <img src="images/chicken.png" alt="Chicken" />
+  <p id="chickenMessage" class="hidden">🐔 Bawk bawk! Too slow Georgi Frongi!</p>
+</div>
+
+
+  <!-- Sounds -->
+  <audio id="flipSound" src="sounds/flip.wav" preload="auto"></audio>
+  <audio id="winSound" src="sounds/win.wav" preload="auto"></audio>
+  <audio id="chickenSound" src="sounds/chicken.wav" preload="auto"></audio>
+
+  <!-- JS Script -->
+  <script src="memory.js"></script>
+
+</body>
+</html>

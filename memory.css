@@ -1,0 +1,208 @@
+/* memory.css — Fortnite Memory Match Game for George */
+
+/* === General Page Styling === */
+body {
+  font-family: 'Comic Sans MS', cursive;
+  background: linear-gradient(135deg, #42a5f5, #ab47bc);
+  text-align: center;
+  padding: 20px;
+  color: #ffffff;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px #00000044;
+}
+
+p {
+  font-size: 1.2em;
+  margin-top: 10px;
+}
+
+/* === Difficulty Buttons === */
+.difficulty-container {
+  margin-bottom: 20px;
+}
+
+.difficulty-container button {
+  margin: 5px;
+  padding: 10px 15px;
+  font-size: 1em;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.difficulty-container button:nth-child(1) {
+  background-color: #4caf50; /* Easy - Green */
+}
+
+.difficulty-container button:nth-child(2) {
+  background-color: #2196f3; /* Medium - Blue */
+}
+
+.difficulty-container button:nth-child(3) {
+  background-color: #ff9800; /* Hard - Orange */
+}
+
+.difficulty-container button:nth-child(4) {
+  background-color: #f44336; /* Legendary - Red */
+}
+
+.difficulty-container button:hover {
+  opacity: 0.85;
+}
+
+/* === Timer Display === */
+.timer-container {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.timer-container.hidden {
+  display: none;
+}
+
+/* === Game Board === */
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(4, 110px);
+  gap: 15px;
+  justify-content: center;
+  margin: 30px auto;
+}
+
+/* === Card Styles === */
+.card {
+  width: 100px;
+  height: 100px;
+  perspective: 1000px;
+  cursor: pointer;
+  position: relative;
+}
+
+.card .front,
+.card .back {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 0.6s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Card back (front facing when hidden) */
+.card .front {
+  background-color: #1e1e1e;
+  background-image: url('images/card-back.png'); /* Optional back image */
+  background-size: cover;
+  background-position: center;
+  transform: rotateY(0deg);
+}
+
+/* Card face (character image) */
+.card .back {
+  background-color: #fff;
+  transform: rotateY(180deg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card .back img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* Flipped state */
+.card.flipped .front {
+  transform: rotateY(180deg);
+}
+
+.card.flipped .back {
+  transform: rotateY(360deg);
+}
+
+/* Matched state */
+.card.matched {
+  box-shadow: 0 0 10px 4px #81c784;
+  pointer-events: none;
+}
+
+/* === Messages === */
+#winMessage,
+#loseMessage {
+  font-size: 1.5em;
+  margin-top: 20px;
+  text-shadow: 1px 1px 2px #000;
+}
+
+#winMessage {
+  color: #81c784; /* Green */
+}
+
+#loseMessage {
+  color: #e57373; /* Red */
+}
+
+
+/* === Utility === */
+.hidden {
+  display: none;
+}
+/* Chicken animation styling */
+#chickenAnim {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  opacity: 0;
+  text-align: center;
+  transition: opacity 0.5s ease;
+}
+
+#chickenAnim.show {
+  opacity: 1;
+  animation: chickenBounce 1s ease infinite;
+}
+
+#chickenAnim img {
+  width: 200px;
+  height: auto;
+}
+
+#chickenMessage {
+  margin-top: 15px;
+  font-size: 1.3em;
+  color: #fff;
+  text-shadow: 1px 1px 4px #000;
+}
+
+#chickenMessage.hidden {
+  display: none;
+}
+
+/* Hide game board when time is up */
+.hide-board {
+  display: none;
+}
+
+#chickenAnim.hidden {
+  pointer-events: none;
+}
+
+@keyframes chickenBounce {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
