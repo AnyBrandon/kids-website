@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Superhero George: The Quest to Save Princess Rita</title>
+  <style>
+body {
+  margin: 0;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  background: url('images/questBackground.gif') no-repeat center center fixed;
+  background-size: cover;
+  overflow: hidden;
+}
+
+    h1, #instructions {
+      text-align: center;
+      margin: 10px;
+      color: #333;
+    }
+
+    #hearts {
+      text-align: center;
+      margin: 5px;
+    }
+
+    .heart {
+      width: 30px;
+      height: 30px;
+      margin: 0 5px;
+      vertical-align: middle;
+    }
+
+    .heart.lost {
+      opacity: 0.2;
+      filter: grayscale(100%);
+    }
+
+    #key-count {
+      text-align: center;
+      font-weight: bold;
+      color: green;
+      font-size: 1.2em;
+      margin-top: 5px;
+    }
+
+#game-area {
+  position: relative;
+  width: 100vw;
+  height: 90vh;
+  background-image: url('images/questBackground.gif');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+
+    .character {
+      position: absolute;
+      z-index: 2;
+    }
+
+#george {
+  top: 55%;
+  left: 5%;
+  transform: translateY(-50%);
+  width: 220px;
+    }    
+
+    #rita {
+      top: 40px;
+      right: 30px;
+      width: 120px;
+      border: 5px solid pink;
+      border-radius: 10px;
+      background-color: rgba(255, 182, 193, 0.6);
+      padding: 5px;
+      text-align: center;
+    }
+
+    #rita img {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    #rita .caption {
+      color: darkmagenta;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+
+    .chest:hover {
+      transform: scale(1.1);
+    }
+
+    /* Chest positions */
+
+
+    /* Modal */
+    #puzzle-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+
+    #puzzle-box {
+      background: white;
+      padding: 20px;
+      max-width: 90%;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    #puzzle-box h2 {
+      color: #444;
+    }
+
+.option-btn {
+  display: block;
+  margin: 12px auto;
+  padding: 14px 30px;
+  background: linear-gradient(135deg, #00c3ff, #005bea);
+  color: white;
+  font-size: 1.1em;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  border: 2px solid #ffffff80;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00c3ff80;
+  transition: all 0.25s ease;
+  text-shadow: 1px 1px 2px #000;
+}
+
+.option-btn:hover {
+  background: linear-gradient(135deg, #005bea, #00c3ff);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #00ffff, 0 0 25px #00ffff;
+}
+
+
+    #close-btn {
+      margin-top: 15px;
+      background-color: lightcoral;
+      color: white;
+    }
+
+    #game-over {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      font-size: 2em;
+      text-align: center;
+      padding-top: 30vh;
+      z-index: 1000;
+    }
+    /* Screen shake animation */
+@keyframes shake {
+  0% { transform: translate(0px, 0px); }
+  20% { transform: translate(-5px, 5px); }
+  40% { transform: translate(5px, -5px); }
+  60% { transform: translate(-5px, 5px); }
+  80% { transform: translate(5px, -5px); }
+  100% { transform: translate(0px, 0px); }
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+#keys {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.key-slot {
+  width: 35px;
+  height: 35px;
+  margin: 0 5px;
+  opacity: 0.2;
+  transition: opacity 0.3s ease;
+}
+.key-slot.collected {
+  opacity: 1;
+}
+#chest-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  width: 80%;
+  max-width: 800px;
+  z-index: 1;
+}
+
+.chest {
+  width: 80px;
+  flex: 0 0 22%;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.chest:hover {
+  transform: scale(1.1);
+}
+
+h1 {
+  text-align: center;
+  margin: 10px;
+  color: #ffffff;
+  font-weight: bold;
+  text-shadow:
+    0 0 5px #80dfff,
+    0 0 10px #80dfff,
+    0 0 20px #ffffff,
+    0 0 40px #00ccff,
+    0 0 60px #00ccff;
+  font-size: 2.5em; /* bigger for title */
+  animation: glow-pulse 2s infinite ease-in-out;
+}
+
+#instructions {
+  text-align: center;
+  margin: 5px 10px 15px 10px;
+  color: #afff80;
+  font-weight: bold;
+  text-shadow:
+    0 0 5px #afff80,
+    0 0 10px #afff80,
+    0 0 20px #afff80,
+    0 0 40px #afff80,
+    0 0 60px #afff80;
+  font-size: 1.2em;
+  animation: glow-pulse 2s infinite ease-in-out;
+}
+
+
+@keyframes glow-pulse {
+  0% {
+    text-shadow:
+      0 0 5px #80dfff,
+      0 0 10px #80dfff,
+      0 0 20px #ffffff,
+      0 0 40px #00ccff,
+      0 0 60px #00ccff;
+  }
+  50% {
+    text-shadow:
+      0 0 2px #66c2ff,
+      0 0 6px #66c2ff,
+      0 0 12px #ffffff,
+      0 0 24px #00bfff,
+      0 0 36px #00bfff;
+  }
+  100% {
+    text-shadow:
+      0 0 5px #80dfff,
+      0 0 10px #80dfff,
+      0 0 20px #ffffff,
+      0 0 40px #00ccff,
+      0 0 60px #00ccff;
+  }
+}
+#villain-img {
+  margin-top: 20px;
+  width: 250px;
+  max-width: 80vw;
+}
+#story-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+#story-box {
+  background: #222;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 400px;
+  color: #fff;
+  text-align: center;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  box-shadow: 0 0 15px #ff1493;
+}
+
+#story-box h2 {
+  margin-top: 0;
+  font-size: 1.8em;
+  text-shadow:
+    0 0 5px #ff69b4,
+    0 0 10px #ff69b4,
+    0 0 20px #ff1493;
+}
+
+#story-box p {
+  font-size: 1.1em;
+  margin: 20px 0;
+  line-height: 1.4;
+}
+
+#start-game-btn {
+  background-color: #ff1493;
+  border: none;
+  color: white;
+  padding: 12px 25px;
+  font-size: 1.1em;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+#start-game-btn:hover {
+  background-color: #ff69b4;
+}
+
+
+  </style>
+</head>
+<body>
+<div id="main-container">  
+
+    <div id="story-overlay">
+  <div id="story-box">
+    <h2>Welcome to the Quest!</h2>
+    <p>
+      The Villain <strong>Darkzor</strong> kidnapped Princess Rita and made her a prisoner. <br/>
+      George, the superhero, must save her by solving riddles and avoiding traps! <br/>
+      This quest will be difficult! Only great superheroes can finish it and save the prettiest princess of all time!
+    </p>
+    <button id="start-game-btn">Start Game</button>
+  </div>
+</div>
+
+  <h1>Superhero George: The Quest to Save Princess Rita</h1>
+  <div id="instructions">Tap the treasure chests to find keys, but watch out for traps!</div>
+  <div id="hearts">
+    <img class="heart" id="heart1" src="images/heart.png" />
+    <img class="heart" id="heart2" src="images/heart.png" />
+    <img class="heart" id="heart3" src="images/heart.png" />
+  </div>
+<div id="keys">
+  <img class="key-slot" id="key1" src="images/key.png" />
+  <img class="key-slot" id="key2" src="images/key.png" />
+  <img class="key-slot" id="key3" src="images/key.png" />
+  <img class="key-slot" id="key4" src="images/key.png" />
+  <img class="key-slot" id="key5" src="images/key.png" />
+</div>
+
+
+  <div id="game-area">
+    <img id="george" class="character" src="images/superheroGeorge.png" alt="Superhero George" />
+
+    <div id="rita" class="character">
+      <img src="images/princessRita.png" alt="Princess Rita" />
+      <div class="caption">"George, help me!"</div>
+    </div>
+
+    <!-- Chests -->
+     <div id="chest-container">
+    <img id="chest1" class="chest" src="images/chest.png" />
+    <img id="chest2" class="chest" src="images/chest.png" />
+    <img id="chest3" class="chest" src="images/chest.png" />
+    <img id="chest4" class="chest" src="images/chest.png" />
+    <img id="chest5" class="chest" src="images/chest.png" />
+    <img id="chest6" class="chest" src="images/chest.png" />
+    <img id="chest7" class="chest" src="images/chest.png" />
+    </div>
+  </div>
+
+  <!-- Puzzle Modal -->
+  <div id="puzzle-modal">
+    <div id="puzzle-box">
+      <h2 id="puzzle-question">Puzzle goes here</h2>
+      <div id="options-container"></div>
+    </div>
+  </div>
+
+  <!-- Game Over Screen -->
+<div id="game-over">
+  💔 George lost all his hearts!<br>Princess Ploufi is MINE!
+  <br />
+  <img src="images/villain.png" alt="Villain" id="villain-img" />
+</div>
+
+  <!-- Bomb Effect -->
+<img id="bomb-effect" src="images/bomb.png" alt="Bomb!" style="
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  display: none;
+  z-index: 1001;
+" />
+</div>
+
+<audio id="correct-sound" src="sounds/correct.wav" preload="auto"></audio>
+<audio id="incorrect-sound" src="sounds/incorrect.wav" preload="auto"></audio>
+<audio id="bomb-sound" src="sounds/bomb.wav" preload="auto"></audio>
+<audio id="evil-laugh-sound" src="sounds/evilLaugh.wav" preload="auto"></audio>
+<audio id="victory-sound" src="sounds/victory.wav" preload="auto"></audio>
+
+<script>
+const chests = document.querySelectorAll('.chest');
+const modal = document.getElementById('puzzle-modal');
+const questionEl = document.getElementById('puzzle-question');
+const optionsContainer = document.getElementById('options-container');
+const keyCountDisplay = document.getElementById('key-count');
+const hearts = [document.getElementById('heart1'), document.getElementById('heart2'), document.getElementById('heart3')];
+const gameOverScreen = document.getElementById('game-over');
+
+let keysCollected = 0;
+let lives = 3;
+const openedChests = new Set();
+
+let puzzles = [];
+let trapChests = [];
+let chestMap = {}; 
+
+// Disable chests initially until setup is done
+chests.forEach(chest => {
+  chest.style.pointerEvents = 'none';
+  chest.style.opacity = 0.5;
+});
+
+const storyOverlay = document.getElementById('story-overlay');
+const startGameBtn = document.getElementById('start-game-btn');
+
+startGameBtn.addEventListener('click', () => {
+  storyOverlay.style.display = 'none';
+  
+  chests.forEach(chest => {
+    chest.style.pointerEvents = 'auto';
+    chest.style.opacity = 1;
+  });
+});
+
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function setupGame(loadedPuzzles) {
+  if (!Array.isArray(loadedPuzzles) || loadedPuzzles.length < 5) {
+    console.error('Not enough puzzles in quest.json, minimum 5 required');
+    return;
+  }
+
+  puzzles = shuffleArray([...loadedPuzzles]).slice(0, 5);
+
+  const chestIndices = [...Array(chests.length).keys()]; // [0..6]
+  shuffleArray(chestIndices);
+  trapChests = chestIndices.slice(0, 2);
+
+  const puzzleChestIndices = chestIndices.slice(2);
+
+  chestMap = {};
+
+  trapChests.forEach(chestIdx => {
+    chestMap[chestIdx] = { type: 'trap' };
+  });
+
+  puzzleChestIndices.forEach((chestIdx, i) => {
+    chestMap[chestIdx] = { type: 'puzzle', puzzleIndex: i };
+  });
+
+  // Enable chests now that setup is complete
+  chests.forEach(chest => {
+    chest.style.pointerEvents = 'auto';
+    chest.style.opacity = 1;
+  });
+}
+
+function loseHeart() {
+  if (lives > 0) {
+    lives--;
+    hearts[lives].classList.add("lost");
+    if (lives === 0) {
+      gameOverScreen.style.display = "block";
+      disableAllChests();
+       // Play evil laugh sound
+      const evilLaugh = document.getElementById('evil-laugh-sound');
+      evilLaugh.currentTime = 0;
+      evilLaugh.play();
+    }
+  }
+}
+
+function disableAllChests() {
+  chests.forEach(chest => {
+    chest.style.pointerEvents = "none";
+    chest.style.opacity = 0.5;
+  });
+}
+
+function showPuzzle(puzzleIndex) {
+  const puzzle = puzzles[puzzleIndex];
+  questionEl.textContent = puzzle.question;
+  optionsContainer.innerHTML = "";
+
+  puzzle.options.forEach(option => {
+    const btn = document.createElement('button');
+    btn.textContent = option;
+    btn.classList.add('option-btn');
+    btn.onclick = () => {
+      // No need to add to openedChests here, do it in click handler
+
+      if (option === puzzle.answer) {
+        keysCollected++;
+        const keyImg = document.getElementById(`key${keysCollected}`);
+        if (keyImg) {
+          keyImg.classList.add("collected");
+        }
+        const correctSound = document.getElementById('correct-sound');
+        correctSound.currentTime = 0;
+        correctSound.play();
+          // Check for victory condition:
+        if (keysCollected === 5) {
+        showVictoryAnimation();
+        }
+      } else {
+        const incorrectSound = document.getElementById('incorrect-sound');
+        incorrectSound.currentTime = 0;
+        incorrectSound.play();
+        loseHeart();
+      }
+      modal.style.display = "none";
+    };
+    optionsContainer.appendChild(btn);
+  });
+
+  modal.style.display = "flex";
+}
+
+// Chest click handler
+chests.forEach((chest, index) => {
+  chest.addEventListener('click', () => {
+    if (openedChests.has(index)) {
+      chest.src = "images/openedChest.png";
+      return;
+    }
+
+    const chestData = chestMap[index];
+    if (!chestData) {
+      console.warn('Chest clicked has no assigned puzzle or trap:', index);
+      return;
+    }
+
+    openedChests.add(index); // Mark chest opened here
+
+    if (chestData.type === 'trap') {
+      chest.src = "images/openedChest.png";
+
+      const bombSound = document.getElementById('bomb-sound');
+      bombSound.currentTime = 0;
+      bombSound.play();
+
+      const bomb = document.getElementById('bomb-effect');
+      const container = document.getElementById('main-container');
+      bomb.style.display = "block";
+      container.classList.add('shake');
+
+      setTimeout(() => {
+        bomb.style.display = "none";
+        container.classList.remove('shake');
+        loseHeart();
+      }, 1000);
+
+      return;
+    }
+
+    if (chestData.type === 'puzzle') {
+      chest.src = "images/openedChest.png";
+      showPuzzle(chestData.puzzleIndex);
+    }
+  });
+});
+
+// Load puzzles and setup
+fetch('quest.json')
+  .then(response => {
+    if (!response.ok) throw new Error('Network response not OK');
+    return response.json();
+  })
+  .then(data => {
+    setupGame(data);
+  })
+  .catch(error => {
+    console.error('Error loading quest.json:', error);
+  });
+function showVictoryAnimation() {
+  // Disable all chests
+  disableAllChests();
+
+  // Hide puzzle modal
+  modal.style.display = 'none';
+
+  // Play victory sound
+  const victorySound = document.getElementById('victory-sound');
+  victorySound.currentTime = 0;
+  victorySound.play();
+
+  // Create a victory overlay
+  const victoryOverlay = document.createElement('div');
+  victoryOverlay.id = 'victory-overlay';
+  victoryOverlay.style.position = 'fixed';
+  victoryOverlay.style.top = '0';
+  victoryOverlay.style.left = '0';
+  victoryOverlay.style.width = '100vw';
+  victoryOverlay.style.height = '100vh';
+  victoryOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+  victoryOverlay.style.display = 'flex';
+  victoryOverlay.style.flexDirection = 'column';
+  victoryOverlay.style.justifyContent = 'center';
+  victoryOverlay.style.alignItems = 'center';
+  victoryOverlay.style.color = 'white';
+  victoryOverlay.style.fontSize = '2em';
+  victoryOverlay.style.zIndex = '2000';
+  victoryOverlay.style.textAlign = 'center';
+  victoryOverlay.style.padding = '20px';
+
+  // Princess image
+  const princessImg = document.createElement('img');
+  princessImg.src = 'images/princessRita.png';
+  princessImg.style.width = '200px';
+  princessImg.style.borderRadius = '10px';
+  princessImg.style.marginBottom = '20px';
+  princessImg.style.animation = 'glow-pulse 2s infinite ease-in-out';
+
+  // Thank you text
+  const thankYouText = document.createElement('div');
+  thankYouText.textContent = 'Thank you, George, the Superhero! You saved me!';
+  thankYouText.style.textShadow = `
+    0 0 5px #ff69b4,
+    0 0 10px #ff69b4,
+    0 0 20px #ff1493,
+    0 0 40px #ff1493,
+    0 0 60px #ff69b4
+  `;
+  thankYouText.style.fontWeight = 'bold';
+
+  victoryOverlay.appendChild(princessImg);
+  victoryOverlay.appendChild(thankYouText);
+  document.body.appendChild(victoryOverlay);
+}
+
+</script>
+
+</body>
+</html>
