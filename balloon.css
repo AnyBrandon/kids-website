@@ -1,0 +1,205 @@
+/* Reset & fonts */
+body {
+  margin: 0;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+  height: 100vh;
+  color: #fff;
+  user-select: none;
+}
+
+h1 {
+  margin: 30px 0 10px;
+  font-size: 3em;
+  color: #ff6f91;
+  text-shadow: 3px 3px 8px rgba(0,0,0,0.4);
+  letter-spacing: 2px;
+}
+
+#score {
+  font-size: 1.6em;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #f9f871;
+  text-shadow: 1px 1px 3px #0008;
+}
+
+#status-bar {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  font-size: 1.2em;
+  z-index: 1000;
+  font-weight: bold;
+  color: #1565c0;
+  text-shadow: 1px 1px 1px #fff;
+  border: 2px solid #42a5f5;
+}
+
+#score, #timer {
+  transition: all 0.3s ease-in-out;
+}
+
+
+
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #e0f7fa;
+  overflow: hidden;
+}
+
+/* Balloon base */
+.balloon {
+  position: absolute;
+  bottom: 0;
+  width: 130px;
+  height: 70px;
+  background: radial-gradient(circle at 30% 30%, #ffdde1, #f06292);
+  border-radius: 60% / 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 1.3em;
+  color: white;
+  cursor: pointer;
+  text-shadow: 2px 2px 6px #222;
+  box-shadow:
+    0 5px 10px rgba(255, 105, 180, 0.6),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
+  transition: transform 0.3s ease;
+  user-select: none;
+  animation: float 4s ease-in-out infinite;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+}
+
+/* Balloon colors variation using classes */
+.balloon.color1 {
+  background: radial-gradient(circle at 30% 30%, #ffdde1, #f06292);
+  box-shadow:
+    0 5px 10px rgba(255, 105, 180, 0.6),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
+}
+.balloon.color2 {
+  background: radial-gradient(circle at 30% 30%, #b5ead7, #4caf50);
+  box-shadow:
+    0 5px 10px rgba(76, 175, 80, 0.6),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
+}
+.balloon.color3 {
+  background: radial-gradient(circle at 30% 30%, #fef3bd, #f9a825);
+  box-shadow:
+    0 5px 10px rgba(249, 168, 37, 0.6),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
+}
+.balloon.color4 {
+  background: radial-gradient(circle at 30% 30%, #d0c1f9, #673ab7);
+  box-shadow:
+    0 5px 10px rgba(103, 58, 183, 0.6),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-12px) scale(1.05);
+  }
+}
+
+/* Hover pop scale */
+.balloon:hover {
+  transform: scale(1.2) rotate(-3deg);
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
+  z-index: 1000;
+}
+
+/* Wrong answer shake */
+.balloon.wrong {
+  animation: shake 0.4s;
+  color: #ff4444 !important;
+  text-shadow: 2px 2px 6px #a00000;
+  border: 2px solid #ff4444;
+  background: #ffccd5 !important;
+  filter: none !important;
+}
+
+/* Shake keyframes */
+@keyframes shake {
+  0% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-8px) rotate(-10deg); }
+  40% { transform: translateX(8px) rotate(10deg); }
+  60% { transform: translateX(-8px) rotate(-10deg); }
+  80% { transform: translateX(8px) rotate(10deg); }
+  100% { transform: translateX(0) rotate(0); }
+}
+
+/* End screen styling */
+#end-screen {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255 255 255 / 0.95);
+  padding: 40px 50px;
+  border-radius: 20px;
+  box-shadow: 0 0 25px #2196f3;
+  color: #212121;
+  max-width: 320px;
+}
+
+#end-screen h2 {
+  color: #f50057;
+  font-size: 2.5em;
+  margin-bottom: 15px;
+  text-shadow: none;
+}
+
+#end-screen p {
+  font-size: 1.3em;
+  margin-bottom: 30px;
+  font-weight: 600;
+  color: #333;
+}
+
+#end-screen button {
+  margin: 10px 15px;
+  padding: 14px 30px;
+  font-size: 1.2em;
+  border-radius: 15px;
+  border: none;
+  background-color: #ff4081;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: 700;
+  box-shadow: 0 4px 12px #ff4081aa;
+}
+
+#end-screen button:hover {
+  background-color: #f50057;
+}
+
+/* Confetti canvas fills screen */
+#confetti-canvas {
+  position: fixed;
+  pointer-events: none;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+}

@@ -1,0 +1,47 @@
+<!-- barbie.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rita's Barbie Memory Match</title>
+  <link rel="stylesheet" href="barbie.css" />
+</head>
+<body>
+
+  <h1>🎀 Rita's Barbie Memory Match</h1>
+  <p>Choose your difficulty and start flipping!</p>
+
+  <!-- Difficulty Buttons -->
+  <div class="difficulty-container">
+    <button onclick="startGame('easy')">Easy</button>
+    <button onclick="startGame('medium')">Medium</button>
+    <button onclick="startGame('hard')">Hard</button>
+    <button onclick="startGame('legendary')">Legendary</button>
+  </div>
+
+  <!-- Timer -->
+  <div class="timer-container hidden">
+    Time Left: <span id="timer">60</span> seconds
+  </div>
+
+  <!-- Game Board -->
+  <div id="gameBoard" class="game-board"></div>
+  <!-- Win Message -->
+<div id="winMessage" class="hidden">🎉 You Won! Great job, Rita! 🎉</div>
+
+
+  <!-- Chicken Animation -->
+  <div id="chickenAnim" class="hidden">
+    <img src="images/chicken.png" alt="Chicken" />
+    <p id="chickenMessage" class="hidden">🐔 Bawk bawk! Too slow Rita Cricita!</p>
+  </div>
+
+  <!-- Sounds -->
+  <audio id="flipSound" src="sounds/flip.wav" preload="auto"></audio>
+  <audio id="winSound" src="sounds/win.wav" preload="auto"></audio>
+  <audio id="chickenSound" src="sounds/chicken.wav" preload="auto"></audio>
+
+  <script src="barbie.js"></script>
+</body>
+</html>

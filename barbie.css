@@ -1,0 +1,176 @@
+/* barbie.css — Rita's Barbie Memory Game */
+
+body {
+  font-family: 'Comic Sans MS', cursive;
+  background: linear-gradient(135deg, #ffb6c1, #f06292);
+  text-align: center;
+  padding: 20px;
+  color: #fff0f5;
+}
+
+h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px #00000033;
+}
+
+.difficulty-container button {
+  margin: 5px;
+  padding: 10px 15px;
+  font-size: 1em;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+}
+
+.difficulty-container button:nth-child(1) {
+  background-color: #e91e63;
+}
+
+.difficulty-container button:nth-child(2) {
+  background-color: #ba68c8;
+}
+
+.difficulty-container button:nth-child(3) {
+  background-color: #f06292;
+}
+
+.difficulty-container button:nth-child(4) {
+  background-color: #d81b60;
+}
+
+.timer-container {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.timer-container.hidden {
+  display: none;
+}
+
+.game-board {
+  display: grid;
+  grid-template-columns: repeat(4, 110px);
+  gap: 15px;
+  justify-content: center;
+  margin: 30px auto;
+}
+
+.card {
+  width: 100px;
+  height: 100px;
+  perspective: 1000px;
+  cursor: pointer;
+  position: relative;
+}
+
+.card .front,
+.card .back {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  backface-visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 0.6s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.card .front {
+  background-color: #f8bbd0;
+  background-image: url('images/card-back-barbie.png');
+  background-size: cover;
+  background-position: center;
+  transform: rotateY(0deg);
+}
+
+.card .back {
+  background-color: #fff;
+  transform: rotateY(180deg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card .back img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.card.flipped .front {
+  transform: rotateY(180deg);
+}
+
+.card.flipped .back {
+  transform: rotateY(360deg);
+}
+
+.card.matched {
+  box-shadow: 0 0 12px 4px #ffd1dc;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.hide-board {
+  display: none;
+}
+
+#chickenAnim {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  opacity: 0;
+  text-align: center;
+  transition: opacity 0.5s ease;
+}
+
+#chickenAnim.show {
+  opacity: 1;
+  animation: chickenBounce 1s ease infinite;
+}
+
+#chickenAnim img {
+  width: 200px;
+}
+
+#chickenMessage {
+  margin-top: 10px;
+  font-size: 1.3em;
+  color: #fff0f5;
+  text-shadow: 1px 1px 4px #000;
+}
+
+#chickenMessage.hidden {
+  display: none;
+}
+
+#chickenAnim.hidden {
+  pointer-events: none;
+}
+
+@keyframes chickenBounce {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+#winMessage {
+  font-size: 1.5em;
+  margin-top: 20px;
+  color: #ffb6c1; /* light pink */
+  text-shadow: 1px 1px 2px #000;
+}
+
+.hidden {
+  display: none;
+}

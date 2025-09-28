@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz Time - George & Rita's Fun Land!</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Your existing styles kept intact... */
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      text-align: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(270deg, #1a237e, #0d47a1, #1976d2, #42a5f5);
+      background-size: 800% 800%;
+      animation: gradientAnimation 15s ease infinite;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    @keyframes gradientAnimation {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    #quiz-container, #difficulty-selection {
+      margin-top: 30px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      max-width: 600px;
+      width: 90%;
+    }
+
+    #question {
+      font-size: 2em;
+      margin-bottom: 25px;
+      font-weight: 700;
+      color: #ffeb3b;
+      text-shadow: 2px 2px 5px #000000aa;
+    }
+
+    .option-btn {
+      display: block;
+      margin: 12px auto;
+      padding: 14px 25px;
+      width: 100%;
+      max-width: 400px;
+      font-size: 1.2em;
+      cursor: pointer;
+      border: 3px solid #ffeb3b;
+      background-color: transparent;
+      border-radius: 12px;
+      color: #ffeb3b;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-shadow: 1px 1px 2px #000000cc;
+      box-shadow: 0 0 8px #ffeb3baa;
+    }
+
+    .option-btn:hover {
+      background-color: #ffeb3b;
+      color: #0d47a1;
+      box-shadow: 0 0 20px #fff700cc;
+      border-color: #fff700;
+      transform: scale(1.05);
+    }
+
+    .buttons button {
+      margin: 10px;
+      padding: 14px 30px;
+      font-size: 1.2em;
+      font-weight: 600;
+      border-radius: 12px;
+      border: 2px solid white;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .buttons button:hover {
+      background-color: #ffeb3b;
+      color: #0d47a1;
+      box-shadow: 0 0 15px #fff700cc;
+      border-color: #fff700;
+    }
+
+    #score {
+      font-size: 1.6em;
+      margin: 18px 0;
+      font-weight: 700;
+      color: #ffeb3b;
+      text-shadow: 1px 1px 4px #000000cc;
+      background: linear-gradient(135deg, #ffeb3b, #fbc02d);
+      padding: 12px 35px;
+      border-radius: 50px;
+      box-shadow: 0 0 10px #ffeb3b, 0 0 30px #fff700, 0 0 40px #fff700, inset 0 0 10px #fff700;
+      display: inline-block;
+      user-select: none;
+      letter-spacing: 1.2px;
+      transition: transform 0.2s ease;
+      cursor: default;
+    }
+
+    #score:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 15px #ffeb3b, 0 0 40px #fff700, 0 0 50px #fff700, inset 0 0 15px #fff700;
+    }
+
+    #end-message {
+      font-size: 1.8em;
+      margin-top: 40px;
+      color: #f44336;
+      font-weight: 700;
+      text-shadow: 1px 1px 6px #000000cc;
+    }
+
+    h1 {
+      margin-bottom: 15px;
+      text-shadow: 3px 3px 7px #000000cc;
+      font-weight: 900;
+      font-size: 2.8em;
+      color: #ffeb3b;
+    }
+
+    #timer {
+      font-size: 1.6em;
+      margin: 18px 0;
+      font-weight: 700;
+      color: #42a5f5;
+      text-shadow: 1px 1px 4px #000000cc;
+      background: linear-gradient(135deg, #42a5f5, #1e88e5);
+      padding: 14px 30px;
+      border-radius: 40px;
+      box-shadow: 0 0 10px #42a5f5, 0 0 30px #64b5f6, inset 0 0 15px #64b5f6;
+      display: inline-block;
+      user-select: none;
+      letter-spacing: 1.2px;
+      transition: transform 0.2s ease;
+      cursor: default;
+      animation: pulseBlue 2.5s ease-in-out infinite;
+    }
+
+    #timer:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 15px #42a5f5, 0 0 40px #90caf9, inset 0 0 20px #90caf9;
+    }
+
+    @keyframes pulseBlue {
+      0%, 100% {
+        box-shadow: 0 0 10px #42a5f5, 0 0 30px #64b5f6, inset 0 0 15px #64b5f6;
+      }
+      50% {
+        box-shadow: 0 0 20px #2196f3, 0 0 50px #90caf9, inset 0 0 25px #90caf9;
+      }
+    }
+
+    @keyframes correctAnswerAnim {
+      0% { box-shadow: 0 0 0px #4caf50; transform: scale(1); }
+      50% { box-shadow: 0 0 15px 6px #4caf50; transform: scale(1.15); }
+      100% { box-shadow: 0 0 0px #4caf50; transform: scale(1); }
+    }
+
+    .option-btn.correct-animate {
+      animation: correctAnswerAnim 0.7s ease forwards;
+      position: relative;
+      color: #4caf50 !important;
+      border-color: #4caf50 !important;
+      box-shadow: 0 0 8px #4caf50;
+    }
+
+    .option-btn.correct-animate::after {
+      content: "✔";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.5em;
+      color: #4caf50;
+      opacity: 1;
+    }
+
+    @keyframes wrongAnswerAnim {
+      0% { transform: translateX(0); background-color: transparent; box-shadow: none; color: #ff5252; border-color: #ff5252; }
+      25% { transform: translateX(-10px); }
+      50% { transform: translateX(10px); }
+      75% { transform: translateX(-10px); }
+      100% { transform: translateX(0); background-color: transparent; box-shadow: none; color: #ff5252; border-color: #ff5252; }
+    }
+
+    .option-btn.wrong-animate {
+      animation: wrongAnswerAnim 0.5s ease;
+      color: #ff5252 !important;
+      border-color: #ff5252 !important;
+      box-shadow: 0 0 10px #ff5252;
+    }
+.back-home-btn {
+  margin-top: 25px;
+  padding: 14px 36px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(135deg, #ff5252, #e53935);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 0 10px #ff5252,
+    0 0 20px #ff1744,
+    inset 0 0 5px #ff1744;
+  text-shadow: 1px 1px 3px #000;
+}
+
+.back-home-btn:hover {
+  background: linear-gradient(135deg, #ff1744, #d32f2f);
+  transform: scale(1.07);
+  box-shadow:
+    0 0 15px #ff1744,
+    0 0 30px #ff5252,
+    inset 0 0 10px #ff5252;
+}
+
+  </style>
+</head>
+<body>
+  <h1>🧠 Quiz Time!</h1>
+
+  <!-- Difficulty Selection Screen -->
+  <div id="difficulty-selection" class="container">
+    <h2>Select Difficulty Level</h2>
+    <div class="buttons">
+      <button onclick="startWithDifficulty('easy')">🟢 Easy</button>
+      <button onclick="startWithDifficulty('hard')">🔵 Hard</button>
+      <button onclick="startWithDifficulty('legendary')">🔴 Legendary</button>
+    </div>
+    <br />
+  <!-- Back to Home Button -->
+<!-- Back to Home Button -->
+<button onclick="window.location.href='index.html'" class="back-home-btn">
+  ⬅️ Back to Home
+</button>
+  </div>
+
+  <!-- Quiz Container (Initially Hidden) -->
+  <div id="quiz-container" style="display: none;">
+    <div id="score">Score: 0</div>
+    <div id="timer">Time Left: 60s</div>
+    <div id="question">Loading quiz...</div>
+    <div id="options"></div>
+  </div>
+
+  <div id="end-message"></div>
+
+  <script src="quiz.js"></script>
+</body>
+</html>
