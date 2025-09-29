@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Zombie Apocalypse</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: url("images/zombies/darkForest.gif") no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Creepster', cursive;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&display=swap');
+
+        .title {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 65px;
+            color: #b10000;
+            text-shadow: 0 0 5px black, 0 0 15px #8b0000, 0 0 25px #ff0000;
+            animation: flicker 2s infinite, shake 3s infinite;
+            letter-spacing: 3px;
+            text-align: center;
+        }
+
+        @keyframes flicker {
+
+            0%,
+            18%,
+            22%,
+            25%,
+            53%,
+            57%,
+            100% {
+                opacity: 1;
+            }
+
+            20%,
+            24%,
+            55% {
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(-50%, -50%) translate(0, 0);
+            }
+
+            20% {
+                transform: translate(-50%, -50%) translate(-2px, 1px);
+            }
+
+            40% {
+                transform: translate(-50%, -50%) translate(2px, -1px);
+            }
+
+            60% {
+                transform: translate(-50%, -50%) translate(-1px, 2px);
+            }
+
+            80% {
+                transform: translate(-50%, -50%) translate(1px, -2px);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) translate(0, 0);
+            }
+        }
+
+        .title::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 100%;
+            width: 100%;
+            height: 25px;
+            background: linear-gradient(#b10000, #300000);
+            clip-path: polygon(0 0, 100% 0, 100% 40%, 70% 100%,
+                    65% 40%, 40% 100%, 35% 40%, 10% 100%,
+                    5% 40%, 0 100%);
+            animation: drip 3s infinite ease-in-out;
+        }
+
+        @keyframes drip {
+
+            0%,
+            100% {
+                transform: translateX(-50%) scaleY(1);
+            }
+
+            50% {
+                transform: translateX(-50%) scaleY(1.3);
+            }
+        }
+
+        .subtitle {
+            position: absolute;
+            top: 22%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #e0e0e0;
+            text-shadow: 0 0 3px black, 0 0 8px rgba(255, 255, 255, 0.6);
+            text-align: center;
+            font-family: 'Creepster', cursive;
+            opacity: 0;
+            animation: fadeInCreepy 5s ease forwards, flickerSubtitle 4s infinite, pulseSubtitle 6s infinite ease-in-out;
+        }
+
+        @keyframes fadeInCreepy {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+
+            60% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes flickerSubtitle {
+
+            0%,
+            100% {
+                opacity: 0.9;
+            }
+
+            10% {
+                opacity: 0.5;
+            }
+
+            20% {
+                opacity: 0.8;
+            }
+
+            35% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 0.95;
+            }
+
+            70% {
+                opacity: 0.7;
+            }
+
+            85% {
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes pulseSubtitle {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.05);
+            }
+        }
+
+        .cases {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 50px;
+            z-index: 2;
+        }
+
+        .case {
+            text-align: center;
+            color: #fff;
+            font-family: 'Creepster', cursive;
+            position: relative;
+        }
+
+        .case img {
+            width: 180px;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            transition: filter 0.4s ease, transform 0.4s ease;
+            animation: cursed-glow 3s infinite ease-in-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes cursed-glow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 6px rgba(255, 0, 0, 0.3));
+            }
+
+            50% {
+                filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.5));
+            }
+        }
+
+        .case img:hover {
+            filter: drop-shadow(0 0 18px rgba(255, 0, 0, 0.8));
+            transform: scale(1.05);
+        }
+
+        .case span {
+            display: block;
+            margin-top: 15px;
+            font-size: 28px;
+            color: #b10000;
+            text-shadow: 0 0 5px black, 0 0 10px red;
+            position: relative;
+            opacity: 0.8;
+            animation: text-flicker 3s infinite;
+        }
+
+        @keyframes text-flicker {
+
+            0%,
+            100% {
+                opacity: 0.8;
+            }
+
+            5% {
+                opacity: 0.4;
+            }
+
+            10% {
+                opacity: 0.9;
+            }
+
+            15% {
+                opacity: 0.6;
+            }
+
+            20% {
+                opacity: 0.85;
+            }
+
+            30% {
+                opacity: 0.7;
+            }
+
+            50% {
+                opacity: 0.9;
+            }
+
+            70% {
+                opacity: 0.6;
+            }
+
+            85% {
+                opacity: 0.95;
+            }
+        }
+
+        /* Zombie row */
+        .zombie-row {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 80px;
+        }
+
+        .zombie-row img {
+            height: 220px;
+            width: auto;
+        }
+
+        .zombie-row img:nth-child(1) {
+            height: 240px;
+        }
+
+        .zombie-row img:nth-child(3) {
+            height: 260px;
+        }
+
+        /* Extra style for bigger effect */
+        .bigger {
+            transform: scale(1.5) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">Zombie Apocalypse</div>
+    <div class="subtitle">This game awakens on George’s 12th birthday... and it has been waiting.</div>
+
+    <!-- Cases -->
+    <div class="cases">
+        <div class="case" id="case1">
+            <img src="images/zombies/frame1.png" alt="Case 1" class="frame">
+            <span>Season 1</span>
+        </div>
+        <div class="case">
+            <img src="images/zombies/frame.png" alt="Case 2">
+            <span>Season 2</span>
+        </div>
+        <div class="case">
+            <img src="images/zombies/frame.png" alt="Case 3">
+            <span>Season 3</span>
+        </div>
+        <div class="case">
+            <img src="images/zombies/frame.png" alt="Case 4">
+            <span>Season 4</span>
+        </div>
+        <div class="case">
+            <img src="images/zombies/frame.png" alt="Case 5">
+            <span>Season 5</span>
+        </div>
+    </div>
+
+    <!-- Zombies -->
+    <div class="zombie-row">
+        <img src="images/zombies/zombie1.png" alt="Zombie 1">
+        <img src="images/zombies/zombie2.png" alt="Zombie 2">
+        <img src="images/zombies/zombie3.png" alt="Zombie 3">
+        <img src="images/zombies/zombie4.png" alt="Zombie 4">
+    </div>
+
+    <!-- Audio -->
+    <audio id="bgAudio" loop>
+        <source src="sounds/zombiesHoard.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    <button id="playButton">🔊 Play Sound</button>
+
+    <script>
+
+        const audio = document.getElementById('bgAudio');
+        const playButton = document.getElementById('playButton');
+        const case1 = document.getElementById('case1');
+        const frameImg = case1.querySelector('.frame');
+        const seasonLabel = case1.querySelector('span');
+        let pressTimer;
+        let isRevealing = false;
+
+        // Try autoplay
+        audio.autoplay = true;
+        audio.play().then(() => {
+            playButton.classList.add('hidden');
+        }).catch(() => {
+            playButton.classList.remove('hidden');
+        });
+
+        playButton.addEventListener('click', () => {
+            audio.play();
+            playButton.classList.add('hidden');
+        });
+
+        // Function to swap image and label temporarily
+        function revealWeapons() {
+            if (isRevealing) return;
+            isRevealing = true;
+
+            const originalSrc = "images/zombies/frame1.png";
+            const weaponsSrc = "images/zombies/weapons.png";
+            const originalLabel = "Season 1";
+
+            // Swap image and enlarge
+            frameImg.src = weaponsSrc;
+            frameImg.classList.add("bigger");
+
+            // Change label
+            seasonLabel.textContent = "Crafting the Weapons";
+
+            setTimeout(() => {
+                // Restore everything
+                frameImg.src = originalSrc;
+                frameImg.classList.remove("bigger");
+                seasonLabel.textContent = originalLabel;
+                isRevealing = false;
+            }, 3000);
+        }
+
+        // Long press detection (desktop)
+        case1.addEventListener('mousedown', () => {
+            pressTimer = setTimeout(revealWeapons, 800);
+        });
+        case1.addEventListener('mouseup', () => clearTimeout(pressTimer));
+        case1.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+
+        // Long press detection (touch devices)
+        case1.addEventListener('touchstart', () => {
+            pressTimer = setTimeout(revealWeapons, 800);
+        });
+        case1.addEventListener('touchend', () => clearTimeout(pressTimer));
+    </script>
+
+</body>
+
+</html>

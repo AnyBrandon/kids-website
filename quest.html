@@ -426,6 +426,10 @@ const keyCountDisplay = document.getElementById('key-count');
 const hearts = [document.getElementById('heart1'), document.getElementById('heart2'), document.getElementById('heart3')];
 const gameOverScreen = document.getElementById('game-over');
 
+window.addEventListener('load', () => {
+  narrateStory();
+});
+
 let keysCollected = 0;
 let lives = 3;
 const openedChests = new Set();
@@ -443,9 +447,40 @@ chests.forEach(chest => {
 const storyOverlay = document.getElementById('story-overlay');
 const startGameBtn = document.getElementById('start-game-btn');
 
+function narrateStory() {
+  const narrationText = `The Villain Darkzor kidnapped Princess Rita and made her a prisoner. 
+  George, the superhero, must save her by solving riddles and avoiding traps! 
+  This quest will be difficult! Only great superheroes can finish it and save the prettiest princess of all time!`;
+
+  const utterance = new SpeechSynthesisUtterance(narrationText);
+  utterance.rate = 1; 
+  utterance.pitch = 1; 
+  utterance.volume = 1;
+
+  // Wait for voices to be loaded before picking
+  function setEnglishVoice() {
+    const voices = speechSynthesis.getVoices();
+    const englishVoice = voices.find(v => v.lang.startsWith("en")) || voices[0];
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+    speechSynthesis.speak(utterance);
+  }
+
+  if (speechSynthesis.getVoices().length === 0) {
+    // Some browsers need this event
+    speechSynthesis.onvoiceschanged = setEnglishVoice;
+  } else {
+    setEnglishVoice();
+  }
+}
+
+
+
 startGameBtn.addEventListener('click', () => {
   storyOverlay.style.display = 'none';
-  
+  speechSynthesis.cancel(); // stop narration if still speaking
+
   chests.forEach(chest => {
     chest.style.pointerEvents = 'auto';
     chest.style.opacity = 1;

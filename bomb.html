@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Magic Kitchen Showdown — MVP</title>
+    <style>
+        :root {
+            --bg: #fff8f0;
+            --accent: #ff6b6b;
+            --accent2: #ffdd57;
+            --teal: #33c5c5;
+            --dark: #2b2b2b;
+            --panel: #fff;
+            --muted: #9b9b9b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, #fff8f0 0%, #fff5ea 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1200px;
+            margin: 24px auto;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            display: grid;
+            grid-template-columns: 240px 1fr 240px;
+            background: var(--panel)
+        }
+
+        header {
+            grid-column: 1/-1;
+            padding: 18px 24px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px
+        }
+
+        .host {
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .host .crown {
+            font-weight: 700
+        }
+
+        .sidebar {
+            padding: 16px;
+            border-right: 1px solid rgba(0, 0, 0, 0.04)
+        }
+
+        .sidebar.right {
+            border-left: 1px solid rgba(0, 0, 0, 0.04)
+        }
+
+        .player {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px
+        }
+
+        .avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #fff, #f7f7f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            border: 4px solid rgba(0, 0, 0, 0.04)
+        }
+
+        .name {
+            font-weight: 700
+        }
+
+        .panel-row {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .money-locked {
+            background: #f5fff5;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px dashed #cfeeca
+        }
+
+        .main {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .stage {
+            background: linear-gradient(180deg, #fff, #fff6ee);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px
+        }
+
+        .pans-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px
+        }
+
+        .pan {
+            background: linear-gradient(180deg, #fff, #fff5e6);
+            border-radius: 10px;
+            height: 84px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+            transition: transform .12s
+        }
+
+        .pan:hover {
+            transform: translateY(-6px)
+        }
+
+        .pan.revealed {
+            cursor: default;
+            transform: none;
+            opacity: 0.9
+        }
+
+        .pan .label {
+            font-size: 14px
+        }
+
+        .pan .content {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transform: rotateY(90deg);
+            backface-visibility: hidden
+        }
+
+        .pan.revealed .content {
+            transform: rotateY(0);
+        }
+
+        .statusbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px
+        }
+
+        .banker {
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .bank-phone {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: #111;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .values-box {
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .value-pill {
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            font-weight: 700
+        }
+
+        .value-pill.silly {
+            opacity: 0.6
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .modal {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            min-width: 320px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25)
+        }
+
+        .modal h3 {
+            margin: 0 0 8px
+        }
+
+        .modal .choices {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px
+        }
+
+        .btn {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 0;
+            cursor: pointer;
+            font-weight: 700
+        }
+
+        .btn.primary {
+            background: var(--teal);
+            color: white
+        }
+
+        .btn.danger {
+            background: var(--accent);
+            color: white
+        }
+
+        .btn.ghost {
+            background: #fff;
+            border: 1px solid #eee
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .reveal-animate {
+            animation: pop .6s ease both
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(.6)
+            }
+
+            60% {
+                transform: scale(1.08)
+            }
+
+            100% {
+                transform: scale(1)
+            }
+        }
+
+        footer {
+            grid-column: 1/-1;
+            padding: 12px 18px;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app" id="app">
+        <header>
+            <div class="host">
+                <div style="font-size:26px">🍳</div>
+                <div>
+                    <div style="font-size:14px;opacity:.95">Magic Kitchen Showdown</div>
+                    <h1>Hosted by King Ado ADI</h1>
+                </div>
+            </div>
+        </header>
+
+        <aside class="sidebar left">
+            <div class="player" id="player1Panel">
+                <div class="avatar" id="avatar1">G</div>
+                <div class="name">George</div>
+                <div class="panel-row small">
+                    <div>Pan:</div>
+                    <div id="p1-pan">—</div>
+                </div>
+                <div class="panel-row small">
+                    <div>Locked Deal:</div>
+                    <div id="p1-deal">—</div>
+                </div>
+                <div style="margin-top:8px;font-size:13px">Status: <span id="p1-status">Playing</span></div>
+            </div>
+            <hr style="margin:12px 0;border:none;border-top:1px solid #f0f0f0" />
+            <div>
+                <div class="small">Silly items found</div>
+                <div id="silly-list" class="values-box"></div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="stage">
+                <div class="statusbar">
+                    <div class="banker">
+                        <div class="bank-phone">📞</div>
+                        <div id="host-line">King Ado ADI: Welcome chefs! Pick your pans.</div>
+                    </div>
+                    <div><strong id="turn-indicator">Turn: George</strong></div>
+                </div>
+
+                <div class="pans-grid" id="pansGrid"></div>
+
+                <div>
+                    <div class="small">Remaining money values</div>
+                    <div id="valuesList" class="values-box"></div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar right">
+            <div class="player" id="player2Panel">
+                <div class="avatar" id="avatar2">R</div>
+                <div class="name">Rita</div>
+                <div class="panel-row small">
+                    <div>Pan:</div>
+                    <div id="p2-pan">—</div>
+                </div>
+                <div class="panel-row small">
+                    <div>Locked Deal:</div>
+                    <div id="p2-deal">—</div>
+                </div>
+                <div style="margin-top:8px;font-size:13px">Status: <span id="p2-status">Playing</span></div>
+            </div>
+            <hr style="margin:12px 0;border:none;border-top:1px solid #f0f0f0" />
+            <div>
+                <div class="small">Silly items pool</div>
+                <div id="silly-pool" class="values-box"></div>
+            </div>
+        </aside>
+
+        <footer>
+            <div class="small">Rules: George and Rita pick pans. Alternate reveals. Banker calls after 4 / 8 / 12 / 16
+                reveals total.</div>
+            <div><button class="btn ghost" id="restartBtn">Restart</button></div>
+        </footer>
+    </div>
+
+    <!-- Modals container -->
+    <div id="modals"></div>
+
+    <script>
+        // Magic Kitchen Showdown - MVP logic (vanilla JS)
+        (() => {
+            // -- Game configuration
+            const MONEY_VALUES = [1000000, 500000, 100000, 25000, 5000, 500, 100, 25, 5, 1];
+            const SILLY_ITEMS = ['Tomato', 'Panties', 'Banana Hat', 'Spoon', 'Tiny Umbrella', 'Tabel Zenkol', 'Stinky Sock', 'Chicken Bicken', 'Slippery Soap', 'Fake Moustache'];
+            const TOTAL_PANS = 20;
+
+            // banker offer timing (after these numbers of reveals total)
+            const BANKER_TIMINGS = [4, 8, 12, 16];
+
+            // state
+            let pans = []; // {id, type: 'money'|'silly', valueOrName, revealed}
+            let players = {
+                george: { name: 'George', selectedPan: null, lockedDeal: null, status: 'playing' },
+                rita: { name: 'Rita', selectedPan: null, lockedDeal: null, status: 'playing' }
+            };
+            let turn = 'pickGeorge'; // states: pickGeorge,pickRita,playGeorge,playRita
+            let revealsCount = 0; // total reveals
+            let currentPlayer = 'george';
+            let modalsEl = document.getElementById('modals');
+            function setHostLine(text) {
+                hostLine.textContent = text;
+                narrate(text);
+            }
+
+            function narrate(text) {
+                if ('speechSynthesis' in window) {
+                    const utter = new SpeechSynthesisUtterance(text);
+                    utter.rate = 1; // adjust speed if needed
+                    utter.pitch = 1;
+                    utter.lang = 'en-US';
+                    window.speechSynthesis.cancel(); // stop previous
+                    window.speechSynthesis.speak(utter);
+                }
+            }
+
+
+            // DOM refs
+            const pansGrid = document.getElementById('pansGrid');
+            const valuesList = document.getElementById('valuesList');
+            const sillyPool = document.getElementById('silly-pool');
+            const sillyList = document.getElementById('silly-list');
+            const hostLine = document.getElementById('host-line');
+            const turnIndicator = document.getElementById('turn-indicator');
+            const p1Pan = document.getElementById('p1-pan');
+            const p2Pan = document.getElementById('p2-pan');
+            const p1Deal = document.getElementById('p1-deal');
+            const p2Deal = document.getElementById('p2-deal');
+            const p1Status = document.getElementById('p1-status');
+            const p2Status = document.getElementById('p2-status');
+            const restartBtn = document.getElementById('restartBtn');
+
+            // helper shuffle
+            function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]] } return a }
+
+            function initGame() {
+                // reset
+                pans = [];
+                revealsCount = 0;
+                currentPlayer = 'george';
+                turn = 'pickGeorge';
+                players.george = { name: 'George', selectedPan: null, lockedDeal: null, status: 'playing' };
+                players.rita = { name: 'Rita', selectedPan: null, lockedDeal: null, status: 'playing' };
+                setHostLine('Welcome chefs! George, pick your pan.');
+                turnIndicator.textContent = 'Turn: George (pick your pan)';
+                sillyList.innerHTML = '';
+
+                // prepare pans: mix money values + silly items
+                const moneyCopy = [...MONEY_VALUES];
+                const sillyCopy = [...SILLY_ITEMS];
+                shuffle(moneyCopy); shuffle(sillyCopy);
+                const content = [...moneyCopy.map(v => ({ type: 'money', value: v })), ...sillyCopy.map(n => ({ type: 'silly', name: n }))];
+                shuffle(content);
+                for (let i = 0; i < TOTAL_PANS; i++) {
+                    pans.push({ id: i + 1, revealed: false, content: content[i] });
+                }
+                renderPans();
+                renderValues();
+                renderSillyPool();
+                updatePlayerPanels();
+            }
+
+            function renderPans() {
+                pansGrid.innerHTML = '';
+                pans.forEach(p => {
+                    if (p.reserved) return; // <-- don't render reserved pans
+                    const el = document.createElement('div');
+                    el.className = 'pan';
+                    el.dataset.id = p.id;
+                    if (p.revealed) el.classList.add('revealed');
+                    if (!p.revealed) {
+                        const label = document.createElement('div');
+                        label.className = 'label';
+                        label.textContent = `Pan ${p.id}`;
+                        el.appendChild(label);
+                    }
+
+                    const content = document.createElement('div'); content.className = 'content';
+                    if (p.revealed) {
+                        if (p.content.type === 'money') content.innerHTML = `<div style="font-size:16px;font-weight:900;color:#b07f00">$${numberWithCommas(p.content.value)}</div>`;
+                        else content.innerHTML = `<div style="font-size:14px">${p.content.name}</div>`;
+                    } else {
+                        content.innerHTML = `<div style="font-size:16px">🍳</div>`;
+                    }
+                    el.appendChild(content);
+                    el.addEventListener('click', () => onPanClick(p.id));
+                    pansGrid.appendChild(el);
+                });
+            }
+
+            function renderValues() {
+                // show remaining money values (not revealed)
+                const remaining = pans.filter(p => !p.revealed && p.content.type === 'money').map(p => p.content.value).sort((a, b) => b - a);
+                const unique = remaining.slice();
+                valuesList.innerHTML = '';
+                MONEY_VALUES.slice().sort((a, b) => b - a).forEach(v => {
+                    const pill = document.createElement('div'); pill.className = 'value-pill';
+                    if (unique.indexOf(v) === -1) pill.style.opacity = 0.2;
+                    pill.textContent = `$${numberWithCommas(v)}`;
+                    valuesList.appendChild(pill);
+                })
+            }
+
+            function renderSillyPool() {
+                sillyPool.innerHTML = '';
+                SILLY_ITEMS.forEach(s => {
+                    const pill = document.createElement('div'); pill.className = 'value-pill silly'; pill.textContent = s; sillyPool.appendChild(pill);
+                });
+            }
+
+            function numberWithCommas(x) { return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") }
+
+            function updatePlayerPanels() {
+                p1Pan.textContent = players.george.selectedPan ? `Pan ${players.george.selectedPan}` : '—';
+                p2Pan.textContent = players.rita.selectedPan ? `Pan ${players.rita.selectedPan}` : '—';
+                p1Deal.textContent = players.george.lockedDeal ? `$${numberWithCommas(players.george.lockedDeal)}` : '—';
+                p2Deal.textContent = players.rita.lockedDeal ? `$${numberWithCommas(players.rita.lockedDeal)}` : '—';
+                p1Status.textContent = players.george.status;
+                p2Status.textContent = players.rita.status;
+            }
+
+            // click handler
+            function onPanClick(id) {
+                const p = pans.find(x => x.id == id);
+                if (!p || p.revealed) return;
+
+                // picking stage
+                if (turn === 'pickGeorge') {
+                    players.george.selectedPan = id;
+                    const pan = pans.find(x => x.id == id);
+                    if (pan) pan.reserved = true; // <-- mark as reserved, NOT revealed
+                    renderPans();
+                    turn = 'pickRita';
+                    setHostLine('Great choice! Rita, pick your pan.');
+                    turnIndicator.textContent = 'Turn: Rita (pick your pan)';
+                    updatePlayerPanels();
+                    return;
+                }
+
+                if (turn === 'pickRita') {
+                    if (players.george.selectedPan == id) { alert('That pan is already taken by George.'); return }
+                    players.rita.selectedPan = id;
+                    const pan = pans.find(x => x.id == id);
+                    if (pan) pan.reserved = true; // <-- mark as reserved, NOT revealed
+                    renderPans();
+                    turn = 'playGeorge'; currentPlayer = 'george';
+                    setHostLine('Let the reveals begin. George starts!');
+                    turnIndicator.textContent = 'Turn: George';
+                    updatePlayerPanels();
+                    return;
+                }
+
+
+
+                // if player had accepted deal they can't play
+                if (players.george.status !== 'playing' && players.rita.status !== 'playing') return;
+
+                // only allow clicking on turn player's choice
+                const active = (currentPlayer === 'george') ? players.george : players.rita;
+                if (active.status !== 'playing') { alert(active.name + ' is out (deal accepted).'); return }
+
+                // if both players have selected and it's play state
+                // clicking a pan eliminates it. players cannot click their own pan to reveal it until end (we'll allow but it's their choice)
+                // reveal
+                revealPan(p);
+            }
+
+            function revealPan(p) {
+                p.revealed = true;
+                revealsCount++;
+                renderPans();
+                // show animation & narration
+                if (p.content.type === 'money') {
+                    const value = p.content.value;
+
+                    const jackpotLines = [
+                        "A MILLION?! That’s it, game over. Might as well pack it up.",
+                        "Well… there goes early retirement. A *million* just vanished!!",
+                        "Oh no no no… 1 million! You will stay poor!"
+                    ];
+
+                    const highLossLines = [
+                        `Ouch! $${numberWithCommas(value)} down the drain. Painful!`,
+                        `That’s $${numberWithCommas(value)} gone! it hurts just looking at it.`,
+                        `Say goodbye to $${numberWithCommas(value)}... that one stings.`
+                    ];
+
+                    const lowLossLines = [
+                        `Phew! Only $${numberWithCommas(value)}! pocket change.`,
+                        `Not too bad… $${numberWithCommas(value)} revealed. Could’ve been way worse.`,
+                        `Lucky break! Just $${numberWithCommas(value)} off the board.`
+                    ];
+
+                    function pickRandomLine(lines) {
+                        return lines[Math.floor(Math.random() * lines.length)];
+                    }
+
+                    if (value === 1000000) {
+                        setHostLine(pickRandomLine(jackpotLines));
+                    } else if (value > 25000) {
+                        setHostLine(pickRandomLine(highLossLines));
+                    } else {
+                        setHostLine(pickRandomLine(lowLossLines));
+                    }
+                }
+                else {
+                    setHostLine(`Oh my!! ${p.content.name}! What a silly billy surprise!`);
+                    // add to silly list
+                    const pill = document.createElement('div'); pill.className = 'value-pill silly'; pill.textContent = p.content.name; sillyList.appendChild(pill);
+                }
+                renderValues();
+                // If the revealed pan was one of the player's selected pan -> immediate effect: their pan was opened
+                if (players.george.selectedPan === p.id) {
+                    // George's pan opened
+                    players.george.status = 'revealed';
+                    players.george.finalValue = (p.content.type === 'money') ? p.content.value : 0;
+                    hostLine.textContent += ` ${players.george.name}'s pan was opened!`;
+                }
+                if (players.rita.selectedPan === p.id) {
+                    players.rita.status = 'revealed';
+                    players.rita.finalValue = (p.content.type === 'money') ? p.content.value : 0;
+                    hostLine.textContent += ` ${players.rita.name}'s pan was opened!`;
+                }
+
+                // After reveal, check if banker timing triggered
+                checkBankerTimings();
+
+                // Switch turn to the other active player who still plays
+                setTimeout(() => {
+                    if (turn === 'playGeorge' || turn === 'playRita') {
+                        // find next player who is still playing
+                        if (currentPlayer === 'george') {
+                            // switch to rita if playing else stay
+                            if (players.rita.status === 'playing') { currentPlayer = 'rita'; turnIndicator.textContent = 'Turn: Rita' }
+                            else if (players.george.status === 'playing') { currentPlayer = 'george'; turnIndicator.textContent = 'Turn: George' }
+                        } else {
+                            if (players.george.status === 'playing') { currentPlayer = 'george'; turnIndicator.textContent = 'Turn: George' }
+                            else if (players.rita.status === 'playing') { currentPlayer = 'rita'; turnIndicator.textContent = 'Turn: Rita' }
+                        }
+                        updatePlayerPanels();
+                    }
+                    checkEndgame();
+                }, 350);
+            }
+
+            // banker logic
+            function checkBankerTimings() {
+                if (BANKER_TIMINGS.includes(revealsCount)) {
+                    const idx = BANKER_TIMINGS.indexOf(revealsCount);
+
+                    // Now play phoneCall sound twice, then continue with offers
+                    const audio = new Audio('sounds/phoneCall.mp3');
+                    let playCount = 0;
+
+                    function playSoundTwiceThenContinue() {
+                        audio.currentTime = 0;
+                        audio.play();
+
+                        audio.onended = () => {
+                            playCount++;
+                            if (playCount < 3) {
+                                audio.currentTime = 0;
+                                audio.play();
+                            } else {
+                                // After the second ring finishes, continue with logic
+                                proceedWithBankerOffer(idx);
+                            }
+                        };
+                    }
+
+                    playSoundTwiceThenContinue();
+                }
+            }
+
+            function proceedWithBankerOffer(idx) {
+                if (idx === 0 || idx === 1) {
+                    doMoneyOffer(idx);
+                } else if (idx === 2) {
+                    doMutualSwapOffer();
+                } else if (idx === 3) {
+                    doSingleRandomSwapOffer();
+                }
+            }
+
+
+            let georgeMoneyOffer = 0;
+            let ritaMoneyOffer = 0;
+
+            function doMoneyOffer(idx) {
+                // compute EV of the remaining money values
+                const remainingMoney = pans.filter(p => !p.revealed && p.content.type === 'money').map(p => p.content.value);
+                if (remainingMoney.length === 0) return;
+                const ev = Math.round(remainingMoney.reduce((a, b) => a + b, 0) / remainingMoney.length);
+                // base factors (stage-dependent)
+                const factors = [0.6, 0.7];
+                const factor = factors[idx] || 0.6;
+                const variation = 1 + (Math.random() * 0.16 - 0.08);
+                const offer = Math.round(ev * factor * variation);
+                setHostLine(`the Master Chef is offering deals...`);
+
+                // offer to players who are still playing (private modals in hot-seat)
+                const targets = [];
+                if (players.george.status === 'playing') targets.push('george');
+                if (players.rita.status === 'playing') targets.push('rita');
+
+                // sequentially show offers for each target
+                let acceptedCount = 0;
+                function nextOffer(i) {
+                    if (i >= targets.length) {
+                        // if both accepted during same banker call, and both accepted -> end game
+                        if ((players.george.lockedDeal) && (players.rita.lockedDeal)) {
+                            endGame();
+                        }
+                        return;
+                    }
+                    const who = targets[i];
+                    showOfferModal(who, offer, () => {
+                        // accepted
+                        players[who].lockedDeal = offer;
+                        players[who].status = 'locked';
+                        setHostLine(`${players[who].name} accepted $${numberWithCommas(offer)}!`);
+                        updatePlayerPanels();
+                        if (currentPlayer === 'george' && players.george.status !== 'playing') {
+                            currentPlayer = 'rita';
+                            turn = 'playRita';
+                            turnIndicator.textContent = "Turn: Rita";
+                             georgeMoneyOffer = offer;
+                        } else if (currentPlayer === 'rita' && players.rita.status !== 'playing') {
+                            currentPlayer = 'george';
+                            turn = 'playGeorge';
+                            turnIndicator.textContent = "Turn: George";
+                             ritaMoneyOffer = offer;
+                        }
+                        // continue to next
+                        nextOffer(i + 1);
+                    }, () => {
+                        // declined
+                        setHostLine(` ${players[who].name} declined the offer.`);
+                        nextOffer(i + 1);
+                    });
+                }
+                nextOffer(0);
+            }
+
+            function doMutualSwapOffer() {
+                // only if both players still playing
+                if (players.george.status !== 'playing' || players.rita.status !== 'playing') return;
+                setHostLine('Do you both want to swap pans with each other? (both of you must agree)');
+                // show both modals simultaneously (two private prompts sequentially)
+                let votes = { george: null, rita: null };
+                showYesNoModal('george', 'Swap with Rita?', (choice) => { votes.george = choice; afterVote(); });
+                showYesNoModal('rita', 'Swap with George?', (choice) => { votes.rita = choice; afterVote(); });
+                function afterVote() {
+                    if (votes.george === null || votes.rita === null) return; // wait both
+                    if (votes.george && votes.rita) {
+                        // perform swap
+                        const a = players.george.selectedPan; const b = players.rita.selectedPan;
+                        players.george.selectedPan = b; players.rita.selectedPan = a;
+                        setHostLine('You both agreed!! pans have been swapped!');
+                        updatePlayerPanels();
+                    } else {
+                        setHostLine('The chefs did not both agree. no swap.');
+                    }
+                }
+            }
+
+            function doSingleRandomSwapOffer() {
+                // pick one player who is still playing
+                const candidates = [];
+                if (players.george.status === 'playing') candidates.push('george');
+                if (players.rita.status === 'playing') candidates.push('rita');
+                if (candidates.length === 0) return;
+                const who = candidates[Math.floor(Math.random() * candidates.length)];
+                setHostLine(` ${players[who].name}, would you like to swap your pan with any remaining unopened pan??`);
+                showYesNoModal(who, 'Swap with a random unopened pan?', (choice) => {
+                    if (choice) {
+                        // pick a random unopened pan excluding other player's pan and excluding own pan
+                        const excluded = [players.george.selectedPan, players.rita.selectedPan].filter(Boolean);
+                        const options = pans.filter(p => !p.revealed && excluded.indexOf(p.id) === -1).map(x => x.id);
+                        if (options.length === 0) { setHostLine('No unopened pans available for swap.'); return; }
+                        const newPan = options[Math.floor(Math.random() * options.length)];
+                        players[who].selectedPan = newPan;
+                        setHostLine(` ${players[who].name} swapped to Pan ${newPan}!`);
+                        updatePlayerPanels();
+                    } else {
+                        setHostLine(`${players[who].name} chose not to swap.`);
+                    }
+                }, () => { });
+            }
+
+            // modals
+            function showOfferModal(playerKey, amount, onAccept, onDecline) {
+                const modal = createModal(`Private offer for ${players[playerKey].name}`, `The Banker offers you $${numberWithCommas(amount)} as a guaranteed deal. Take it?`);
+                const btnYes = document.createElement('button'); btnYes.className = 'btn primary'; btnYes.textContent = 'Take it';
+                const btnNo = document.createElement('button'); btnNo.className = 'btn ghost'; btnNo.textContent = 'No, thanks';
+                btnYes.addEventListener('click', () => { closeModal(modal); onAccept && onAccept(); });
+                btnNo.addEventListener('click', () => { closeModal(modal); onDecline && onDecline(); });
+                modal.querySelector('.modal .choices').appendChild(btnYes); modal.querySelector('.modal .choices').appendChild(btnNo);
+            }
+
+            function showYesNoModal(playerKey, text, onChoice, onCancel) {
+                const modal = createModal(`Dear ${players[playerKey].name}`, text);
+                const btnYes = document.createElement('button'); btnYes.className = 'btn primary'; btnYes.textContent = 'Yes';
+                const btnNo = document.createElement('button'); btnNo.className = 'btn ghost'; btnNo.textContent = 'No';
+                btnYes.addEventListener('click', () => { closeModal(modal); onChoice(true); });
+                btnNo.addEventListener('click', () => { closeModal(modal); onChoice(false); });
+                modal.querySelector('.modal .choices').appendChild(btnYes); modal.querySelector('.modal .choices').appendChild(btnNo);
+            }
+
+            function createModal(title, text) {
+                const wrap = document.createElement('div'); wrap.className = 'modal-backdrop';
+                const modal = document.createElement('div'); modal.className = 'modal';
+                modal.innerHTML = `<h3>${title}</h3><div class="small">${text}</div><div class="choices" style="margin-top:12px"></div>`;
+                wrap.appendChild(modal); modalsEl.appendChild(wrap);
+                return wrap;
+            }
+            function closeModal(modal) { modalsEl.removeChild(modal); }
+
+            // endgame detection
+            function checkEndgame() {
+                // Conditions: both players have lockedDeal OR both players have status not 'playing' (i.e., revealed or locked)
+                const p1Out = players.george.status !== 'playing';
+                const p2Out = players.rita.status !== 'playing';
+                if (p1Out && p2Out) {
+                    // gather final values
+                    if (!players.george.finalValue && players.george.lockedDeal) players.george.finalValue = players.george.lockedDeal;
+                    if (!players.rita.finalValue && players.rita.lockedDeal) players.rita.finalValue = players.rita.lockedDeal;
+                    // if a player still doesn't have finalValue and their pan is still closed, reveal it now
+                    if (players.george.status === 'locked' && players.george.finalValue == null) {
+                        // reveal their pan's content
+                        const pan = pans.find(p => p.id === players.george.selectedPan);
+                        if (pan && pan.revealed) players.george.finalValue = (pan.content.type === 'money') ? pan.content.value : 0;
+                    }
+                    if (players.rita.status === 'locked' && players.rita.finalValue == null) {
+                        const pan = pans.find(p => p.id === players.rita.selectedPan);
+                        if (pan && pan.revealed) players.rita.finalValue = (pan.content.type === 'money') ? pan.content.value : 0;
+                    }
+                    // finally end
+                    setTimeout(() => endGame(), 400);
+                } else {
+                    // continue game
+                }
+            }
+
+            function endGame() {
+                // reveal any remaining selected pans
+                if (players.george.status !== 'revealed' && players.george.selectedPan) {
+                    const pan = pans.find(p => p.id === players.george.selectedPan);
+                    if (pan && !pan.revealed) { pan.revealed = true; players.george.finalValue = (pan.content.type === 'money') ? pan.content.value : 0; }
+                }
+                if (players.rita.status !== 'revealed' && players.rita.selectedPan) {
+                    const pan = pans.find(p => p.id === players.rita.selectedPan);
+                    if (pan && !pan.revealed) { pan.revealed = true; players.rita.finalValue = (pan.content.type === 'money') ? pan.content.value : 0; }
+                }
+                renderPans(); renderValues(); updatePlayerPanels();
+                // determine winner
+                let p1v = players.george.finalValue || 0; 
+                let p2v = players.rita.finalValue || 0;
+                let resultText = '';
+                if(georgeMoneyOffer>0){
+                 p1v = georgeMoneyOffer   
+                }
+                if(ritaMoneyOffer>0){
+                p2v = ritaMoneyOffer   
+                }
+                if (p1v > p2v) resultText = `George wins with $${numberWithCommas(p1v)} vs Rita's $${numberWithCommas(p2v)}!`;
+                else if (p2v > p1v) resultText = `Rita wins with $${numberWithCommas(p2v)} vs George's $${numberWithCommas(p1v)}!`;
+                else resultText = `It's a tie! Both chefs get $${numberWithCommas(p1v)} ! deliciously even!`;
+                setHostLine(resultText);
+                players.george.status = 'done'; players.rita.status = 'done'; updatePlayerPanels();
+            }
+
+            // restart
+            restartBtn.addEventListener('click', () => initGame());
+
+            // init
+            initGame();
+
+            // expose for debugging
+            window._mks = { pans, players };
+        })();
+    </script>
+</body>
+
+</html>
