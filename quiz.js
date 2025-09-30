@@ -78,14 +78,14 @@ function showQuestion() {
     return;
   }
 
-  const currentQuiz = quizzes[currentQuestionIndex];
-  questionEl.textContent = currentQuiz.question;
-
   // Clear any lingering animation classes
   const oldButtons = optionsEl.querySelectorAll('button');
   oldButtons.forEach(btn => {
     btn.classList.remove('correct-animate', 'wrong-animate');
   });
+
+  const currentQuiz = quizzes[currentQuestionIndex];
+  questionEl.textContent = currentQuiz.question;
 
   optionsEl.innerHTML = '';
 
@@ -110,7 +110,7 @@ function checkAnswer(selectedOption, clickedBtn) {
     correctSound.currentTime = 0;
     correctSound.play();
 
-    clickedBtn.classList.add('correct-animate');
+   // clickedBtn.classList.add('correct-animate');
     clickedBtn.blur();
     disableAllOptions();
 
@@ -121,7 +121,7 @@ function checkAnswer(selectedOption, clickedBtn) {
       } else {
         endGame();
       }
-    }, 100);
+    }, 500);
 
   } else {
     // Subtract points based on difficulty
@@ -146,7 +146,7 @@ function checkAnswer(selectedOption, clickedBtn) {
       } else {
         endGame();
       }
-    }, 100);
+    }, 500);
   }
 }
 
