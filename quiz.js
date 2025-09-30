@@ -121,7 +121,7 @@ function checkAnswer(selectedOption, clickedBtn) {
       } else {
         endGame();
       }
-    }, 1000);
+    }, 100);
 
   } else {
     // Subtract points based on difficulty
@@ -146,7 +146,7 @@ function checkAnswer(selectedOption, clickedBtn) {
       } else {
         endGame();
       }
-    }, 1000);
+    }, 100);
   }
 }
 
