@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -25,12 +26,21 @@
     }
 
     @keyframes gradientAnimation {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
-    #quiz-container, #difficulty-selection {
+    #quiz-container,
+    #difficulty-selection {
       margin-top: 30px;
       background: rgba(0, 0, 0, 0.5);
       padding: 30px 40px;
@@ -156,18 +166,32 @@
     }
 
     @keyframes pulseBlue {
-      0%, 100% {
+
+      0%,
+      100% {
         box-shadow: 0 0 10px #42a5f5, 0 0 30px #64b5f6, inset 0 0 15px #64b5f6;
       }
+
       50% {
         box-shadow: 0 0 20px #2196f3, 0 0 50px #90caf9, inset 0 0 25px #90caf9;
       }
     }
 
     @keyframes correctAnswerAnim {
-      0% { box-shadow: 0 0 0px #4caf50; transform: scale(1); }
-      50% { box-shadow: 0 0 15px 6px #4caf50; transform: scale(1.15); }
-      100% { box-shadow: 0 0 0px #4caf50; transform: scale(1); }
+      0% {
+        box-shadow: 0 0 0px #4caf50;
+        transform: scale(1);
+      }
+
+      50% {
+        box-shadow: 0 0 15px 6px #4caf50;
+        transform: scale(1.15);
+      }
+
+      100% {
+        box-shadow: 0 0 0px #4caf50;
+        transform: scale(1);
+      }
     }
 
     .option-btn.correct-animate {
@@ -190,11 +214,33 @@
     }
 
     @keyframes wrongAnswerAnim {
-      0% { transform: translateX(0); background-color: transparent; box-shadow: none; color: #ff5252; border-color: #ff5252; }
-      25% { transform: translateX(-10px); }
-      50% { transform: translateX(10px); }
-      75% { transform: translateX(-10px); }
-      100% { transform: translateX(0); background-color: transparent; box-shadow: none; color: #ff5252; border-color: #ff5252; }
+      0% {
+        transform: translateX(0);
+        background-color: transparent;
+        box-shadow: none;
+        color: #ff5252;
+        border-color: #ff5252;
+      }
+
+      25% {
+        transform: translateX(-10px);
+      }
+
+      50% {
+        transform: translateX(10px);
+      }
+
+      75% {
+        transform: translateX(-10px);
+      }
+
+      100% {
+        transform: translateX(0);
+        background-color: transparent;
+        box-shadow: none;
+        color: #ff5252;
+        border-color: #ff5252;
+      }
     }
 
     .option-btn.wrong-animate {
@@ -203,35 +249,43 @@
       border-color: #ff5252 !important;
       box-shadow: 0 0 10px #ff5252;
     }
-.back-home-btn {
-  margin-top: 25px;
-  padding: 14px 36px;
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #fff;
-  background: linear-gradient(135deg, #ff5252, #e53935);
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow:
-    0 0 10px #ff5252,
-    0 0 20px #ff1744,
-    inset 0 0 5px #ff1744;
-  text-shadow: 1px 1px 3px #000;
-}
 
-.back-home-btn:hover {
-  background: linear-gradient(135deg, #ff1744, #d32f2f);
-  transform: scale(1.07);
-  box-shadow:
-    0 0 15px #ff1744,
-    0 0 30px #ff5252,
-    inset 0 0 10px #ff5252;
-}
+    .back-home-btn {
+      margin-top: 25px;
+      padding: 14px 36px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(135deg, #ff5252, #e53935);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow:
+        0 0 10px #ff5252,
+        0 0 20px #ff1744,
+        inset 0 0 5px #ff1744;
+      text-shadow: 1px 1px 3px #000;
+    }
 
+    .back-home-btn:hover {
+      background: linear-gradient(135deg, #ff1744, #d32f2f);
+      transform: scale(1.07);
+      box-shadow:
+        0 0 15px #ff1744,
+        0 0 30px #ff5252,
+        inset 0 0 10px #ff5252;
+    }
+
+    .option-btn:focus,
+    .option-btn:active {
+      outline: none;
+      background-color: transparent !important;
+      box-shadow: none !important;
+    }
   </style>
 </head>
+
 <body>
   <h1>🧠 Quiz Time!</h1>
 
@@ -244,11 +298,11 @@
       <button onclick="startWithDifficulty('legendary')">🔴 Legendary</button>
     </div>
     <br />
-  <!-- Back to Home Button -->
-<!-- Back to Home Button -->
-<button onclick="window.location.href='index.html'" class="back-home-btn">
-  ⬅️ Back to Home
-</button>
+    <!-- Back to Home Button -->
+    <!-- Back to Home Button -->
+    <button onclick="window.location.href='index.html'" class="back-home-btn">
+      ⬅️ Back to Home
+    </button>
   </div>
 
   <!-- Quiz Container (Initially Hidden) -->
@@ -263,4 +317,5 @@
 
   <script src="quiz.js"></script>
 </body>
+
 </html>

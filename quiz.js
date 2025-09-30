@@ -111,6 +111,7 @@ function checkAnswer(selectedOption, clickedBtn) {
     correctSound.play();
 
     clickedBtn.classList.add('correct-animate');
+    clickedBtn.blur();
     disableAllOptions();
 
     setTimeout(() => {
@@ -135,6 +136,7 @@ function checkAnswer(selectedOption, clickedBtn) {
     incorrectSound.play();
 
     clickedBtn.classList.add('wrong-animate');
+    clickedBtn.blur();
     disableAllOptions();
 
     setTimeout(() => {
