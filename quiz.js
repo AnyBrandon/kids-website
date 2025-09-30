@@ -111,7 +111,7 @@ function checkAnswer(selectedOption, clickedBtn) {
     correctSound.play();
 
    // clickedBtn.classList.add('correct-animate');
-    clickedBtn.blur();
+    //clickedBtn.blur();
     disableAllOptions();
 
     setTimeout(() => {
@@ -135,8 +135,8 @@ function checkAnswer(selectedOption, clickedBtn) {
     incorrectSound.currentTime = 0;
     incorrectSound.play();
 
-    clickedBtn.classList.add('wrong-animate');
-    clickedBtn.blur();
+    //clickedBtn.classList.add('wrong-animate');
+    //clickedBtn.blur();
     disableAllOptions();
 
     setTimeout(() => {
