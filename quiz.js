@@ -35,7 +35,7 @@ async function loadQuizzes() {
 }
 
 function shuffleArray(array) {
-  for(let i = array.length - 1; i > 0; i--) {
+  for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
@@ -81,6 +81,12 @@ function showQuestion() {
   const currentQuiz = quizzes[currentQuestionIndex];
   questionEl.textContent = currentQuiz.question;
 
+  // Clear any lingering animation classes
+  const oldButtons = optionsEl.querySelectorAll('button');
+  oldButtons.forEach(btn => {
+    btn.classList.remove('correct-animate', 'wrong-animate');
+  });
+
   optionsEl.innerHTML = '';
 
   const shuffledOptions = shuffleArray([...currentQuiz.options]);
@@ -114,7 +120,7 @@ function checkAnswer(selectedOption, clickedBtn) {
       } else {
         endGame();
       }
-    }, 1200);
+    }, 1000);
 
   } else {
     // Subtract points based on difficulty
@@ -138,7 +144,7 @@ function checkAnswer(selectedOption, clickedBtn) {
       } else {
         endGame();
       }
-    }, 1200);
+    }, 1000);
   }
 }
 
