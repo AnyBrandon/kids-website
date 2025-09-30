@@ -94,7 +94,7 @@ function showQuestion() {
   shuffledOptions.forEach(option => {
     const btn = document.createElement('button');
     btn.textContent = option;
-    btn.classList.add('option-btn');
+    btn.className = 'option-btn';
     btn.onclick = () => checkAnswer(option, btn);
     optionsEl.appendChild(btn);
   });
