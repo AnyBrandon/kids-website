@@ -87,7 +87,7 @@ p {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('https://i.imgur.com/eVZrYEk.png') repeat;
+  background: url('images/mainBackgound.gif') repeat;
   animation: moveStars 60s linear infinite;
   opacity: 0.15;
   z-index: 1;

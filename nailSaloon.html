@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Princess Rita's Nails Saloon!</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(to bottom, #ffe6f0, #fff0f5);
+            color: #6a1b6a;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #ffb6c1, #ff69b4);
+            text-align: center;
+            padding: 4rem 2rem;
+            color: white;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-family: 'Pacifico', cursive;
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 5px #ff69b4;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn-play {
+            display: inline-block;
+            background-color: #fff;
+            color: #ff1493;
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4);
+            transition: transform 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+
+        .launch-subtitle {
+            font-size: 1rem;
+            color: #fff;
+            margin-top: 1rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 4px rgba(255, 20, 147, 0.6);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 2rem;
+            background-color: #fff0f5;
+            text-align: center;
+        }
+
+        .features h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            font-family: 'Pacifico', cursive;
+            color: #d63384;
+        }
+
+        .feature-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+        }
+
+        .feature-card {
+            position: relative;
+            background: #ffe4e1;
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            width: 250px;
+            box-shadow: 0 4px 10px rgba(255, 192, 203, 0.5);
+            transition: transform 0.3s;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .feature-card span.lock {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.3rem;
+            color: #c2185b;
+        }
+
+        .feature-card span.icon {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: #c2185b;
+        }
+
+        /* Preview Section */
+        .preview {
+            padding: 4rem 2rem;
+            background: #ffe6f0;
+            text-align: center;
+        }
+
+        .preview h2 {
+            font-family: 'Pacifico', cursive;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #e91e63;
+        }
+
+        .preview-trigger {
+            width: 80px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .preview-trigger:hover {
+            transform: scale(1.1);
+        }
+
+        .preview-image {
+            margin-top: 2rem;
+            display: none;
+            /* hidden by default */
+        }
+
+        .preview-image img {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 15px;
+            border: 5px solid #ffc0cb;
+            box-shadow: 0 8px 20px rgba(255, 105, 180, 0.3);
+        }
+
+        /* Footer */
+        .footer {
+            background: #ffc1e3;
+            text-align: center;
+            padding: 2rem 1rem;
+            font-size: 0.9rem;
+            color: #6a1b6a;
+        }
+
+        .footer .socials a {
+            margin: 0 10px;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: #e91e63;
+        }
+
+        .footer .socials a:hover {
+            color: #ad1457;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .feature-grid {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .btn-play {
+                padding: 0.6rem 1.2rem;
+            }
+        }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .feature-label {
+            margin-top: 0.8rem;
+            background: #ffc0cb;
+            color: #c2185b;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
+            transition: transform 0.2s ease-in-out;
+            font-family: 'Quicksand', sans-serif;
+            text-shadow: 1px 1px 2px #fff0f5;
+            opacity: 0.7;
+        }
+
+
+        .feature-label:hover {
+            transform: scale(1.05);
+        }
+
+        /* Sparkle effect */
+        .sparkle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, #fff0f5, #ff69b4);
+            border-radius: 50%;
+            animation: sparkle 1s ease-out forwards;
+            opacity: 0.8;
+        }
+
+        @keyframes sparkle {
+            0% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.5) translateY(-50px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="hero">
+        <div class="container">
+            <h1>👑 Princess Rita's Nails Saloon! 💅</h1>
+            <p class="tagline">Make the world sparkle one nail at a time!</p>
+            <a href="#" class="btn-play">✨ Start Glamming! ✨</a>
+            <p class="launch-subtitle">Launching on Rita’s Epic 10th Birthday!</p>
+        </div>
+    </header>
+
+    <section class="features">
+        <div class="container">
+            <h2>What You Can Do</h2>
+            <div class="feature-grid">
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <div class="feature-card">
+                            <span class="lock">🔒</span>
+                            <span class="icon">💅</span>
+                            <h3>Customize Nails</h3>
+                            <p>Choose shapes, lengths, and more!</p>
+                        </div>
+                        <div class="feature-label">Season 1</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-card">
+                            <span class="lock">🔒</span>
+                            <span class="icon">🎨</span>
+                            <h3>Color & Paint</h3>
+                            <p>Pick from magical polish colors!</p>
+                        </div>
+                        <div class="feature-label">Season 2</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-card">
+                            <span class="lock">🔒</span>
+                            <span class="icon">🌟</span>
+                            <h3>Add Stickers</h3>
+                            <p>Hearts, stars, butterflies and more!</p>
+                        </div>
+                        <div class="feature-label">Season 3</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-card">
+                            <span class="lock">🔒</span>
+                            <span class="icon">💍</span>
+                            <h3>Add Jewels</h3>
+                            <p>Glitzy gems and shiny rings!</p>
+                        </div>
+                        <div class="feature-label">Season 4</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="preview">
+        <div class="container">
+            <h2>See the Magic</h2>
+            <img src="images/nailHand.png" alt="Tap to preview" class="preview-trigger" id="previewTrigger" />
+
+            <div class="preview-image" id="previewImage">
+                <img src="images/nailsPreview.png" alt="Game preview">
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>© 2027 Princess Rita's Nails Saloon. All sparkle rights reserved 💖</p>
+        <div class="socials">
+            <a href="#">🌸</a>
+            <a href="#">💖</a>
+            <a href="#">👑</a>
+        </div>
+    </footer>
+<div class="sparkle-container" id="sparkleContainer"></div>
+<script>
+  const trigger = document.getElementById('previewTrigger');
+  const preview = document.getElementById('previewImage');
+  let pressTimer;
+
+  const showPreview = () => {
+    preview.style.display = 'block';
+    setTimeout(() => {
+      preview.style.display = 'none';
+    }, 3000);
+  };
+
+  trigger.addEventListener('mousedown', () => {
+    pressTimer = setTimeout(showPreview, 500);
+  });
+  trigger.addEventListener('mouseup', () => clearTimeout(pressTimer));
+  trigger.addEventListener('mouseleave', () => clearTimeout(pressTimer));
+  trigger.addEventListener('touchstart', () => {
+    pressTimer = setTimeout(showPreview, 500);
+  });
+  trigger.addEventListener('touchend', () => clearTimeout(pressTimer));
+
+  // 🌟 Sparkle logic for "Start Glamming!" button
+  const glamBtn = document.querySelector('.btn-play');
+  const sparkleContainer = document.getElementById('sparkleContainer');
+
+  function createSparkle(x, y) {
+    const sparkle = document.createElement('div');
+    sparkle.classList.add('sparkle');
+    sparkle.style.left = x + 'px';
+    sparkle.style.top = y + 'px';
+    sparkleContainer.appendChild(sparkle);
+
+    setTimeout(() => sparkle.remove(), 1000); // remove after animation
+  }
+
+  function sparkleBurstAroundElement(element) {
+    const rect = element.getBoundingClientRect();
+    for (let i = 0; i < 20; i++) {
+      const randX = rect.left + Math.random() * rect.width;
+      const randY = rect.top + Math.random() * rect.height;
+      createSparkle(randX, randY);
+    }
+  }
+
+  let glamTimer;
+  glamBtn.addEventListener('mousedown', () => {
+    glamTimer = setTimeout(() => sparkleBurstAroundElement(glamBtn), 500);
+  });
+
+  glamBtn.addEventListener('mouseup', () => clearTimeout(glamTimer));
+  glamBtn.addEventListener('mouseleave', () => clearTimeout(glamTimer));
+
+  glamBtn.addEventListener('touchstart', () => {
+    glamTimer = setTimeout(() => sparkleBurstAroundElement(glamBtn), 500);
+  });
+  glamBtn.addEventListener('touchend', () => clearTimeout(glamTimer));
+</script>
+</body>
+
+</html>
