@@ -110,8 +110,8 @@ function checkAnswer(selectedOption, clickedBtn) {
     correctSound.currentTime = 0;
     correctSound.play();
 
-   // clickedBtn.classList.add('correct-animate');
-    //clickedBtn.blur();
+    clickedBtn.classList.add('correct-animate');
+    clickedBtn.blur();
     disableAllOptions();
 
     setTimeout(() => {
@@ -121,7 +121,7 @@ function checkAnswer(selectedOption, clickedBtn) {
       } else {
         endGame();
       }
-    }, 500);
+    }, 750);
 
   } else {
     // Subtract points based on difficulty
@@ -135,8 +135,8 @@ function checkAnswer(selectedOption, clickedBtn) {
     incorrectSound.currentTime = 0;
     incorrectSound.play();
 
-    //clickedBtn.classList.add('wrong-animate');
-    //clickedBtn.blur();
+    clickedBtn.classList.add('wrong-animate');
+    clickedBtn.blur();
     disableAllOptions();
 
     setTimeout(() => {
@@ -146,7 +146,7 @@ function checkAnswer(selectedOption, clickedBtn) {
       } else {
         endGame();
       }
-    }, 500);
+    }, 750);
   }
 }
 
