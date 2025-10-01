@@ -3,13 +3,48 @@ let eggPositions = [];
 let crackedCount = 0;
 let gameEnded = false;
 
+
+function weightedRandom() {
+  const probabilities = [
+    { value: 0, weight: 11 },
+    { value: 1, weight: 20 },
+    { value: 2, weight: 22 },
+    { value: 3, weight: 20 },
+    { value: 4, weight: 16 },
+    { value: 5, weight: 11 },
+  ];
+
+  const totalWeight = probabilities.reduce((acc, curr) => acc + curr.weight, 0);
+  const random = Math.random() * totalWeight;
+
+  let cumulative = 0;
+  for (let i = 0; i < probabilities.length; i++) {
+    cumulative += probabilities[i].weight;
+    if (random < cumulative) {
+      return probabilities[i].value;
+    }
+  }
+}
+
+
 function startGame(selectedMode) {
   mode = selectedMode;
   document.getElementById("start-screen").classList.add("hidden");
   document.getElementById("game-screen").classList.remove("hidden");
 
   initializeEggs();
+
+  const drawContainer = document.getElementById("draw-container");
+  if (mode === "competitive") {
+    drawContainer.classList.remove("hidden");
+    drawContainer.classList.add("visible");
+  } else {
+    drawContainer.classList.remove("visible");
+    drawContainer.classList.add("hidden");
+  }
+
 }
+
 
 function initializeEggs() {
   const grid = document.getElementById("egg-grid");
@@ -71,8 +106,8 @@ function revealEgg(egg, index) {
   egg.appendChild(img);
 
   crackedCount++;
-  document.getElementById("status").innerText = `Eggs cracked: ${crackedCount} / 24`;
-  
+  document.getElementById("status").innerText = `🥚 Eggs cracked: ${crackedCount} / 24`;
+
   if (crackedCount === 24) {
     setTimeout(() => {
       gameOver(true);
@@ -120,3 +155,30 @@ function shuffleArray(array) {
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
+
+// DRAW button functionality
+document.addEventListener("DOMContentLoaded", () => {
+  const drawButton = document.getElementById("draw-button");
+  const drawCard = document.getElementById("draw-card");
+
+  drawButton.addEventListener("click", () => {
+    // Play click sound
+    const clickSound = new Audio("sounds/click.wav");
+    clickSound.play();
+
+    // Clear previous number
+    drawCard.textContent = "";
+
+    // Start shake animation
+    drawCard.classList.add("shaking");
+
+    // After 2 seconds, show new number and stop shaking
+    setTimeout(() => {
+      const number = weightedRandom();
+      drawCard.textContent = number;
+      drawCard.classList.remove("shaking");
+    }, 2000);
+  });
+});
+
+

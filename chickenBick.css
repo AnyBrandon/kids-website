@@ -219,3 +219,180 @@ button:hover {
     transform: scale(1.05);
   }
 }
+
+.mode-button {
+  font-family: 'Luckiest Guy', cursive, 'Comic Sans MS', sans-serif;
+  font-size: 1.4rem; /* Smaller font size */
+  padding: 0.8em 1.8em; /* Less padding */
+  margin: 0.8em;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  color: white;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+/* Family Mode: greenish with glow */
+.mode-button.family {
+  background: linear-gradient(45deg, #66bb6a, #43a047);
+  text-shadow: 0 0 4px #c8e6c9, 0 0 8px #a5d6a7;
+}
+
+/* Competitive Mode: reddish with glow */
+.mode-button.competitive {
+  background: linear-gradient(45deg, #f44336, #d32f2f);
+  text-shadow: 0 0 4px #ffcdd2, 0 0 8px #ef9a9a;
+}
+
+/* Hover effect: subtle bounce and glow */
+.mode-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 8px #fff, 0 0 12px #fff;
+}
+
+/* Pressed effect */
+.mode-button:active {
+  transform: scale(0.95);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Optional floating animation */
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.mode-button {
+  animation: floaty 4s ease-in-out infinite;
+}
+
+#draw-container {
+  position: absolute;
+  left: 20px;
+  top: 150px;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  z-index: 100;
+}
+
+/* New class */
+.visible {
+  display: flex;
+}
+
+/* Already defined */
+.hidden {
+  display: none;
+}
+
+
+#draw-button {
+  padding: 0.6em 1.4em;
+  font-size: 1.4rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #ff6f00, #ffcc00);
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Luckiest Guy', cursive;
+  box-shadow:
+    0 0 8px #ffcc00,
+    0 0 12px #ffa000,
+    0 0 20px #ff6f00;
+  text-shadow:
+    1px 1px 2px #000,
+    0 0 4px #fff176;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  animation: buttonPulse 2s ease-in-out infinite;
+  touch-action: manipulation;
+}
+
+/* Press (tap) effect with different glow */
+#draw-button:active {
+  transform: scale(0.95);
+  box-shadow:
+    0 0 10px #ffffff,
+    0 0 20px #ffffff,
+    0 0 30px #bbdefb;
+  background: linear-gradient(45deg, #f57c00, #ffee58);
+}
+
+
+/* Subtle pulse animation */
+@keyframes buttonPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 8px #ffcc00,
+      0 0 12px #ffa000,
+      0 0 20px #ff6f00;
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow:
+      0 0 10px #ffeb3b,
+      0 0 18px #ffc107,
+      0 0 24px #ff9800;
+  }
+}
+
+
+#draw-card {
+  min-width: 100px;
+  min-height: 60px;
+  font-size: 2.5rem;
+  background: #fff3cd;
+  color: #333;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Luckiest Guy', cursive;
+  padding: 10px 20px;
+  border: 3px dashed #ffc107;
+}
+
+#draw-card.shaking {
+  animation: shake 2s ease-in-out;
+}
+
+#status {
+  font-family: 'Luckiest Guy', cursive, 'Comic Sans MS', sans-serif;
+  font-size: 1.8rem;
+  color: #ffcc00;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 10px 20px;
+  margin-top: 20px;
+  border-radius: 12px;
+  display: inline-block;
+  border: 3px dashed #fff176;
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+  text-shadow:
+    0 0 6px #fff176,
+    0 0 12px #ffd700;
+
+  animation: crackPulse 2s infinite ease-in-out;
+}
+
+/* Add gentle pulsing animation */
+@keyframes crackPulse {
+  0%, 100% {
+    transform: scale(1);
+    text-shadow:
+      0 0 6px #fff176,
+      0 0 12px #ffd700;
+  }
+  50% {
+    transform: scale(1.05);
+    text-shadow:
+      0 0 10px #ffee58,
+      0 0 20px #fff176;
+  }
+}
