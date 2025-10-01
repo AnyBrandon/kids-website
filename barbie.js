@@ -22,6 +22,7 @@ let matchedPairs = 0;
 let timerInterval = null;
 let timeLeft = 0;
 let gameActive = false;
+let currentDifficulty = null;
 
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -107,10 +108,34 @@ function gameWon() {
   clearInterval(timerInterval);
   timerContainer.classList.add("hidden");
 
+  document.getElementById("winMessage").classList.remove("hidden");
   winSound.currentTime = 0;
   winSound.play();
 
-  document.getElementById("winMessage").classList.remove("hidden");
+  console.log("Player won on difficulty:", currentDifficulty);
+
+  // Define trophies for each difficulty
+  const difficultyTrophies = {
+    easy: "barbieEasyTrophy",
+    medium: "barbieMediumTrophy",
+    hard: "barbieHardTrophy",
+    legendary: "barbieLegendaryTrophy"
+  };
+
+  const trophyToAdd = difficultyTrophies[currentDifficulty];
+  if (!trophyToAdd) return; // safety check
+
+  // Retrieve existing trophies from localStorage
+  const trophies = JSON.parse(localStorage.getItem("trophies") || "[]");
+
+  // Check if the trophy already exists
+  if (!trophies.includes(trophyToAdd)) {
+    trophies.push(trophyToAdd);
+    localStorage.setItem("trophies", JSON.stringify(trophies));
+    console.log(`${trophyToAdd} added!`);
+  } else {
+    console.log(`${trophyToAdd} already earned.`);
+  }
 }
 
 
@@ -121,10 +146,10 @@ function gameLost() {
 
   document.getElementById("gameBoard").classList.add("hide-board");
 
-// Show chicken animation and message
-chickenAnim.classList.remove("hidden");
-chickenAnim.classList.add("show");
-chickenMessage.classList.remove("hidden");
+  // Show chicken animation and message
+  chickenAnim.classList.remove("hidden");
+  chickenAnim.classList.add("show");
+  chickenMessage.classList.remove("hidden");
 
   chickenSound.currentTime = 0;
   chickenSound.play();
@@ -156,6 +181,8 @@ function startGame(difficulty) {
   };
 
   if (!timeMap[difficulty]) return;
+
+  currentDifficulty = difficulty;
 
   matchedPairs = 0;
   flipped = [];

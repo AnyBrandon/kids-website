@@ -19,7 +19,7 @@ const timerDisplay = document.getElementById("timer");
 const timerContainer = document.querySelector(".timer-container");
 const chickenAnim = document.getElementById("chickenAnim");
 const chickenMessage = document.getElementById("chickenMessage");
-
+let currentDifficulty = null;
 let cards = [];
 let flipped = [];
 let matchedPairs = 0;
@@ -112,11 +112,36 @@ function gameWon() {
   timerContainer.classList.add("hidden");
 
   document.getElementById("winMessage").classList.remove("hidden");
-  
-
   winSound.currentTime = 0;
   winSound.play();
+
+  console.log("Player won on difficulty:", currentDifficulty);
+
+  // Define trophies for each difficulty
+  const difficultyTrophies = {
+    easy: "fortniteEasyTrophy",
+    medium: "fortniteMediumTrophy",
+    hard: "fortniteHardTrophy",
+    legendary: "fortniteLegendaryTrophy"
+  };
+
+  const trophyToAdd = difficultyTrophies[currentDifficulty];
+  if (!trophyToAdd) return; // safety check
+
+  // Retrieve existing trophies from localStorage
+  const trophies = JSON.parse(localStorage.getItem("trophies") || "[]");
+
+  // Check if the trophy already exists
+  if (!trophies.includes(trophyToAdd)) {
+    trophies.push(trophyToAdd);
+    localStorage.setItem("trophies", JSON.stringify(trophies));
+    console.log(`${trophyToAdd} added!`);
+  } else {
+    console.log(`${trophyToAdd} already earned.`);
+  }
 }
+
+
 
 function gameLost() {
   gameActive = false;
@@ -163,6 +188,9 @@ function startGame(difficulty) {
   };
 
   if (!timeMap[difficulty]) return;
+
+    // Store the current difficulty
+  currentDifficulty = difficulty;
 
   // Reset state
   matchedPairs = 0;
