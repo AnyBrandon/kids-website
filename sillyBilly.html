@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Totally True-ish Trivia</title>
+    <style>
+        /* ---------- GENERAL ---------- */
+        body {
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0 10px;
+        }
+
+        .game-container {
+            max-width: 650px;
+            width: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* ---------- QUESTION CARD ---------- */
+        .question {
+            background: linear-gradient(145deg, #ffe066, #ffb347);
+            padding: 25px;
+            border-radius: 20px;
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #4b3e2f;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 25px;
+            transition: transform 0.3s;
+        }
+
+        .question:hover {
+            transform: scale(1.03);
+        }
+
+        /* ---------- OPTIONS ---------- */
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button.option {
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: #fff;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+        }
+
+        button.option:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+        }
+
+        /* ---------- POPUP ---------- */
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+        }
+
+        .popup-content {
+            background: #fff;
+            padding: 25px 20px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 450px;
+            width: 80%;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            animation: popupAnim 0.3s ease-out;
+        }
+
+        @keyframes popupAnim {
+            0% {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .popup-content h2 {
+            margin-top: 0;
+            color: #ff3d00;
+            font-size: 1.8rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .popup-content p {
+            margin: 10px 0;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        button.next-btn {
+            margin-top: 15px;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 12px;
+            background: #ff5722;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        button.next-btn:hover {
+            background: #e64a19;
+            transform: scale(1.05);
+        }
+
+        /* ---------- FINAL MESSAGE ---------- */
+        .final-message {
+            font-size: 1.7rem;
+            margin-top: 30px;
+            color: #673ab7;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ---------- RESPONSIVE ---------- */
+        @media (max-width: 768px) {
+            .question {
+                font-size: 1.3rem;
+                padding: 20px;
+            }
+
+            button.option {
+                font-size: 1rem;
+                padding: 12px 18px;
+            }
+
+            .popup-content h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        .final-message {
+            font-size: 2rem;
+            margin-top: 30px;
+            color: #ff4081;
+            font-weight: bold;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            animation: bounceColor 1s infinite, colorChange 2s infinite alternate;
+        }
+
+        @keyframes bounceColor {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes colorChange {
+            0% {
+                color: #ff4081;
+            }
+
+            25% {
+                color: #ffeb3b;
+            }
+
+            50% {
+                color: #4caf50;
+            }
+
+            75% {
+                color: #2196f3;
+            }
+
+            100% {
+                color: #ff4081;
+            }
+        }
+
+        #confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 200;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            opacity: 0.8;
+            animation: fall 3s linear infinite;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        .game-title {
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff4081, #ffb347, #4caf50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            /* subtle shadow for clarity */
+            animation: bounceTitle 1.2s infinite alternate;
+        }
+
+        @keyframes bounceTitle {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-12px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="game-title">🎉 Silly Billy Trivia 🎉</div>
+        <div class="question" id="question">Loading...</div>
+        <div class="options" id="options"></div>
+        <div class="final-message" id="finalMessage" style="display:none;"></div>
+        <div id="confetti"></div>
+    </div>
+
+    <div class="popup" id="popup">
+        <div class="popup-content">
+            <h2>Wrong Answer! ❌</h2>
+            <p id="sillyAnswer"></p>
+            <p id="explanation"></p>
+            <button class="next-btn" id="nextBtn">Next ➡️</button>
+        </div>
+    </div>
+
+    <audio id="endSound" src="sounds/cartoonLaugh.wav"></audio>
+    <audio id="incorrectSound" src="sounds/incorrect.wav"></audio>
+
+
+    <script>
+        let questions = [];
+        let currentQuestion = 0;
+
+        function shuffleArray(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        async function loadQuestions() {
+            const response = await fetch('sillyTrivia.json');
+            const allQuestions = await response.json();
+
+            // Pick 12 random questions
+            questions = shuffleArray(allQuestions).slice(0, 12);
+
+            // Optional: shuffle options for each question
+            questions.forEach(q => q.options = shuffleArray(q.options));
+
+            showQuestion();
+        }
+
+
+        function showQuestion() {
+            if (currentQuestion >= questions.length) {
+                document.getElementById('question').style.display = 'none';
+                document.getElementById('options').style.display = 'none';
+                const final = document.getElementById('finalMessage');
+                final.textContent = "Congrats! You got 0 points! 🎉";
+                final.style.display = 'block';
+
+                // Play cartoon laugh
+                document.getElementById('endSound').play();
+
+                // Launch confetti
+                launchConfetti(100);
+
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            document.getElementById('question').textContent = q.question;
+
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            q.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.textContent = option;
+                btn.className = 'option';
+                btn.onclick = () => showPopup(q);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function launchConfetti(count) {
+            const confettiContainer = document.getElementById('confetti');
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti-piece';
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                confetti.style.animationDuration = 2 + Math.random() * 3 + 's';
+                confetti.style.opacity = 0.7 + Math.random() * 0.3;
+                confettiContainer.appendChild(confetti);
+
+                // Remove after animation
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+
+        function showPopup(q) {
+            // Play incorrect sound
+            document.getElementById('incorrectSound').play();
+
+            // Show popup
+            document.getElementById('sillyAnswer').textContent = q.sillyAnswer;
+            document.getElementById('explanation').textContent = q.explanation;
+            document.getElementById('popup').style.display = 'flex';
+        }
+
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            document.getElementById('popup').style.display = 'none';
+            currentQuestion++;
+            showQuestion();
+        });
+
+        // Start the game
+        loadQuestions();
+    </script>
+</body>
+
+</html>

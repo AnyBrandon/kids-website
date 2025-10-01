@@ -1,0 +1,290 @@
+[
+  {
+    "question": "Who landed first on the moon?",
+    "options": ["Neil Armstrong", "Buzz Aldrin", "Yuri Gagarin", "Michael Collins"],
+    "sillyAnswer": "Mickey Mouse",
+    "explanation": "because he left cheese footprints for the aliens. 🧀🌕"
+  },
+  {
+    "question": "What is the largest planet in our solar system?",
+    "options": ["Jupiter", "Saturn", "Neptune", "Earth"],
+    "sillyAnswer": "Godzilla",
+    "explanation": "because he wanted a bigger playground. 🐲🪐"
+  },
+  {
+    "question": "Who wrote the play 'Romeo and Juliet'?",
+    "options": ["William Shakespeare", "Charles Dickens", "Leo Tolstoy", "Mark Twain"],
+    "sillyAnswer": "Elmo",
+    "explanation": "because he needed a new script for Sesame Street drama. 🐥🎭"
+  },
+  {
+    "question": "What is the capital of France?",
+    "options": ["Paris", "Berlin", "Madrid", "Rome"],
+    "sillyAnswer": "Atlantis",
+    "explanation": "because everyone knows mermaids prefer baguettes. 🧜‍♀️🥖"
+  },
+  {
+    "question": "Which element has the chemical symbol 'O'?",
+    "options": ["Oxygen", "Gold", "Hydrogen", "Iron"],
+    "sillyAnswer": "Bubblegum",
+    "explanation": "because the air tastes better with pink bubbles. 🍬💨"
+  },
+  {
+    "question": "How many continents are there on Earth?",
+    "options": ["7", "5", "6", "8"],
+    "sillyAnswer": "Narnia",
+    "explanation": "because talking lions need their own land. 🦁🌳"
+  },
+  {
+    "question": "What is the fastest land animal?",
+    "options": ["Cheetah", "Lion", "Horse", "Tiger"],
+    "sillyAnswer": "Roadrunner",
+    "explanation": "because he never stops saying 'Beep beep!' 🏃💨"
+  },
+  {
+    "question": "Who painted the Mona Lisa?",
+    "options": ["Leonardo da Vinci", "Vincent van Gogh", "Pablo Picasso", "Claude Monet"],
+    "sillyAnswer": "SpongeBob",
+    "explanation": "because he wanted a smiley square portrait. 🍍🎨"
+  },
+  {
+    "question": "Which ocean is the largest?",
+    "options": ["Pacific", "Atlantic", "Indian", "Arctic"],
+    "sillyAnswer": "Chocolate Milk Ocean",
+    "explanation": "because whales love chocolate. 🐳🍫"
+  },
+  {
+    "question": "Who discovered penicillin?",
+    "options": ["Alexander Fleming", "Marie Curie", "Louis Pasteur", "Isaac Newton"],
+    "sillyAnswer": "Sherlock Holmes",
+    "explanation": "because germs needed a detective. 🕵️‍♂️🦠"
+  },
+  {
+    "question": "What gas do plants absorb from the atmosphere?",
+    "options": ["Carbon Dioxide", "Oxygen", "Nitrogen", "Helium"],
+    "sillyAnswer": "Soda Pop",
+    "explanation": "because leaves like fizzy drinks. 🥤🍃"
+  },
+  {
+    "question": "What is H2O more commonly known as?",
+    "options": ["Water", "Hydrogen Peroxide", "Salt", "Mercury"],
+    "sillyAnswer": "Vanilla Ice Cream",
+    "explanation": "because snow melts into tasty treats. 🍦❄️"
+  },
+    {
+    "question": "What is Lebanon?",
+    "options": ["a country", "a city", "an island", "a continent"],
+    "sillyAnswer": "Lebanon Tabel el zenkoul",
+    "explanation": "because the zenkoul is benkoul. 🦆🍽️"
+  },
+  {
+    "question": "Who is known as the father of computers?",
+    "options": ["Charles Babbage", "Alan Turing", "Bill Gates", "Steve Jobs"],
+    "sillyAnswer": "Optimus Prime",
+    "explanation": "because robots need calculators too. 🤖🖩"
+  },
+  {
+    "question": "Which planet is known as the Red Planet?",
+    "options": ["Mars", "Venus", "Jupiter", "Saturn"],
+    "sillyAnswer": "Candy Cane Planet",
+    "explanation": "because astronauts love sweet vacations. 🍭🚀"
+  },
+  {
+    "question": "What is the smallest prime number?",
+    "options": ["2", "1", "3", "5"],
+    "sillyAnswer": "Tiny Tom",
+    "explanation": "because he likes to sneak into math class. 🐱➕"
+  },
+    {
+    "question": "Who is the strongest superhero?",
+    "options": ["Hulk", "Thor", "Superman", "Ado Adi"],
+    "sillyAnswer": "Chicken Bicken",
+    "explanation": "because he throw eggs at people. 🐔💪"
+  },
+  {
+    "question": "Who wrote 'Harry Potter'?",
+    "options": ["J.K. Rowling", "J.R.R. Tolkien", "C.S. Lewis", "Rick Riordan"],
+    "sillyAnswer": "Yoda",
+    "explanation": "because magic flows better in small green packages. 🧙‍♂️💚"
+  },
+  {
+    "question": "What is the boiling point of water at sea level?",
+    "options": ["100°C", "90°C", "120°C", "80°C"],
+    "sillyAnswer": "Molten Marshmallows",
+    "explanation": "because summer s'mores taste better hot. 🔥🍡"
+  },
+  {
+    "question": "Which country gifted the Statue of Liberty to the USA?",
+    "options": ["France", "England", "Germany", "Italy"],
+    "sillyAnswer": "Wakanda",
+    "explanation": "because vibranium needed a vacation. 🗽💎"
+  },
+  {
+    "question": "How many bones are in the human body?",
+    "options": ["206", "205", "210", "201"],
+    "sillyAnswer": "Marshmallow Bones",
+    "explanation": "because skeletons like soft snacks. 🍬💀"
+  },
+  {
+    "question": "Who developed the theory of relativity?",
+    "options": ["Albert Einstein", "Isaac Newton", "Galileo Galilei", "Nikola Tesla"],
+    "sillyAnswer": "Wile E. Coyote",
+    "explanation": "because physics works better with Acme rockets. 🚀😹"
+  },
+  {
+    "question": "Which instrument has keys, pedals, and strings?",
+    "options": ["Piano", "Guitar", "Violin", "Flute"],
+    "sillyAnswer": "Banana",
+    "explanation": "because it plays the best fruity melodies. 🍌🎹"
+  },
+  {
+    "question": "Who invented the telephone?",
+    "options": ["Alexander Graham Bell", "Thomas Edison", "Nikola Tesla", "Guglielmo Marconi"],
+    "sillyAnswer": "Kermit the Frog",
+    "explanation": "because frogs love long-distance ribbits. 🐸☎️"
+  },
+  {
+    "question": "What is the hardest natural substance on Earth?",
+    "options": ["Diamond", "Gold", "Iron", "Quartz"],
+    "sillyAnswer": "Super Glue",
+    "explanation": "because rocks like to stick together. 🪨🩹"
+  },
+  {
+    "question": "Which planet has a ring system?",
+    "options": ["Saturn", "Mars", "Jupiter", "Venus"],
+    "sillyAnswer": "Donut Planet",
+    "explanation": "because aliens love sweet rings. 🍩🪐"
+  },
+  {
+    "question": "What is the main ingredient in sushi?",
+    "options": ["Rice", "Bread", "Potato", "Pasta"],
+    "sillyAnswer": "Chocolate",
+    "explanation": "because fish like sweet treats too. 🍫🐟"
+  },
+  {
+    "question": "Who was the first President of the United States?",
+    "options": ["George Washington", "Abraham Lincoln", "Thomas Jefferson", "John Adams"],
+    "sillyAnswer": "Donald Duck",
+    "explanation": "because quacking is a presidential skill. 🦆🇺🇸"
+  },
+  {
+    "question": "Which continent is the Sahara Desert located in?",
+    "options": ["Africa", "Asia", "Australia", "South America"],
+    "sillyAnswer": "Cloudland",
+    "explanation": "because clouds need a sunny holiday. ☁️🏜️"
+  },
+  {
+    "question": "What is the largest mammal in the world?",
+    "options": ["Blue Whale", "Elephant", "Giraffe", "Hippopotamus"],
+    "sillyAnswer": "King Kong",
+    "explanation": "because skyscrapers are the best swimming pools. 🏢🐵"
+  },
+  {
+    "question": "Which gas do humans need to breathe?",
+    "options": ["Oxygen", "Carbon Dioxide", "Nitrogen", "Helium"],
+    "sillyAnswer": "Rainbow Juice",
+    "explanation": "because breathing is more fun in colors. 🌈💨"
+  },
+  {
+    "question": "Who is the author of 'The Odyssey'?",
+    "options": ["Homer", "Virgil", "Plato", "Socrates"],
+    "sillyAnswer": "Shrek",
+    "explanation": "because ogres love epic journeys. 🐸🏞️"
+  },
+  {
+    "question": "Which organ pumps blood through the body?",
+    "options": ["Heart", "Lungs", "Liver", "Kidneys"],
+    "sillyAnswer": "Watermelon",
+    "explanation": "because fruity hearts are healthiest. 🍉❤️"
+  },
+  {
+    "question": "What is the chemical symbol for gold?",
+    "options": ["Au", "Ag", "Gd", "Fe"],
+    "sillyAnswer": "Unicorn Dust",
+    "explanation": "because gold sparkles magically. 🦄✨"
+  },
+  {
+    "question": "Which planet is closest to the Sun?",
+    "options": ["Mercury", "Venus", "Earth", "Mars"],
+    "sillyAnswer": "Flaming Pizza",
+    "explanation": "because hot pizzas orbit the sun. 🍕☀️"
+  },
+  {
+    "question": "Who invented the light bulb?",
+    "options": ["Thomas Edison", "Nikola Tesla", "Alexander Graham Bell", "Benjamin Franklin"],
+    "sillyAnswer": "Minions",
+    "explanation": "because they need bright ideas for mischief. 🍌💡"
+  },
+  {
+    "question": "What is the largest organ in the human body?",
+    "options": ["Skin", "Liver", "Heart", "Lungs"],
+    "sillyAnswer": "Bubble Wrap",
+    "explanation": "because popping is the best stress relief. 🫧🤯"
+  },
+  {
+    "question": "Which is the longest river in the world?",
+    "options": ["Nile", "Amazon", "Yangtze", "Mississippi"],
+    "sillyAnswer": "Chocolate River",
+    "explanation": "because candy makes everything longer. 🍫🏞️"
+  },
+  {
+    "question": "What is the tallest mountain in the world?",
+    "options": ["Mount Everest", "K2", "Kangchenjunga", "Lhotse"],
+    "sillyAnswer": "Ice Cream Mountain",
+    "explanation": "because sprinkles make it taller. 🍦⛰️"
+  },
+  {
+    "question": "Which country is known for the pyramids?",
+    "options": ["Egypt", "Mexico", "Peru", "Sudan"],
+    "sillyAnswer": "Lego Land",
+    "explanation": "because bricks stack better than sand. 🧱🏜️"
+  },
+  {
+    "question": "Who painted the Starry Night?",
+    "options": ["Vincent van Gogh", "Claude Monet", "Pablo Picasso", "Salvador Dalí"],
+    "sillyAnswer": "Peppa Pig",
+    "explanation": "because stars taste better with mud pies. 🐷✨"
+  },
+  {
+    "question": "Which planet is famous for its Great Red Spot?",
+    "options": ["Jupiter", "Mars", "Saturn", "Venus"],
+    "sillyAnswer": "Tomato Planet",
+    "explanation": "because aliens like ketchup. 🍅🪐"
+  },
+  {
+    "question": "Which is the smallest country in the world?",
+    "options": ["Vatican City", "Monaco", "Nauru", "San Marino"],
+    "sillyAnswer": "Tinyland",
+    "explanation": "because mini citizens need mini skyscrapers. 🏰🪀"
+  },
+  {
+    "question": "What is the freezing point of water?",
+    "options": ["0°C", "32°C", "-10°C", "100°C"],
+    "sillyAnswer": "Ice Cream Sundae",
+    "explanation": "because ice likes a sweet treat. 🍨❄️"
+  },
+  {
+    "question": "Which scientist formulated the laws of motion?",
+    "options": ["Isaac Newton", "Albert Einstein", "Galileo Galilei", "Nikola Tesla"],
+    "sillyAnswer": "Captain Underpants",
+    "explanation": "because physics works better with capes. 🩲💨"
+  },
+  {
+    "question": "Who is the Greek god of the sea?",
+    "options": ["Poseidon", "Zeus", "Hades", "Apollo"],
+    "sillyAnswer": "Dory",
+    "explanation": "because fish need directions. 🐠🌊"
+  },
+  {
+    "question": "Which gas is essential for human respiration?",
+    "options": ["Oxygen", "Carbon Dioxide", "Nitrogen", "Methane"],
+    "sillyAnswer": "Rainbow Soda",
+    "explanation": "because breathing is tastier in colors. 🌈🥤"
+  },
+  {
+    "question": "Which instrument is known as the 'king of instruments'?",
+    "options": ["Organ", "Piano", "Violin", "Trumpet"],
+    "sillyAnswer": "Kazoo",
+    "explanation": "because kazoos rule the playground. 🎶😜"
+  }
+]
