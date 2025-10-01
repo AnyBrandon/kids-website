@@ -1,51 +1,81 @@
 // trophies.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Get trophies from localStorage (stored as JSON array)
     const trophies = JSON.parse(localStorage.getItem('trophies') || '[]');
 
-    // Fortnite trophies
-    if (trophies.includes('fortniteEasyTrophy')) {
-        const fortniteEasy = document.querySelector('img[src="images/trophies/easyTrophy.png"]');
-        fortniteEasy.style.opacity = '1';
-        fortniteEasy.style.filter = 'none';
+    // Helper functions
+    const hasTrophy = (key) => trophies.includes(key);
+    const revealPassword = (id, text) => {
+        const label = document.getElementById(id);
+        if (label) {
+            label.textContent = text;
+            label.classList.add('revealed');
+        }
+    };
+
+    // --- Fortnite Section ---
+    const fortniteSection = document.querySelectorAll('.game-section')[0];
+    let fortniteCount = 0;
+
+    if (hasTrophy('fortniteEasyTrophy')) {
+        const el = fortniteSection.querySelector('img[src="images/trophies/easyTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        fortniteCount++;
     }
-    if (trophies.includes('fortniteMediumTrophy')) {
-        const fortniteMedium = document.querySelector('img[src="images/trophies/mediumTrophy.png"]');
-        fortniteMedium.style.opacity = '1';
-        fortniteMedium.style.filter = 'none';
+    if (hasTrophy('fortniteMediumTrophy')) {
+        const el = fortniteSection.querySelector('img[src="images/trophies/mediumTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        fortniteCount++;
     }
-    if (trophies.includes('fortniteHardTrophy')) {
-        const fortniteHard = document.querySelector('img[src="images/trophies/hardTrophy.png"]');
-        fortniteHard.style.opacity = '1';
-        fortniteHard.style.filter = 'none';
+    if (hasTrophy('fortniteHardTrophy')) {
+        const el = fortniteSection.querySelector('img[src="images/trophies/hardTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        fortniteCount++;
     }
-    if (trophies.includes('fortniteLegendaryTrophy')) {
-        const fortniteLegendary = document.querySelector('img[src="images/trophies/legendaryTrophy.png"]');
-        fortniteLegendary.style.opacity = '1';
-        fortniteLegendary.style.filter = 'none';
+    if (hasTrophy('fortniteLegendaryTrophy')) {
+        const el = fortniteSection.querySelector('img[src="images/trophies/legendaryTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        fortniteCount++;
     }
 
-    // Barbie trophies
+    if (fortniteCount === 4) {
+        revealPassword('fortnite-password', 'memory');
+    }
+
+    // --- Barbie Section ---
     const barbieSection = document.querySelectorAll('.game-section')[1];
-    if (trophies.includes('barbieEasyTrophy')) {
-        const barbieEasy = barbieSection.querySelector('img[src="images/trophies/easyTrophy.png"]');
-        barbieEasy.style.opacity = '1';
-        barbieEasy.style.filter = 'none';
+    let barbieCount = 0;
+
+    if (hasTrophy('barbieEasyTrophy')) {
+        const el = barbieSection.querySelector('img[src="images/trophies/easyTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        barbieCount++;
     }
-    if (trophies.includes('barbieMediumTrophy')) {
-        const barbieMedium = barbieSection.querySelector('img[src="images/trophies/mediumTrophy.png"]');
-        barbieMedium.style.opacity = '1';
-        barbieMedium.style.filter = 'none';
+    if (hasTrophy('barbieMediumTrophy')) {
+        const el = barbieSection.querySelector('img[src="images/trophies/mediumTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        barbieCount++;
     }
-    if (trophies.includes('barbieHardTrophy')) {
-        const barbieHard = barbieSection.querySelector('img[src="images/trophies/hardTrophy.png"]');
-        barbieHard.style.opacity = '1';
-        barbieHard.style.filter = 'none';
+    if (hasTrophy('barbieHardTrophy')) {
+        const el = barbieSection.querySelector('img[src="images/trophies/hardTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        barbieCount++;
     }
-    if (trophies.includes('barbieLegendaryTrophy')) {
-        const barbieLegendary = barbieSection.querySelector('img[src="images/trophies/legendaryTrophy.png"]');
-        barbieLegendary.style.opacity = '1';
-        barbieLegendary.style.filter = 'none';
+    if (hasTrophy('barbieLegendaryTrophy')) {
+        const el = barbieSection.querySelector('img[src="images/trophies/legendaryTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        barbieCount++;
+    }
+
+    if (barbieCount === 4) {
+        revealPassword('barbie-password', '1991');
     }
 });

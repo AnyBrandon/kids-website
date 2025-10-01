@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bonus Memory Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #d299c2, #fef9d7);
+            overflow-x: hidden;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 10px 10px;
+        }
+
+        header h1 {
+            font-size: 3.5em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-align: center;
+            color: #fff;
+            background: linear-gradient(90deg, #00c6ff, #0072ff, #ff00c8, #00c6ff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 6s ease-in-out infinite;
+
+            text-shadow:
+                0 0 10px rgba(255, 255, 255, 0.6),
+                0 0 20px rgba(0, 255, 255, 0.4),
+                0 0 30px rgba(255, 0, 255, 0.3);
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: transparent url('https://i.imgur.com/zZxkM2s.gif') repeat top center;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        #difficulty {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 20px 10px;
+            flex-wrap: wrap;
+            z-index: 1;
+            position: relative;
+        }
+
+        .diff-btn {
+            padding: 14px 24px;
+            font-size: 18px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .diff-btn:nth-child(1) {
+            background: linear-gradient(45deg, #6EE7B7, #3B82F6);
+        }
+
+        .diff-btn:nth-child(2) {
+            background: linear-gradient(45deg, #FDE68A, #F59E0B);
+        }
+
+        .diff-btn:nth-child(3) {
+            background: linear-gradient(45deg, #FCA5A5, #EF4444);
+        }
+
+        .diff-btn:nth-child(4) {
+            background: linear-gradient(45deg, #C084FC, #8B5CF6);
+        }
+
+        .diff-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        #game-board {
+            display: grid;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 900px;
+            z-index: 1;
+        }
+
+        .card {
+            width: 100px;
+            height: 100px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+
+        .card.flip {
+            transform: rotateY(180deg);
+        }
+
+        .card.wiggle {
+            animation: wiggle 0.5s;
+        }
+
+        @keyframes wiggle {
+            0% {
+                transform: rotate(0);
+            }
+
+            25% {
+                transform: rotate(5deg);
+            }
+
+            50% {
+                transform: rotate(-5deg);
+            }
+
+            100% {
+                transform: rotate(0);
+            }
+        }
+
+        .card .front,
+        .card .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card .front {
+            transform: rotateY(180deg);
+        }
+
+        .card .back {
+            background-image: url('images/closedCard.png');
+        }
+
+        #timer {
+            display: inline-block;
+            padding: 12px 30px;
+            font-size: 26px;
+            font-weight: 600;
+            color: #ffffffdd;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            margin: 20px auto 10px;
+            text-align: center;
+            letter-spacing: 1px;
+            transition: background 0.3s ease;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00f260, 0 0 20px #0575e6;
+            }
+
+            to {
+                text-shadow: 0 0 20px #00f260, 0 0 40px #0575e6;
+            }
+        }
+
+
+        @media (min-width: 600px) {
+            #game-board {
+                grid-template-columns: repeat(6, 100px);
+            }
+        }
+
+        @media (max-width: 599px) {
+            #game-board {
+                grid-template-columns: repeat(4, 80px);
+            }
+
+            .card {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        canvas.confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .selected-difficulty {
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5), 0 0 12px #fff;
+            border: 2px solid #fff;
+            transform: scale(1.05);
+        }
+
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.6s ease;
+        }
+
+        #start-screen img {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Hide it with fade-out */
+        #start-screen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #start-image-container {
+            text-align: center;
+            margin-top: 25px;
+            transition: opacity 0.5s ease;
+        }
+
+        #start-image-container img {
+            max-width: 300px;
+            width: 80%;
+            border-radius: 15px;
+            box-shadow:
+                0 0 12px rgba(0, 255, 255, 0.7),
+                0 0 24px rgba(0, 255, 255, 0.5),
+                0 0 36px rgba(0, 255, 255, 0.3);
+            animation: pulseGlow 2.5s ease-in-out infinite;
+        }
+
+
+        /* Hide the image when game starts */
+        #start-image-container.hide {
+            opacity: 0;
+            pointer-events: none;
+            height: 0;
+            overflow: hidden;
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                box-shadow:
+                    0 0 12px rgba(0, 255, 255, 0.7),
+                    0 0 24px rgba(0, 255, 255, 0.5),
+                    0 0 36px rgba(0, 255, 255, 0.3);
+            }
+
+            50% {
+                box-shadow:
+                    0 0 20px rgba(0, 255, 255, 1),
+                    0 0 30px rgba(0, 255, 255, 0.8),
+                    0 0 40px rgba(0, 255, 255, 0.6);
+            }
+
+            100% {
+                box-shadow:
+                    0 0 12px rgba(0, 255, 255, 0.7),
+                    0 0 24px rgba(0, 255, 255, 0.5),
+                    0 0 36px rgba(0, 255, 255, 0.3);
+            }
+        }
+
+        #lose-screen {
+            text-align: center;
+            margin-top: 30px;
+            animation: fadeIn 0.6s ease;
+        }
+
+        #lose-screen img {
+            max-width: 220px;
+            width: 70%;
+            border-radius: 12px;
+            box-shadow:
+                0 0 12px rgba(255, 0, 0, 0.6),
+                0 0 24px rgba(255, 0, 0, 0.4),
+                0 0 36px rgba(255, 0, 0, 0.2);
+            animation: shake 0.6s ease-in-out infinite, glowPulse 2s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+
+
+        #lose-screen p {
+            font-size: 1.3em;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(255, 0, 0, 0.6);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-3px);
+            }
+        }
+
+        @keyframes glowPulse {
+            0% {
+                box-shadow:
+                    0 0 12px rgba(255, 0, 0, 0.6),
+                    0 0 24px rgba(255, 0, 0, 0.4),
+                    0 0 36px rgba(255, 0, 0, 0.2);
+            }
+
+            50% {
+                box-shadow:
+                    0 0 20px rgba(255, 50, 50, 0.8),
+                    0 0 32px rgba(255, 0, 0, 0.6),
+                    0 0 48px rgba(255, 0, 0, 0.4);
+            }
+
+            100% {
+                box-shadow:
+                    0 0 12px rgba(255, 0, 0, 0.6),
+                    0 0 24px rgba(255, 0, 0, 0.4),
+                    0 0 36px rgba(255, 0, 0, 0.2);
+            }
+        }
+
+        #win-screen {
+            text-align: center;
+            margin-top: 30px;
+            animation: fadeIn 0.6s ease;
+        }
+
+        #win-screen img {
+            max-width: 220px;
+            width: 70%;
+            border-radius: 12px;
+            box-shadow:
+                0 0 12px rgba(0, 255, 100, 0.6),
+                0 0 24px rgba(0, 255, 100, 0.4),
+                0 0 36px rgba(0, 255, 100, 0.2);
+            animation: glowPulseWin 2s ease-in-out infinite;
+            margin-bottom: 15px;
+        }
+
+        #win-screen p {
+            font-size: 1.3em;
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+        }
+
+        @keyframes glowPulseWin {
+            0% {
+                box-shadow:
+                    0 0 12px rgba(0, 255, 100, 0.6),
+                    0 0 24px rgba(0, 255, 100, 0.4),
+                    0 0 36px rgba(0, 255, 100, 0.2);
+            }
+
+            50% {
+                box-shadow:
+                    0 0 20px rgba(0, 255, 150, 0.8),
+                    0 0 32px rgba(0, 255, 100, 0.6),
+                    0 0 48px rgba(0, 255, 100, 0.4);
+            }
+
+            100% {
+                box-shadow:
+                    0 0 12px rgba(0, 255, 100, 0.6),
+                    0 0 24px rgba(0, 255, 100, 0.4),
+                    0 0 36px rgba(0, 255, 100, 0.2);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="stars"></div>
+
+    <header>
+        <h1>Bonus Memory Game</h1>
+        <div style="display: flex; justify-content: center;">
+            <div id="timer"></div>
+        </div>
+
+    </header>
+
+    <div id="difficulty">
+        <button class="diff-btn" data-time="100">Easy</button>
+        <button class="diff-btn" data-time="75">Medium</button>
+        <button class="diff-btn" data-time="60">Hard</button>
+        <button class="diff-btn" data-time="5">Legendary</button>
+    </div>
+
+    <div id="start-image-container">
+        <img src="images/pokemonStart.png" alt="Start Image" />
+    </div>
+
+
+    <div id="game-board"></div>
+
+    <div id="lose-screen" class="hidden">
+        <img id="lose-image" src="" alt="You lost!" />
+        <p id="lose-message"></p>
+    </div>
+
+    <div id="win-screen" class="hidden">
+        <img id="win-image" src="images/BmgWon.png" alt="You Won!" />
+        <p id="win-message">Wow! Your brain is on superhero mode! 🎉</p>
+    </div>
+
+
+    <canvas id="confetti" class="confetti"></canvas>
+
+    <audio id="flip-sound" src="sounds/flip.wav"></audio>
+    <audio id="match-sound" src="sounds/match.wav"></audio>
+    <audio id="win-sound" src="sounds/winSound.wav"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        const board = document.getElementById("game-board");
+        const timerDisplay = document.getElementById("timer");
+        const difficultyButtons = document.querySelectorAll(".diff-btn");
+
+        const flipSound = document.getElementById("flip-sound");
+        const matchSound = document.getElementById("match-sound");
+        const winSound = document.getElementById("win-sound");
+        const losingSounds = {
+            1: new Audio('sounds/losingSound1.wav'),
+            2: new Audio('sounds/losingSound2.wav'),
+            3: new Audio('sounds/losingSound3.wav'),
+        };
+
+        let cards = [];
+        let flippedCards = [];
+        let matched = 0;
+        let timeLeft;
+        let timer;
+
+        const totalPairs = 12;
+
+        difficultyButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                // Highlight selected difficulty
+                difficultyButtons.forEach(b => b.classList.remove("selected-difficulty"));
+                btn.classList.add("selected-difficulty");
+
+                // Hide the start image
+                document.getElementById("start-image-container").classList.add("hide");
+
+                // Start the game
+                startGame(parseInt(btn.dataset.time));
+            });
+        });
+
+
+
+
+        function startGame(time) {
+
+            // Hide the lose screen and clear message/image
+            document.getElementById("lose-screen").classList.add("hidden");
+            document.getElementById("lose-image").src = "";
+            document.getElementById("lose-message").textContent = "";
+            document.getElementById("win-screen").classList.add("hidden");
+
+
+            matched = 0;
+            timeLeft = time;
+            board.innerHTML = "";
+            cards = [];
+
+            const images = [];
+            for (let i = 1; i <= totalPairs; i++) {
+                images.push(`images/bmg${i}.png`);
+            }
+
+            let gameImages = [...images, ...images];
+            shuffle(gameImages);
+
+            gameImages.forEach(src => {
+                const card = createCard(src);
+                board.appendChild(card);
+                cards.push(card);
+            });
+
+            startTimer();
+        }
+
+        function createCard(src) {
+            const card = document.createElement("div");
+            card.classList.add("card");
+
+            const front = document.createElement("div");
+            front.classList.add("front");
+            front.style.backgroundImage = `url('${src}')`;
+
+            const back = document.createElement("div");
+            back.classList.add("back");
+
+            card.appendChild(front);
+            card.appendChild(back);
+
+            card.addEventListener("click", () => {
+                if (card.classList.contains("flip") || flippedCards.length === 2) return;
+
+                card.classList.add("flip");
+                flipSound.play();
+                flippedCards.push(card);
+
+                if (flippedCards.length === 2) {
+                    checkMatch();
+                }
+            });
+
+            return card;
+        }
+
+        function checkMatch() {
+            const [first, second] = flippedCards;
+
+            const firstImg = first.querySelector(".front").style.backgroundImage;
+            const secondImg = second.querySelector(".front").style.backgroundImage;
+
+            // Delay to allow both cards to visually flip
+            setTimeout(() => {
+                if (firstImg === secondImg) {
+                    matchSound.play();
+                    matched++;
+
+                    // Add wiggle animation on match only
+                    first.classList.add("wiggle");
+                    second.classList.add("wiggle");
+
+                    // Remove wiggle after a short time
+                    setTimeout(() => {
+                        first.classList.remove("wiggle");
+                        second.classList.remove("wiggle");
+                    }, 500);
+
+                    flippedCards = [];
+
+                    if (matched === totalPairs) {
+                        winGame();
+                    }
+                } else {
+                    // Just flip them back — no wiggle on mismatch
+                    setTimeout(() => {
+                        first.classList.remove("flip");
+                        second.classList.remove("flip");
+                        flippedCards = [];
+                    }, 500);
+                }
+            }, 200); // Let both cards flip before evaluating
+        }
+
+
+
+        function startTimer() {
+            clearInterval(timer);
+            timerDisplay.textContent = `⏱️ Time Left: ${timeLeft}s`;
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `⏱️ Time Left: ${timeLeft}s`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    showLoseScreen();
+                }
+            }, 1000);
+        }
+
+        function showLoseScreen() {
+            // Clear the board
+            const board = document.getElementById("game-board");
+            board.innerHTML = "";
+
+            const loseScreen = document.getElementById("lose-screen");
+            const loseImage = document.getElementById("lose-image");
+            const loseMessage = document.getElementById("lose-message");
+
+            // Randomly select one of the 3 images
+            const rand = Math.floor(Math.random() * 3) + 1;
+            loseImage.src = `images/BmgLost${rand}.png`;
+
+            // Set the corresponding message
+            let message = "";
+            switch (rand) {
+                case 1:
+                    message = "And the award for slowest ever goes to… you!";
+                    break;
+                case 2:
+                    message = "Slowlus Defeatus!";
+                    break;
+                case 3:
+                    message = "You moved so slow, I had time to make a sandwich.";
+                    break;
+            }
+
+            loseMessage.textContent = message;
+
+            // Play corresponding losing sound
+            losingSounds[rand].currentTime = 0;
+            losingSounds[rand].play();
+
+            // Show the lose screen
+            loseScreen.classList.remove("hidden");
+        }
+
+
+        function winGame() {
+            clearInterval(timer);
+
+            // Clear board
+            board.innerHTML = "";
+
+            // Play win sound
+            winSound.currentTime = 0;
+            winSound.play();
+
+            // Show win image/message
+            const winScreen = document.getElementById("win-screen");
+            winScreen.classList.remove("hidden");
+
+            // Optional confetti effect
+            confetti();
+        }
+
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function confetti() {
+            const duration = 2 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+            const interval = setInterval(() => {
+                const timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                confettiLib({
+                    particleCount: 50,
+                    origin: { x: Math.random(), y: Math.random() - 0.2 },
+                    ...defaults
+                });
+            }, 250);
+        }
+
+        const confettiLib = window.confetti;
+    </script>
+</body>
+
+</html>
