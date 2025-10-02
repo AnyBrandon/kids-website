@@ -12,9 +12,17 @@ body {
 }
 
 @keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .container {
@@ -52,26 +60,30 @@ p {
   border-radius: 15px;
   cursor: pointer;
   transition: 0.3s;
-  box-shadow: 2px 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.2);
   color: white;
   font-weight: bold;
 }
 
 /* Each button has a unique background color */
 .buttons button:nth-child(1) {
-  background: #ff6f61; /* Coral Red */
+  background: #ff6f61;
+  /* Coral Red */
 }
 
 .buttons button:nth-child(2) {
-  background: #4db6ac; /* Mint Blue */
+  background: #4db6ac;
+  /* Mint Blue */
 }
 
 .buttons button:nth-child(3) {
-  background: #9575cd; /* Lavender Purple */
+  background: #9575cd;
+  /* Lavender Purple */
 }
 
 .buttons button:nth-child(4) {
-  background: #81d4fa; /* Light Sky Blue */
+  background: #81d4fa;
+  /* Light Sky Blue */
 }
 
 .buttons button:hover {
@@ -93,8 +105,13 @@ p {
 }
 
 @keyframes moveStars {
-  from { background-position: 0 0; }
-  to { background-position: 1000px 1000px; }
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 1000px 1000px;
+  }
 }
 
 .buttons button:nth-child(5) {
@@ -114,20 +131,31 @@ p {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
   animation: glowPulse 3s infinite;
   z-index: 0;
   pointer-events: none;
 }
 
 @keyframes glowPulse {
-  0% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.3); opacity: 0.3; }
-  100% { transform: scale(1); opacity: 0.6; }
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
 }
 
 /* Text above the glow */
-.buttons button:nth-child(5) > * {
+.buttons button:nth-child(5)>* {
   position: relative;
   z-index: 1;
 }
@@ -140,5 +168,118 @@ p {
 }
 
 .buttons button:nth-child(5) {
-  color: #3b2600; /* Darker brown for contrast */
+  color: #3b2600;
+  /* Darker brown for contrast */
+}
+
+/* Style for the Secret Vault button */
+.vault-button {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: #ffffff;
+  border: 2px solid #00fff7;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(0, 255, 247, 0.4);
+  transition: all 0.3s ease;
+  text-shadow: 0 0 5px #00fff7;
+  letter-spacing: 1px;
+}
+
+.vault-button:hover {
+  background: linear-gradient(135deg, #2c5364, #203a43, #0f2027);
+  box-shadow: 0 0 25px rgba(0, 255, 247, 0.8);
+  transform: scale(1.05);
+  text-shadow: 0 0 8px #00fff7, 0 0 12px #00fff7;
+}
+
+.vault-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 0 10px rgba(0, 255, 247, 0.5);
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 15px rgba(0, 255, 247, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 247, 0.8);
+  }
+
+  100% {
+    box-shadow: 0 0 15px rgba(0, 255, 247, 0.4);
+  }
+}
+
+.vault-button {
+  /* existing styles above */
+  animation: pulseGlow 2s infinite;
+}
+
+/* 🌈 Fancy Title Styles */
+.fancy-title {
+  font-size: 4em;
+  background: linear-gradient(90deg, #ffcc70, #ff6f91, #a391e6, #70d6ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: bounceIn 1s ease-out, shimmer 6s linear infinite;
+  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.5) translateY(-100px);
+    opacity: 0;
+  }
+
+  60% {
+    transform: scale(1.2) translateY(20px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -500px 0;
+  }
+
+  100% {
+    background-position: 500px 0;
+  }
+}
+
+.fancy-title {
+  background-size: 300% auto;
+}
+
+/* ✨ Sparkly Subtitle */
+.fancy-subtitle {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 10px #ffbbff, 0 0 20px #ffaaff;
+  animation: pulseSubtitle 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseSubtitle {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
 }

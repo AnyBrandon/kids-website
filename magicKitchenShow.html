@@ -156,6 +156,8 @@
         .pan.revealed {
             cursor: default;
             transform: none;
+            border: 3px solid #ff6b6b;
+            /* bright red border */
             opacity: 0.9
         }
 
@@ -480,25 +482,46 @@
                     el.className = 'pan';
                     el.dataset.id = p.id;
                     if (p.revealed) el.classList.add('revealed');
+
+                    // --- UNREVEALED STATE ---
                     if (!p.revealed) {
-                        const label = document.createElement('div');
-                        label.className = 'label';
-                        label.textContent = `Pan ${p.id}`;
-                        el.appendChild(label);
+                        // Show pan image
+                        const img = document.createElement('img');
+                        img.src = 'images/mks/pan.png';
+                        img.alt = 'Pan';
+                        img.style.width = '60px';
+                        img.style.height = 'auto';
+
+                        // Show pan number under image
+                        const num = document.createElement('div');
+                        num.className = 'label';
+                        num.textContent = `Pan ${p.id}`;
+                        num.style.fontSize = '14px';
+                        num.style.marginTop = '4px';
+
+                        el.appendChild(img);
+                        el.appendChild(num);
                     }
 
-                    const content = document.createElement('div'); content.className = 'content';
+                    // --- CONTENT (REVEALED STATE) ---
+                    const content = document.createElement('div');
+                    content.className = 'content';
                     if (p.revealed) {
-                        if (p.content.type === 'money') content.innerHTML = `<div style="font-size:16px;font-weight:900;color:#b07f00">$${numberWithCommas(p.content.value)}</div>`;
-                        else content.innerHTML = `<div style="font-size:14px">${p.content.name}</div>`;
-                    } else {
-                        content.innerHTML = `<div style="font-size:16px">🍳</div>`;
+                        if (p.content.type === 'money') {
+                            content.innerHTML = `<div style="font-size:16px;font-weight:900;color:#b07f00">$${numberWithCommas(p.content.value)}</div>`;
+                        } else {
+                            content.innerHTML = `<div style="font-size:14px">${p.content.name}</div>`;
+                        }
                     }
                     el.appendChild(content);
+
+                    // --- Click handling ---
                     el.addEventListener('click', () => onPanClick(p.id));
+
                     pansGrid.appendChild(el);
                 });
             }
+
 
             function renderValues() {
                 // show remaining money values (not revealed)
@@ -577,9 +600,29 @@
                 revealPan(p);
             }
 
+            const sillyLines = [
+                (name) => `Oh my!! ${name}! What a silly billy surprise!`,
+                (name) => `Oh noodles! ${name}! you sneaky little rascal!`,
+                (name) => `Wiggle my waffles! It’s ${name} again!`,
+                (name) => `Great googly moogly! Is that ${name}?`,
+                (name) => `Jumpin’ jellybeans! ${name}! What is that!`,
+                (name) => `Oh snapdragons! Look who it is! ${name}!`,
+                (name) => `Zippity zap! ${name}! you magnificent goof!`,
+                (name) => `Holy guacamole! ${name}! what are you doing here?!`
+            ];
+
+
             function revealPan(p) {
                 p.revealed = true;
                 revealsCount++;
+
+                // If 18 pans are revealed, automatically reveal both players' reserved pans
+                if (revealsCount === 18) {
+                    revealReservedPans();
+
+                }
+
+
                 renderPans();
                 // show animation & narration
                 if (p.content.type === 'money') {
@@ -616,44 +659,166 @@
                     }
                 }
                 else {
-                    setHostLine(`Oh my!! ${p.content.name}! What a silly billy surprise!`);
+                    //setHostLine(`Oh my!! ${p.content.name}! What a silly billy surprise!`);
+                    const randomLine = sillyLines[Math.floor(Math.random() * sillyLines.length)];
+                    setHostLine(randomLine(p.content.name));
                     // add to silly list
                     const pill = document.createElement('div'); pill.className = 'value-pill silly'; pill.textContent = p.content.name; sillyList.appendChild(pill);
                 }
                 renderValues();
-                // If the revealed pan was one of the player's selected pan -> immediate effect: their pan was opened
-                if (players.george.selectedPan === p.id) {
-                    // George's pan opened
-                    players.george.status = 'revealed';
-                    players.george.finalValue = (p.content.type === 'money') ? p.content.value : 0;
-                    hostLine.textContent += ` ${players.george.name}'s pan was opened!`;
-                }
-                if (players.rita.selectedPan === p.id) {
-                    players.rita.status = 'revealed';
-                    players.rita.finalValue = (p.content.type === 'money') ? p.content.value : 0;
-                    hostLine.textContent += ` ${players.rita.name}'s pan was opened!`;
-                }
-
                 // After reveal, check if banker timing triggered
                 checkBankerTimings();
 
                 // Switch turn to the other active player who still plays
-                setTimeout(() => {
-                    if (turn === 'playGeorge' || turn === 'playRita') {
-                        // find next player who is still playing
-                        if (currentPlayer === 'george') {
-                            // switch to rita if playing else stay
-                            if (players.rita.status === 'playing') { currentPlayer = 'rita'; turnIndicator.textContent = 'Turn: Rita' }
-                            else if (players.george.status === 'playing') { currentPlayer = 'george'; turnIndicator.textContent = 'Turn: George' }
-                        } else {
-                            if (players.george.status === 'playing') { currentPlayer = 'george'; turnIndicator.textContent = 'Turn: George' }
-                            else if (players.rita.status === 'playing') { currentPlayer = 'rita'; turnIndicator.textContent = 'Turn: Rita' }
+                if (revealsCount !== 18) {
+                    setTimeout(() => {
+                        if (turn === 'playGeorge' || turn === 'playRita') {
+                            // find next player who is still playing
+                            if (currentPlayer === 'george') {
+                                // switch to rita if playing else stay
+                                if (players.rita.status === 'playing') { currentPlayer = 'rita'; turnIndicator.textContent = 'Turn: Rita' }
+                                else if (players.george.status === 'playing') { currentPlayer = 'george'; turnIndicator.textContent = 'Turn: George' }
+                            } else {
+                                if (players.george.status === 'playing') { currentPlayer = 'george'; turnIndicator.textContent = 'Turn: George' }
+                                else if (players.rita.status === 'playing') { currentPlayer = 'rita'; turnIndicator.textContent = 'Turn: Rita' }
+                            }
+                            updatePlayerPanels();
                         }
-                        updatePlayerPanels();
-                    }
-                    checkEndgame();
-                }, 350);
+                        checkEndgame();
+                    }, 350);
+                }
             }
+            // Helper to pause execution
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            async function revealReservedPans() {
+                if (revealsCount === 18) {
+                    players.george.status = 'revealed';
+                    players.rita.status = 'revealed';
+                    //setHostLine(`It is time guys! Let's open your pans!`);
+                    for (const player of [players.george, players.rita]) {
+                        const selectedPanId = player.selectedPan;
+                        if (!selectedPanId) continue; // skip if no selected pan
+
+                        const pan = pans.find(x => String(x.id) === String(selectedPanId));
+                        if (!pan || pan.revealed) continue; // skip if already revealed
+
+                        // Mark pan as revealed
+                        pan.revealed = true;
+
+                        // Save final value for player
+                        if (pan.content.type === 'money') {
+                            player.finalValue = pan.content.value;
+                        } else {
+                            player.finalValue = 0;
+                        }
+
+                         await sleep(5000);
+
+                        const panContent =
+                            pan.content.type === 'money'
+                                ? `$${numberWithCommas(pan.content.value)}`
+                                : pan.content.name;
+
+                        // Show custom modal popup
+
+                       await showPopup(`${player.name}'s reserved pan: ${player.selectedPan} contains: ${panContent}`);
+
+                    }
+
+                     sleep(1000);
+                    // Re-render in case other UI needs updates
+                    renderPans();
+                    renderValues();
+                    updatePlayerPanels();
+                    checkEndgame();
+                }
+            }
+
+
+            // Helper function to show a modal popup
+            function showPopup(message) {
+                return new Promise((resolve) => {
+                    // Create overlay
+                    const overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = 0;
+                    overlay.style.left = 0;
+                    overlay.style.width = '100%';
+                    overlay.style.height = '100%';
+                    overlay.style.background = 'rgba(0, 0, 0, 0.7)';
+                    overlay.style.backdropFilter = 'blur(4px)';
+                    overlay.style.display = 'flex';
+                    overlay.style.alignItems = 'center';
+                    overlay.style.justifyContent = 'center';
+                    overlay.style.zIndex = 9999;
+                    overlay.style.opacity = 0;
+                    overlay.style.transition = 'opacity 0.5s ease';
+
+                    // Create popup box
+                    const popup = document.createElement('div');
+                    popup.style.background = 'linear-gradient(135deg, #fff, #f8f0ff)';
+                    popup.style.padding = '25px 35px';
+                    popup.style.borderRadius = '15px';
+                    popup.style.boxShadow = '0 10px 20px rgba(0,0,0,0.4)';
+                    popup.style.maxWidth = '400px';
+                    popup.style.width = '80%';
+                    popup.style.textAlign = 'center';
+                    popup.style.position = 'relative';
+                    popup.style.fontSize = '20px';
+                    popup.style.fontWeight = '600';
+                    popup.style.transform = 'scale(0.8)';
+                    popup.style.transition = 'transform 0.5s ease';
+
+                    // Typewriter text span
+                    const textSpan = document.createElement('span');
+                    popup.appendChild(textSpan);
+
+                    // Close button
+                    const closeBtn = document.createElement('span');
+                    closeBtn.textContent = '✖';
+                    closeBtn.style.position = 'absolute';
+                    closeBtn.style.top = '10px';
+                    closeBtn.style.right = '15px';
+                    closeBtn.style.cursor = 'pointer';
+                    closeBtn.style.fontSize = '22px';
+                    closeBtn.style.fontWeight = 'bold';
+                    closeBtn.addEventListener('click', () => {
+                        overlay.remove();
+                        resolve(); // Resolve the promise when closed
+                    });
+                    popup.appendChild(closeBtn);
+
+                    overlay.appendChild(popup);
+                    document.body.appendChild(overlay);
+
+                    // Fade in overlay
+                    requestAnimationFrame(() => overlay.style.opacity = 1);
+
+                    // Typewriter effect
+                    let i = 0;
+                    const typeWriter = () => {
+                        if (i < message.length) {
+                            textSpan.textContent += message.charAt(i);
+                            i++;
+                            setTimeout(typeWriter, 50);
+                        } else {
+                            popup.style.transform = 'scale(1.05)';
+                            setTimeout(() => popup.style.transform = 'scale(1)', 150);
+                        }
+                    };
+                    typeWriter();
+                });
+                
+            }
+
+
+
+
+
+
 
             // banker logic
             function checkBankerTimings() {
@@ -736,12 +901,12 @@
                             currentPlayer = 'rita';
                             turn = 'playRita';
                             turnIndicator.textContent = "Turn: Rita";
-                             georgeMoneyOffer = offer;
+                            georgeMoneyOffer = offer;
                         } else if (currentPlayer === 'rita' && players.rita.status !== 'playing') {
                             currentPlayer = 'george';
                             turn = 'playGeorge';
                             turnIndicator.textContent = "Turn: George";
-                             ritaMoneyOffer = offer;
+                            ritaMoneyOffer = offer;
                         }
                         // continue to next
                         nextOffer(i + 1);
@@ -866,17 +1031,17 @@
                 }
                 renderPans(); renderValues(); updatePlayerPanels();
                 // determine winner
-                let p1v = players.george.finalValue || 0; 
+                let p1v = players.george.finalValue || 0;
                 let p2v = players.rita.finalValue || 0;
                 let resultText = '';
-                if(georgeMoneyOffer>0){
-                 p1v = georgeMoneyOffer   
+                if (georgeMoneyOffer > 0) {
+                    p1v = georgeMoneyOffer
                 }
-                if(ritaMoneyOffer>0){
-                p2v = ritaMoneyOffer   
+                if (ritaMoneyOffer > 0) {
+                    p2v = ritaMoneyOffer
                 }
-                if (p1v > p2v) resultText = `George wins with $${numberWithCommas(p1v)} vs Rita's $${numberWithCommas(p2v)}!`;
-                else if (p2v > p1v) resultText = `Rita wins with $${numberWithCommas(p2v)} vs George's $${numberWithCommas(p1v)}!`;
+                if (p1v > p2v) resultText = `George wins with $${numberWithCommas(p1v)} versus Rita's $${numberWithCommas(p2v)}!`;
+                else if (p2v > p1v) resultText = `Rita wins with $${numberWithCommas(p2v)} versus George's $${numberWithCommas(p1v)}!`;
                 else resultText = `It's a tie! Both chefs get $${numberWithCommas(p1v)} ! deliciously even!`;
                 setHostLine(resultText);
                 players.george.status = 'done'; players.rita.status = 'done'; updatePlayerPanels();
