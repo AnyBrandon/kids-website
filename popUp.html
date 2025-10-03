@@ -41,28 +41,71 @@
         }
 
         /* Target Badge */
+        /* Target Badge - Neon Orb Style */
         .target-badge {
-            background: linear-gradient(135deg, #FF6347, #FFD700);
+            position: relative;
+            background: radial-gradient(circle at 30% 30%, #FFD700, #FF6347 70%);
             border-radius: 50%;
-            padding: 8px 15px;
-            /* Smaller padding */
-            font-size: 1.1rem;
-            /* Smaller font size */
+            width: 100px;
+            height: 100px;
+            font-size: 1.5rem;
             font-weight: bold;
-            text-align: center;
             color: white;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-            min-width: 60px;
-            /* Smaller width */
-            height: 60px;
-            /* Same as width for perfect circle */
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Center the content */
             margin: 0 auto;
-            /* Center the badge inside the stats box */
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8),
+                0 0 40px rgba(255, 99, 71, 0.7),
+                inset 0 0 20px rgba(255, 255, 255, 0.4);
+            text-shadow: 0 0 10px #fff, 0 0 20px #FFD700;
+            animation: pulseTarget 2s infinite ease-in-out;
         }
+
+        /* Glowing ring around badge */
+        .target-badge::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 215, 0, 0.7);
+            box-shadow: 0 0 25px #FFD700, 0 0 50px #FF6347;
+            animation: rotateGlow 6s linear infinite;
+        }
+
+        /* Pulsating glow animation */
+        @keyframes pulseTarget {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8),
+                    0 0 40px rgba(255, 99, 71, 0.7),
+                    inset 0 0 20px rgba(255, 255, 255, 0.4);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 30px rgba(255, 215, 0, 1),
+                    0 0 60px rgba(255, 99, 71, 0.9),
+                    inset 0 0 25px rgba(255, 255, 255, 0.6);
+            }
+        }
+
+        /* Slow glowing ring rotation */
+        @keyframes rotateGlow {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
 
 
         .score-progress-container {
@@ -91,24 +134,36 @@
             width: 120px;
             height: 120px;
             border-radius: 50%;
-            border: 10px solid white;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 2rem;
             font-weight: bold;
+            color: white;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
         }
 
         .timer-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background: conic-gradient(#FF6347 0deg 360deg);
             border-radius: 50%;
-            position: absolute;
-            clip-path: circle(50%);
+            z-index: 1;
+            /* behind the text */
         }
 
+        #timer-text {
+            position: relative;
+            z-index: 2;
+            /* keep text above the circle */
+        }
+
+
         /* Difficulty Buttons */
+        /* Difficulty Buttons - Neon Glow Upgrade */
         .difficulty-btn {
             color: white;
             border: none;
@@ -118,31 +173,59 @@
             font-weight: bold;
             border-radius: 15px;
             margin-top: 20px;
-            font-family: 'Verdana', sans-serif;
             margin-bottom: 15px;
             text-transform: uppercase;
             width: 250px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            font-family: 'Verdana', sans-serif;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
         }
 
-        /* Easy button color */
+        /* Glow effects per difficulty */
         #easy-btn {
-            background-color: #32CD32;
-            /* Lime green */
+            background: #32CD32;
+            box-shadow: 0 0 20px #32CD32, 0 0 40px #32CD32, 0 0 60px #32CD32;
         }
 
-        /* Medium button color */
         #medium-btn {
-            background-color: #FFA500;
-            /* Orange */
+            background: #FFA500;
+            box-shadow: 0 0 20px #FFA500, 0 0 40px #FFA500, 0 0 60px #FFA500;
         }
 
-        /* Hard button color */
         #hard-btn {
-            background-color: #FF4500;
-            /* Red-orange */
+            background: #FF4500;
+            box-shadow: 0 0 20px #FF4500, 0 0 40px #FF4500, 0 0 60px #FF4500;
         }
+
+        /* Hover effect - stronger glow and slight zoom */
+        .difficulty-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 30px currentColor, 0 0 60px currentColor, 0 0 90px currentColor;
+        }
+
+        /* Pulsating animation */
+        @keyframes pulseGlow {
+            0% {
+                box-shadow: 0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor;
+            }
+
+            50% {
+                box-shadow: 0 0 30px currentColor, 0 0 60px currentColor, 0 0 100px currentColor;
+            }
+
+            100% {
+                box-shadow: 0 0 20px currentColor, 0 0 40px currentColor, 0 0 60px currentColor;
+            }
+        }
+
+        /* Apply pulse animation */
+        #easy-btn,
+        #medium-btn,
+        #hard-btn {
+            animation: pulseGlow 2s infinite;
+        }
+
 
         /* Button press effect */
         .difficulty-btn:active {
@@ -203,6 +286,69 @@
                 font-size: 1rem;
             }
         }
+
+        /* Loss Overlay */
+        #loss-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 20px;
+        }
+
+        #loss-overlay img {
+            max-width: 300px;
+            width: 50%;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite alternate;
+        }
+
+        /* optional bounce animation for fun */
+        @keyframes bounce {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(-15px);
+            }
+        }
+
+        #game-description {
+            margin-top: 15px;
+            font-size: 1.2rem;
+            color: #f0f0ec;
+            text-align: center;
+            text-shadow: 0 0 5px #fff, 0 0 10px #FFD700;
+            max-width: 500px;
+            line-height: 1.4;
+            animation: glowText 2s infinite alternate;
+        }
+
+        /* subtle glowing animation */
+        @keyframes glowText {
+            0% {
+                text-shadow: 0 0 5px #fff, 0 0 10px #FFD700;
+            }
+
+            50% {
+                text-shadow: 0 0 10px #fff, 0 0 20px #FFD700;
+            }
+
+            100% {
+                text-shadow: 0 0 5px #fff, 0 0 10px #FFD700;
+            }
+        }
     </style>
 </head>
 
@@ -228,10 +374,17 @@
         <span id="timer-text">60</span>
     </div>
 
+
+    <!-- Game Description -->
+    <div id="game-description">
+        Pop all the correct balloons by clicking them to reach the target score before time runs out!
+    </div>
+
     <!-- Difficulty Buttons -->
     <button id="easy-btn" class="difficulty-btn">Easy</button>
     <button id="medium-btn" class="difficulty-btn">Medium</button>
     <button id="hard-btn" class="difficulty-btn">Hard</button>
+
 
     <!-- Background Music -->
     <audio id="background-music" loop>
@@ -261,16 +414,33 @@
         const backgroundMusic = document.getElementById('background-music');
         const popSound = document.getElementById('pop-sound');
         const wrongPopSound = document.getElementById('wrong-pop-sound');
+        const gameDescription = document.getElementById('game-description');
 
         let score = 0;
         let timer = 60;
         let targetScore = 100;
         let gameInterval, squareInterval, timerInterval;
+        let currentDifficulty = ''; // stores 'Easy', 'Medium', or 'Hard'
 
         // Difficulty buttons
-        easyBtn.addEventListener('click', () => startGame(100));
-        mediumBtn.addEventListener('click', () => startGame(130));
-        hardBtn.addEventListener('click', () => startGame(150));
+        easyBtn.addEventListener('click', () => {
+            currentDifficulty = 'easy';
+            gameDescription.style.display = 'none'; // hide description
+            startGame(100);
+        });
+
+        mediumBtn.addEventListener('click', () => {
+            currentDifficulty = 'medium';
+            gameDescription.style.display = 'none'; // hide description
+            startGame(130);
+        });
+
+        hardBtn.addEventListener('click', () => {
+            currentDifficulty = 'hard';
+            gameDescription.style.display = 'none'; // hide description
+            startGame(150);
+        });
+
 
         function startGame(target) {
             score = 0;
@@ -290,50 +460,80 @@
             timerInterval = setInterval(() => {
                 timer--;
                 timerDisplay.textContent = timer;
+
+                // Calculate remaining angle
                 const angle = (360 * timer) / 60;
-                document.getElementById('timer-circle').style.background = `conic-gradient(#FF6347 ${angle}deg 360deg)`;
+
+                // Paint the circle countdown (red shrinking)
+                document.getElementById('timer-circle').style.background =
+                    `conic-gradient(#FF6347 ${angle}deg, transparent 0deg)`;
+
                 if (timer <= 0) {
                     clearInterval(timerInterval);
                     endGame();
                 }
             }, 1000);
 
+
             // Start creating squares
             squareInterval = setInterval(createSquare, 2000);
         }
 
+        const lanes = 8; // number of horizontal lanes
+        const laneWidth = window.innerWidth / lanes;
+
         function createSquare() {
             const square = document.createElement('div');
-            const isCorrect = Math.random() > 0.3; // 70% chance for correct square
+            const isCorrect = Math.random() > 0.3;
             square.classList.add('square');
             const equation = generateEquation(isCorrect);
             square.textContent = equation.display;
             square.dataset.correct = isCorrect;
+            square.style.backgroundColor = getRandomColor();
 
-            // Assign random color to square
-            const randomColor = getRandomColor();
-            square.style.backgroundColor = randomColor;
+            // Choose a random lane that is not currently used
+            const usedLanes = Array.from(document.querySelectorAll('.square')).map(sq =>
+                Math.floor(parseInt(sq.style.left) / laneWidth)
+            );
 
-            // Random horizontal position for the square to float from
-            const randomPosition = Math.floor(Math.random() * window.innerWidth);
-            square.style.left = `${randomPosition}px`;
+            const availableLanes = [];
+            for (let i = 0; i < lanes; i++) {
+                if (!usedLanes.includes(i)) availableLanes.push(i);
+            }
 
+            // Pick a random available lane, or fallback
+            let lane = availableLanes.length ? availableLanes[Math.floor(Math.random() * availableLanes.length)] : Math.floor(Math.random() * lanes);
+
+            square.style.left = `${lane * laneWidth + 10}px`; // 10px padding inside lane
+
+            // Click handler
             square.addEventListener('click', function () {
                 if (this.dataset.correct === 'true') {
                     score += 10;
-                    this.remove(); // Remove correct square on click
-                    popSound.play(); // Play pop sound on correct answer
+                    popSound.currentTime = 0; // reset sound
+                    popSound.play();
                 } else {
                     score -= 5;
-                    this.classList.add('wrong'); // Keep wrong squares on screen
-                    wrongPopSound.play(); // Play wrong sound
-                    this.remove(); // Remove the wrong square
+                    wrongPopSound.currentTime = 0; // reset sound
+                    wrongPopSound.play();
                 }
+
                 scoreDisplay.style.width = `${(score / targetScore) * 100}%`;
+
+                // Remove the square after playing the sound
+                this.remove();
+
+                // Check if player reached target
+                if (score >= targetScore) {
+                    endGame(true);
+                }
             });
+
 
             document.body.appendChild(square);
         }
+
+
 
         function generateEquation(isCorrect) {
             let num1 = Math.floor(Math.random() * 10) + 1;
@@ -372,15 +572,120 @@
             return colors[Math.floor(Math.random() * colors.length)];
         }
 
-        function endGame() {
+        function endGame(playerWon = false) {
             clearInterval(squareInterval);
-            backgroundMusic.pause(); // Stop background music
-            if (score >= targetScore) {
-                alert('You won! Congrats!');
+            clearInterval(timerInterval);
+
+            // Remove all squares
+            document.querySelectorAll('.square').forEach(square => square.remove());
+
+            // Stop and reset music
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0;
+
+            // Reset score, target, timer
+            score = 0;
+            scoreDisplay.style.width = '0%';
+            targetScoreDisplay.textContent = "Target";
+            timer = 60;
+            timerDisplay.textContent = timer;
+            document.getElementById('timer-circle').style.background =
+                `conic-gradient(#FF6347 360deg, transparent 0deg)`;
+
+            // Show buttons again
+            easyBtn.style.display = 'inline-block';
+            mediumBtn.style.display = 'inline-block';
+            hardBtn.style.display = 'inline-block';
+
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'loss-overlay'; // reuse same CSS styling
+            let texts = [];
+            let imgSrc = '';
+            let soundSrc = '';
+
+            if (playerWon || score >= targetScore) {
+                // ✅ WIN
+                texts = [
+                    "Oh wow, you actually won? I didn’t see that coming at all.",
+                    "Congratulations! You won... but don’t let it go to your head.",
+                    "Hold on, did you just win? I guess miracles do happen.",
+                    "Well, I guess you were supposed to win... you know, after all that effort.",
+                    "Wow, you won? I’m shocked... said no one ever.",
+                    "Oh look, a victory. Like that was ever in doubt, right?",
+                    "Who knew that winning could look this easy for you?",
+                    "Nice job! I mean, you were supposed to win, but still... impressive.",
+                    "You won? So humble, so gracious, so... predictable."
+                ];
+                imgSrc = 'images/popUpWin.png';
+                soundSrc = 'sounds/popUpWin.mp3';
+
+                // Define trophies for each difficulty
+                const difficultyTrophies = {
+                    easy: "popEasyTrophy",
+                    medium: "popMediumTrophy",
+                    hard: "popHardTrophy",
+                };
+
+                // Ensure currentDifficulty is set before proceeding
+                if (!currentDifficulty) {
+                    console.log("No difficulty selected. Cannot award trophy.");
+                }
+                else {
+                    console.log(`Game won on ${currentDifficulty} difficulty.`);
+                }
+
+                const trophyToAdd = difficultyTrophies[currentDifficulty];
+                if (!trophyToAdd) return; // safety check
+
+                // Retrieve existing trophies from localStorage
+                const trophies = JSON.parse(localStorage.getItem("trophies") || "[]");
+
+                // Check if the trophy already exists
+                if (!trophies.includes(trophyToAdd)) {
+                    trophies.push(trophyToAdd);
+                    localStorage.setItem("trophies", JSON.stringify(trophies));
+                    console.log(`${trophyToAdd} added!`);
+                } else {
+                    console.log(`${trophyToAdd} already earned.`);
+                }
             } else {
-                alert('Time is up! You lost!');
+                // ❌ LOSS
+                texts = [
+                    "Wow, you really nailed the art of losing. I’m impressed.",
+                    "Congrats! You just invented a new way to not win!",
+                    "Well, at least you got really good at being bad at this!",
+                    "You didn't win, but you sure made failure look so effortless!",
+                    "That was almost a victory... if the point was to lose spectacularly.",
+                    "Who needs a win when you can be a master of losing?",
+                    "Oh, you didn’t win? Shocking. I was so sure that was your time.",
+                    "It’s like you didn’t even try to win, and yet, here we are.",
+                    "You’re like a pro... at getting everything wrong."
+                ];
+                imgSrc = 'images/popUpChicken.png';
+                soundSrc = 'sounds/popUpChicken.mp3';
             }
+
+            const randomText = texts[Math.floor(Math.random() * texts.length)];
+
+            overlay.innerHTML = `
+        <img src="${imgSrc}" alt="${playerWon ? 'You won!' : 'You lost!'}">
+        <div>${randomText}</div>
+    `;
+
+            document.body.appendChild(overlay);
+
+            // Play sound
+            const popSound = new Audio(soundSrc);
+            popSound.play();
+
+            // Click overlay to remove
+            overlay.addEventListener('click', () => overlay.remove());
         }
+
+
+
+
     </script>
 </body>
 

@@ -78,4 +78,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (barbieCount === 4) {
         revealPassword('barbie-password', '1991');
     }
+
+    // --- Pop it Up Section ---
+    const popitupSection = document.querySelectorAll('.game-section')[2];
+    let popitupCount = 0;
+
+    if (hasTrophy('popEasyTrophy')) {
+        const el = popitupSection.querySelector('img[src="images/trophies/easyTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        popitupCount++;
+    }
+    if (hasTrophy('popMediumTrophy')) {
+        const el = popitupSection.querySelector('img[src="images/trophies/mediumTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        popitupCount++;
+    }
+    if (hasTrophy('popHardTrophy')) {
+        const el = popitupSection.querySelector('img[src="images/trophies/hardTrophy.png"]');
+        el.style.opacity = '1';
+        el.style.filter = 'none';
+        popitupCount++;
+    }
+
+    if (popitupCount === 3) {
+        revealPassword('popitup-password', 'genius321');
+    }
 });

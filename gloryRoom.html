@@ -117,58 +117,61 @@
                 width: 60px;
             }
         }
+
         .trophies-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
-  flex-wrap: wrap;
-}
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
 
-.password-reveal {
-  font-size: 1.5rem;
-  font-weight: bold;
-  white-space: nowrap;
-  opacity: 0;
-  transform: scale(0.8);
-  transition: opacity 0.8s ease, transform 0.5s ease;
-  background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 165, 0, 0.4);
-}
+        .password-reveal {
+            font-size: 1.5rem;
+            font-weight: bold;
+            white-space: nowrap;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.8s ease, transform 0.5s ease;
+            background: linear-gradient(90deg, #FFD700, #FFA500, #FFD700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 165, 0, 0.4);
+        }
 
-.password-reveal.revealed {
-  opacity: 1;
-  transform: scale(1.1);
-  animation: gold-shine 2.5s infinite linear;
-}
+        .password-reveal.revealed {
+            opacity: 1;
+            transform: scale(1.1);
+            animation: gold-shine 2.5s infinite linear;
+        }
 
-@keyframes gold-shine {
-  0% {
-    background-position: 0%;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 165, 0, 0.4);
-  }
-  50% {
-    background-position: 100%;
-    text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 165, 0, 0.9);
-  }
-  100% {
-    background-position: 0%;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 165, 0, 0.4);
-  }
-}
+        @keyframes gold-shine {
+            0% {
+                background-position: 0%;
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 165, 0, 0.4);
+            }
+
+            50% {
+                background-position: 100%;
+                text-shadow: 0 0 25px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 165, 0, 0.9);
+            }
+
+            100% {
+                background-position: 0%;
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 165, 0, 0.4);
+            }
+        }
 
 
-@keyframes pulse {
-  0% {
-    text-shadow: 0 0 10px rgba(0, 114, 255, 0.7);
-  }
-  100% {
-    text-shadow: 0 0 20px rgba(0, 114, 255, 1), 0 0 30px rgba(0, 114, 255, 0.9);
-  }
-}
+        @keyframes pulse {
+            0% {
+                text-shadow: 0 0 10px rgba(0, 114, 255, 0.7);
+            }
 
+            100% {
+                text-shadow: 0 0 20px rgba(0, 114, 255, 1), 0 0 30px rgba(0, 114, 255, 0.9);
+            }
+        }
     </style>
 </head>
 
@@ -204,6 +207,22 @@
             <div class="password-reveal" id="barbie-password"></div>
         </div>
     </div>
+
+    <!-- New Game Section: Pop it Up -->
+    <div class="game-section">
+        <div class="game-title">
+            <img src="images/balloon.png" alt="Pop it Up Icon"> Pop it Up
+        </div>
+        <div class="trophies-wrapper">
+            <div class="trophies">
+                <img src="images/trophies/easyTrophy.png" alt="Easy Trophy">
+                <img src="images/trophies/mediumTrophy.png" alt="Medium Trophy">
+                <img src="images/trophies/hardTrophy.png" alt="Hard Trophy">
+            </div>
+            <div class="password-reveal" id="popitup-password"></div>
+        </div>
+    </div>
+
     <script src="gloryRoom.js"></script>
 </body>
 
