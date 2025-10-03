@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop It Up</title>
+    <style>
+        /* Global Styling */
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-image: url('images/popBackground.jpg');
+            background-size: cover;
+            background-position: center center;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        .stats-box {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 300px;
+        }
+
+        /* Target Badge */
+        .target-badge {
+            background: linear-gradient(135deg, #FF6347, #FFD700);
+            border-radius: 50%;
+            padding: 8px 15px;
+            /* Smaller padding */
+            font-size: 1.1rem;
+            /* Smaller font size */
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            min-width: 60px;
+            /* Smaller width */
+            height: 60px;
+            /* Same as width for perfect circle */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Center the content */
+            margin: 0 auto;
+            /* Center the badge inside the stats box */
+        }
+
+
+        .score-progress-container {
+            width: 100%;
+            /* Make it full width inside stats box */
+            height: 30px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 20px;
+            margin-top: 20px;
+            /* Add space between the target badge and the progress bar */
+        }
+
+        .score-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(135deg, #32CD32, #FFD700);
+            border-radius: 20px;
+            transition: width 0.5s ease-out;
+        }
+
+        /* Circular Timer */
+        .timer-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 10px solid white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .timer-circle {
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(#FF6347 0deg 360deg);
+            border-radius: 50%;
+            position: absolute;
+            clip-path: circle(50%);
+        }
+
+        /* Difficulty Buttons */
+        .difficulty-btn {
+            color: white;
+            border: none;
+            padding: 25px 50px;
+            cursor: pointer;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-radius: 15px;
+            margin-top: 20px;
+            font-family: 'Verdana', sans-serif;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            width: 250px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Easy button color */
+        #easy-btn {
+            background-color: #32CD32;
+            /* Lime green */
+        }
+
+        /* Medium button color */
+        #medium-btn {
+            background-color: #FFA500;
+            /* Orange */
+        }
+
+        /* Hard button color */
+        #hard-btn {
+            background-color: #FF4500;
+            /* Red-orange */
+        }
+
+        /* Button press effect */
+        .difficulty-btn:active {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transform: scale(0.98);
+        }
+
+        /* Square Styling */
+        .square {
+            position: absolute;
+            bottom: -100px;
+            width: 80px;
+            height: 80px;
+            text-align: center;
+            line-height: 1.4;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            animation: floatUp 6s linear infinite;
+            border-radius: 12px;
+        }
+
+        .square.wrong {
+            opacity: 0.7;
+        }
+
+        /* Square Animations */
+        @keyframes floatUp {
+            0% {
+                bottom: -100px;
+            }
+
+            100% {
+                bottom: 100vh;
+            }
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 768px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .stats-box {
+                font-size: 1rem;
+                padding: 15px;
+            }
+
+            .difficulty-btn {
+                font-size: 1.5rem;
+                padding: 20px 40px;
+                width: 200px;
+            }
+
+            .square {
+                width: 60px;
+                height: 60px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Stats Box -->
+    <div class="stats-box">
+        <h1>Pop It Up!</h1>
+        <div class="target-badge">
+            <span id="target-score">Target</span>
+        </div>
+
+        <!-- Score Progress Bar (moved inside the stats box) -->
+        <div class="score-progress-container">
+            <div class="score-progress-bar" id="score-bar"></div>
+        </div>
+    </div>
+
+
+    <!-- Timer -->
+    <div class="timer-container">
+        <div class="timer-circle" id="timer-circle"></div>
+        <span id="timer-text">60</span>
+    </div>
+
+    <!-- Difficulty Buttons -->
+    <button id="easy-btn" class="difficulty-btn">Easy</button>
+    <button id="medium-btn" class="difficulty-btn">Medium</button>
+    <button id="hard-btn" class="difficulty-btn">Hard</button>
+
+    <!-- Background Music -->
+    <audio id="background-music" loop>
+        <source src="sounds/background.wav" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Correct Pop Sound -->
+    <audio id="pop-sound">
+        <source src="sounds/pop.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Wrong Pop Sound -->
+    <audio id="wrong-pop-sound">
+        <source src="sounds/wrongPop.wav" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        const easyBtn = document.getElementById('easy-btn');
+        const mediumBtn = document.getElementById('medium-btn');
+        const hardBtn = document.getElementById('hard-btn');
+        const scoreDisplay = document.getElementById('score-bar');  // Fixed
+        const timerDisplay = document.getElementById('timer-text');
+        const targetScoreDisplay = document.getElementById('target-score');
+        const backgroundMusic = document.getElementById('background-music');
+        const popSound = document.getElementById('pop-sound');
+        const wrongPopSound = document.getElementById('wrong-pop-sound');
+
+        let score = 0;
+        let timer = 60;
+        let targetScore = 100;
+        let gameInterval, squareInterval, timerInterval;
+
+        // Difficulty buttons
+        easyBtn.addEventListener('click', () => startGame(100));
+        mediumBtn.addEventListener('click', () => startGame(130));
+        hardBtn.addEventListener('click', () => startGame(150));
+
+        function startGame(target) {
+            score = 0;
+            timer = 60;
+            targetScore = target;
+            targetScoreDisplay.textContent = targetScore;
+            scoreDisplay.style.width = '0%';
+
+            easyBtn.style.display = 'none';
+            mediumBtn.style.display = 'none';
+            hardBtn.style.display = 'none';
+
+            // Start background music
+            backgroundMusic.play();
+
+            // Start the timer countdown
+            timerInterval = setInterval(() => {
+                timer--;
+                timerDisplay.textContent = timer;
+                const angle = (360 * timer) / 60;
+                document.getElementById('timer-circle').style.background = `conic-gradient(#FF6347 ${angle}deg 360deg)`;
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    endGame();
+                }
+            }, 1000);
+
+            // Start creating squares
+            squareInterval = setInterval(createSquare, 2000);
+        }
+
+        function createSquare() {
+            const square = document.createElement('div');
+            const isCorrect = Math.random() > 0.3; // 70% chance for correct square
+            square.classList.add('square');
+            const equation = generateEquation(isCorrect);
+            square.textContent = equation.display;
+            square.dataset.correct = isCorrect;
+
+            // Assign random color to square
+            const randomColor = getRandomColor();
+            square.style.backgroundColor = randomColor;
+
+            // Random horizontal position for the square to float from
+            const randomPosition = Math.floor(Math.random() * window.innerWidth);
+            square.style.left = `${randomPosition}px`;
+
+            square.addEventListener('click', function () {
+                if (this.dataset.correct === 'true') {
+                    score += 10;
+                    this.remove(); // Remove correct square on click
+                    popSound.play(); // Play pop sound on correct answer
+                } else {
+                    score -= 5;
+                    this.classList.add('wrong'); // Keep wrong squares on screen
+                    wrongPopSound.play(); // Play wrong sound
+                    this.remove(); // Remove the wrong square
+                }
+                scoreDisplay.style.width = `${(score / targetScore) * 100}%`;
+            });
+
+            document.body.appendChild(square);
+        }
+
+        function generateEquation(isCorrect) {
+            let num1 = Math.floor(Math.random() * 10) + 1;
+            let num2 = Math.floor(Math.random() * 10) + 1;
+            let correctAnswer = num1 + num2;
+            let wrongAnswer = correctAnswer + Math.floor(Math.random() * 3) + 1;
+
+            // Randomly pick equation type (addition, subtraction, multiplication)
+            const equationType = Math.floor(Math.random() * 3);
+            let display;
+
+            switch (equationType) {
+                case 0: // Addition
+                    display = `${num1} + ${num2} = ${isCorrect ? correctAnswer : wrongAnswer}`;
+                    break;
+                case 1: // Subtraction
+                    if (isCorrect) {
+                        correctAnswer = num1 - num2;
+                        display = `${num1} - ${num2} = ${correctAnswer}`;
+                    } else {
+                        wrongAnswer = num1 - (num2 + Math.floor(Math.random() * 3) + 1);
+                        display = `${num1} - ${num2} = ${wrongAnswer}`;
+                    }
+                    break;
+                case 2: // Multiplication
+                    correctAnswer = num1 * num2;
+                    display = `${num1} * ${num2} = ${isCorrect ? correctAnswer : wrongAnswer}`;
+                    break;
+            }
+
+            return { display, correctAnswer };
+        }
+
+        function getRandomColor() {
+            const colors = ['#FF6347', '#FFA07A', '#20B2AA', '#FF4500', '#FFD700', '#8A2BE2', '#00BFFF'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function endGame() {
+            clearInterval(squareInterval);
+            backgroundMusic.pause(); // Stop background music
+            if (score >= targetScore) {
+                alert('You won! Congrats!');
+            } else {
+                alert('Time is up! You lost!');
+            }
+        }
+    </script>
+</body>
+
+</html>

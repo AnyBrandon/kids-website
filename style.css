@@ -282,7 +282,7 @@ p {
     transform: scale(1.05);
     opacity: 1;
   }
-  
+
 }
 
 .cool-btn {
@@ -296,7 +296,7 @@ p {
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3), 0 0 15px rgba(255,255,255,0.3) inset;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.3) inset;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -305,7 +305,7 @@ p {
 /* Hover effects */
 .cool-btn:hover {
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 12px 25px rgba(0,0,0,0.4), 0 0 25px rgba(255,255,255,0.6) inset;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4), 0 0 25px rgba(255, 255, 255, 0.6) inset;
 }
 
 /* Glow animation */
@@ -316,23 +316,62 @@ p {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    120deg,
-    transparent,
-    rgba(255,255,255,0.5),
-    transparent
-  );
+  background: linear-gradient(120deg,
+      transparent,
+      rgba(255, 255, 255, 0.5),
+      transparent);
   transform: rotate(25deg);
   animation: shine 2s infinite;
 }
 
 @keyframes shine {
-  0% { transform: translateX(-100%) rotate(25deg); }
-  100% { transform: translateX(100%) rotate(25deg); }
+  0% {
+    transform: translateX(-100%) rotate(25deg);
+  }
+
+  100% {
+    transform: translateX(100%) rotate(25deg);
+  }
 }
 
 /* Click effect */
 .cool-btn:active {
   transform: translateY(2px) scale(0.98);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Cool Hack Attack button styling */
+.hack-btn {
+  background: linear-gradient(135deg, #00ffcc, #0077ff, #ff00cc);
+  background-size: 300% 300%;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 12px 20px;
+  margin-left: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  box-shadow: 0 0 15px rgba(0, 255, 200, 0.7), 0 0 25px rgba(255, 0, 200, 0.6);
+  transition: all 0.4s ease-in-out;
+  animation: gradientShift 5s ease infinite;
+}
+
+.hack-btn:hover {
+  transform: scale(1.08) rotate(-1deg);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 1), 0 0 45px rgba(255, 0, 255, 1);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }

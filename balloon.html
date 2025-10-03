@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🎈 Balloon Pop Math</title>
   <link rel="stylesheet" href="balloon.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet" />
 </head>
+
 <body>
   <h1>🎈 Balloon Pop Math!</h1>
   <div id="status-bar">
-  <div id="score">🎯 Score: 0</div>
-  <div id="timer">⏰ Time: 60s</div>
-</div>
+    <div id="score">🎯 Score: 0</div>
+    <div id="timer">⏰ Time: 60s</div>
+  </div>
+  <div class="cloud" style="width:120px;height:120px;top:10%;animation-duration:80s;"></div>
+  <div class="cloud" style="width:100px;height:100px;top:30%;animation-duration:100s;"></div>
+  <div class="cloud" style="width:150px;height:150px;top:20%;animation-duration:120s;"></div>
+
   <div id="game-container"></div>
   <div id="end-screen" style="display: none;">
     <h2>Time's Up!</h2>
-    <p>Your final score is: <span id="final-score"></span></p>  
+    <p>Your final score is: <span id="final-score"></span></p>
     <button onclick="startGame()">Play Again</button>
     <button onclick="window.location.href='index.html'">Back to Home</button>
   </div>
@@ -29,4 +35,5 @@
 
   <script src="balloon.js"></script>
 </body>
+
 </html>

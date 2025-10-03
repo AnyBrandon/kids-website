@@ -120,7 +120,7 @@ function generateMathExpression() {
       displayedResult = correctResult + offset;
     } else {
       displayedResult = correctResult - offset;
-      if(displayedResult < 0) displayedResult = correctResult + offset;
+      if (displayedResult < 0) displayedResult = correctResult + offset;
     }
     if (displayedResult === correctResult) {
       displayedResult += 1;
@@ -134,6 +134,7 @@ let balloonColors = ['color1', 'color2', 'color3', 'color4'];
 let balloonColorIndex = 0;
 
 function createBalloon() {
+  console.log("Creating balloon…");
   const balloon = document.createElement('div');
   balloon.classList.add('balloon');
 
@@ -147,18 +148,20 @@ function createBalloon() {
   balloon.dataset.isCorrect = isCorrect;
 
   // Position
-  balloon.style.left = Math.random() * (gameContainer.offsetWidth - 130) + 'px';
+  const balloonWidth = 140; // matches CSS
+  balloon.style.left = Math.random() * (gameContainer.offsetWidth - balloonWidth) + 'px';
+
 
   gameContainer.appendChild(balloon);
   balloons.push(balloon);
-
+  console.log("Balloon added to DOM:", balloon);
   let pos = 0;
   balloon.style.bottom = pos + 'px';
 
   const speed = 1 + Math.random() * 1.5;
 
   const upInterval = setInterval(() => {
-    if (pos > gameContainer.offsetHeight + 130) {
+    if (pos > gameContainer.offsetHeight + 180) {
       clearInterval(upInterval);
       balloon.remove();
       balloons = balloons.filter(b => b !== balloon);

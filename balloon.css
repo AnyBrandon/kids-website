@@ -1,205 +1,125 @@
 /* Reset & fonts */
+html { font-size: clamp(14px, 2.5vw, 22px); }
 body {
   margin: 0;
-  font-family: 'Poppins', 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(180deg, #87ceeb 0%, #e0f7fa 100%);
   overflow: hidden;
-  position: relative;
   height: 100vh;
-  color: #fff;
-  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
+
+/* Animated sky gradient */
+@keyframes skyGradient {
+  0% { background: linear-gradient(180deg, #87ceeb, #e0f7fa); }
+  50% { background: linear-gradient(180deg, #b3e5fc, #ffffff); }
+  100% { background: linear-gradient(180deg, #87ceeb, #e0f7fa); }
+}
+body { animation: skyGradient 20s ease-in-out infinite; }
 
 h1 {
-  margin: 30px 0 10px;
-  font-size: 3em;
-  color: #ff6f91;
-  text-shadow: 3px 3px 8px rgba(0,0,0,0.4);
-  letter-spacing: 2px;
+  margin: 20px 0;
+  font-size: 2.5em;
+  color: #ff4081;
+  text-shadow: 3px 3px 8px rgba(0,0,0,0.3);
 }
-
-#score {
-  font-size: 1.6em;
-  font-weight: 700;
-  margin-bottom: 15px;
-  color: #f9f871;
-  text-shadow: 1px 1px 3px #0008;
-}
-
-#status-bar {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 12px 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  font-size: 1.2em;
-  z-index: 1000;
-  font-weight: bold;
-  color: #1565c0;
-  text-shadow: 1px 1px 1px #fff;
-  border: 2px solid #42a5f5;
-}
-
-#score, #timer {
-  transition: all 0.3s ease-in-out;
-}
-
-
 
 #game-container {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: #e0f7fa;
   overflow: hidden;
+  z-index: 0;
 }
 
-/* Balloon base */
+/* Clouds behind balloons */
+.cloud {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: drift 60s linear infinite;
+  z-index: 1;
+}
+@keyframes drift {
+  from { transform: translateX(-200px); }
+  to { transform: translateX(110vw); }
+}
+
+/* Balloons */
 .balloon {
+  width: 140px;
+  height: 180px;
+  border-radius: 70% 70% 70% 70%;
   position: absolute;
   bottom: 0;
-  width: 130px;
-  height: 70px;
-  background: radial-gradient(circle at 30% 30%, #ffdde1, #f06292);
-  border-radius: 60% / 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 700;
-  font-size: 1.3em;
-  color: white;
   cursor: pointer;
-  text-shadow: 2px 2px 6px #222;
-  box-shadow:
-    0 5px 10px rgba(255, 105, 180, 0.6),
-    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
-  transition: transform 0.3s ease;
-  user-select: none;
-  animation: float 4s ease-in-out infinite;
-  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
-}
-
-/* Balloon colors variation using classes */
-.balloon.color1 {
-  background: radial-gradient(circle at 30% 30%, #ffdde1, #f06292);
-  box-shadow:
-    0 5px 10px rgba(255, 105, 180, 0.6),
-    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
-}
-.balloon.color2 {
-  background: radial-gradient(circle at 30% 30%, #b5ead7, #4caf50);
-  box-shadow:
-    0 5px 10px rgba(76, 175, 80, 0.6),
-    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
-}
-.balloon.color3 {
-  background: radial-gradient(circle at 30% 30%, #fef3bd, #f9a825);
-  box-shadow:
-    0 5px 10px rgba(249, 168, 37, 0.6),
-    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
-}
-.balloon.color4 {
-  background: radial-gradient(circle at 30% 30%, #d0c1f9, #673ab7);
-  box-shadow:
-    0 5px 10px rgba(103, 58, 183, 0.6),
-    inset -3px -3px 8px rgba(255, 255, 255, 0.6);
-}
-
-/* Floating animation */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-12px) scale(1.05);
-  }
-}
-
-/* Hover pop scale */
-.balloon:hover {
-  transform: scale(1.2) rotate(-3deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #673ab7;
+  font-size: 1.2em;
+  text-align: center;
+  text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+  animation: float 6s ease-in-out infinite;
   filter: drop-shadow(0 6px 10px rgba(0,0,0,0.3));
-  z-index: 1000;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  z-index: 100; /* Always above clouds */
 }
 
-/* Wrong answer shake */
-.balloon.wrong {
-  animation: shake 0.4s;
-  color: #ff4444 !important;
-  text-shadow: 2px 2px 6px #a00000;
-  border: 2px solid #ff4444;
-  background: #ffccd5 !important;
-  filter: none !important;
+/* Balloon floating animation */
+@keyframes float {
+  0%,100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
 }
 
-/* Shake keyframes */
+/* Balloon colors (make sure these exist!) */
+.balloon.color1 { background: radial-gradient(circle at 30% 30%, #ffdde1, #f06292); }
+.balloon.color2 { background: radial-gradient(circle at 30% 30%, #b5ead7, #4caf50); }
+.balloon.color3 { background: radial-gradient(circle at 30% 30%, #fef3bd, #f9a825); }
+.balloon.color4 { background: radial-gradient(circle at 30% 30%, #d0c1f9, #673ab7); }
+
+/* Balloon hover/pop */
+.balloon:hover { transform: scale(1.2); }
+
+/* Wrong balloon shake */
 @keyframes shake {
-  0% { transform: translateX(0) rotate(0); }
-  20% { transform: translateX(-8px) rotate(-10deg); }
-  40% { transform: translateX(8px) rotate(10deg); }
-  60% { transform: translateX(-8px) rotate(-10deg); }
-  80% { transform: translateX(8px) rotate(10deg); }
-  100% { transform: translateX(0) rotate(0); }
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+  75% { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
 }
+.balloon.wrong { animation: shake 0.5s; background: #ff5252 !important; }
 
-/* End screen styling */
+/* End screen tablet-friendly */
 #end-screen {
   position: absolute;
-  top: 30%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255 255 255 / 0.95);
-  padding: 40px 50px;
+  transform: translate(-50%, -50%);
+  background: rgba(255,255,255,0.95);
+  padding: 40px 30px;
   border-radius: 20px;
-  box-shadow: 0 0 25px #2196f3;
-  color: #212121;
-  max-width: 320px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
 }
-
-#end-screen h2 {
-  color: #f50057;
-  font-size: 2.5em;
-  margin-bottom: 15px;
-  text-shadow: none;
-}
-
-#end-screen p {
-  font-size: 1.3em;
-  margin-bottom: 30px;
-  font-weight: 600;
-  color: #333;
-}
-
+#end-screen h2 { font-size: 2em; margin-bottom: 10px; color: #ff4081; }
 #end-screen button {
-  margin: 10px 15px;
-  padding: 14px 30px;
+  margin: 10px;
+  padding: 15px 30px;
   font-size: 1.2em;
-  border-radius: 15px;
+  border-radius: 12px;
+  background: linear-gradient(45deg, #ff6f91, #ff4081);
   border: none;
-  background-color: #ff4081;
   color: white;
+  font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-weight: 700;
-  box-shadow: 0 4px 12px #ff4081aa;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
 }
-
-#end-screen button:hover {
-  background-color: #f50057;
-}
-
-/* Confetti canvas fills screen */
-#confetti-canvas {
-  position: fixed;
-  pointer-events: none;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 10000;
-}
+#end-screen button:hover { background: linear-gradient(45deg, #ff4081, #f50057); }
