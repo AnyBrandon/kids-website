@@ -56,7 +56,6 @@
       background-repeat: no-repeat;
     }
 
-
     .character {
       position: absolute;
       z-index: 2;
@@ -91,13 +90,9 @@
       margin-top: 5px;
     }
 
-
     .chest:hover {
       transform: scale(1.1);
     }
-
-    /* Chest positions */
-
 
     /* Modal */
     #puzzle-modal {
@@ -146,7 +141,6 @@
       transform: scale(1.05);
       box-shadow: 0 0 15px #00ffff, 0 0 25px #00ffff;
     }
-
 
     #close-btn {
       margin-top: 15px;
@@ -254,7 +248,6 @@
         0 0 40px #00ccff,
         0 0 60px #00ccff;
       font-size: 2.5em;
-      /* bigger for title */
       animation: glow-pulse 2s infinite ease-in-out;
     }
 
@@ -272,7 +265,6 @@
       font-size: 1.2em;
       animation: glow-pulse 2s infinite ease-in-out;
     }
-
 
     @keyframes glow-pulse {
       0% {
@@ -326,7 +318,7 @@
       background: #222;
       padding: 30px;
       border-radius: 12px;
-      max-width: 400px;
+      max-width: 420px;
       color: #fff;
       text-align: center;
       font-family: 'Comic Sans MS', cursive, sans-serif;
@@ -362,6 +354,25 @@
     #start-game-btn:hover {
       background-color: #ff69b4;
     }
+
+    #read-letter-btn {
+      background-color: #3b82f6;
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      font-size: 1em;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    #read-letter-btn:hover {
+      opacity: 0.9;
+    }
+
+    #letter-image {
+      width: 120px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 
@@ -370,14 +381,27 @@
 
     <div id="story-overlay">
       <div id="story-box">
-        <h2>Welcome to the Quest!</h2>
-        <p>
-          The Villain <strong>Darkzor</strong> kidnapped Princess Rita and made her a prisoner. <br />
-          George, the superhero, must save her by solving riddles and avoiding traps! <br />
-          This quest will be difficult! Only great superheroes can finish it and save the prettiest princess of all
-          time!
-        </p>
-        <button id="start-game-btn">Start Game</button>
+        <!-- LETTER VIEW (initial) -->
+        <div id="letter-view">
+          <img id="letter-image" src="images/letter.png" alt="Letter" />
+          <p id="intro-message">
+            After endless searches for Princess Rita, George the superhero finally received a letter.
+            <br>
+            It was from King Ado Adi...
+          </p>
+          <button id="read-letter-btn">Read Letter</button>
+        </div>
+
+        <!-- STORY VIEW (hidden until Read Letter clicked) -->
+        <div id="story-view" style="display:none;">
+          <h2>Welcome to the Quest!</h2>
+          <p id="full-story-text">
+            The Villain <strong>Darkzor</strong> kidnapped Princess Rita and made her a prisoner. <br />
+            George, the superhero, you must save her by solving riddles and avoiding traps! <br />
+            This quest will be difficult! Only great superheroes can finish it and save the prettiest princess of all time!
+          </p>
+          <button id="start-game-btn">Start Game</button>
+        </div>
       </div>
     </div>
 
@@ -395,7 +419,6 @@
       <img class="key-slot" id="key4" src="images/key.png" />
       <img class="key-slot" id="key5" src="images/key.png" />
     </div>
-
 
     <div id="game-area">
       <img id="george" class="character" src="images/superheroGeorge.png" alt="Superhero George" />
@@ -451,65 +474,46 @@
   <audio id="victory-sound" src="sounds/victory.wav" preload="auto"></audio>
 
   <script>
+    // DOM refs
     const chests = document.querySelectorAll('.chest');
     const modal = document.getElementById('puzzle-modal');
     const questionEl = document.getElementById('puzzle-question');
     const optionsContainer = document.getElementById('options-container');
-    const keyCountDisplay = document.getElementById('key-count');
     const hearts = [document.getElementById('heart1'), document.getElementById('heart2'), document.getElementById('heart3')];
     const gameOverScreen = document.getElementById('game-over');
 
-    window.addEventListener('load', () => {
-      narrateStory();
-    });
+    // Story UI refs
+    const storyOverlay = document.getElementById('story-overlay');
+    const letterView = document.getElementById('letter-view');
+    const storyView = document.getElementById('story-view');
+    const readLetterBtn = document.getElementById('read-letter-btn');
+    const startGameBtn = document.getElementById('start-game-btn');
 
+    // State
     let keysCollected = 0;
     let lives = 3;
     const openedChests = new Set();
-
     let puzzles = [];
     let trapChests = [];
     let chestMap = {};
 
-    // Disable chests initially until setup is done
+    // Initially disable chests until the player starts
     chests.forEach(chest => {
       chest.style.pointerEvents = 'none';
       chest.style.opacity = 0.5;
     });
 
-    const storyOverlay = document.getElementById('story-overlay');
-    const startGameBtn = document.getElementById('start-game-btn');
+    // Show the full story when Read Letter is clicked
+    readLetterBtn.addEventListener('click', () => {
+      // hide letter, show the story text + start button
+      letterView.style.display = 'none';
+      storyView.style.display = 'block';
 
-    function narrateStory() {
-      const narrationText = `The Villain Darkzor kidnapped Princess Rita and made her a prisoner. 
-  George, the superhero, must save her by solving riddles and avoiding traps! 
-  This quest will be difficult! Only great superheroes can finish it and save the prettiest princess of all time!`;
+      // narrate the story (existing function)
+      narrateStory();
+    });
 
-      const utterance = new SpeechSynthesisUtterance(narrationText);
-      utterance.rate = 1;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      // Wait for voices to be loaded before picking
-      function setEnglishVoice() {
-        const voices = speechSynthesis.getVoices();
-        const englishVoice = voices.find(v => v.lang.startsWith("en")) || voices[0];
-        if (englishVoice) {
-          utterance.voice = englishVoice;
-        }
-        speechSynthesis.speak(utterance);
-      }
-
-      if (speechSynthesis.getVoices().length === 0) {
-        // Some browsers need this event
-        speechSynthesis.onvoiceschanged = setEnglishVoice;
-      } else {
-        setEnglishVoice();
-      }
-    }
-
-
-
+    // Start game button: hide overlay and enable chests
     startGameBtn.addEventListener('click', () => {
       storyOverlay.style.display = 'none';
       speechSynthesis.cancel(); // stop narration if still speaking
@@ -520,7 +524,33 @@
       });
     });
 
+    function narrateStory() {
+      const narrationText = `The Villain Darkzor kidnapped Princess Rita and made her a prisoner. 
+  George, the superhero, you must save her by solving riddles and avoiding traps! 
+  This quest will be difficult! Only great superheroes can finish it and save the prettiest princess of all time!`;
 
+      const utterance = new SpeechSynthesisUtterance(narrationText);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      function setEnglishVoice() {
+        const voices = speechSynthesis.getVoices();
+        const englishVoice = voices.find(v => v.lang && v.lang.startsWith("en")) || voices[0];
+        if (englishVoice) {
+          utterance.voice = englishVoice;
+        }
+        speechSynthesis.speak(utterance);
+      }
+
+      if (speechSynthesis.getVoices().length === 0) {
+        speechSynthesis.onvoiceschanged = setEnglishVoice;
+      } else {
+        setEnglishVoice();
+      }
+    }
+
+    // shuffle helper
     function shuffleArray(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -553,11 +583,13 @@
         chestMap[chestIdx] = { type: 'puzzle', puzzleIndex: i };
       });
 
-      // Enable chests now that setup is complete
-      chests.forEach(chest => {
-        chest.style.pointerEvents = 'auto';
-        chest.style.opacity = 1;
-      });
+      // also enable chests if overlay is already hidden (safety)
+      if (!storyOverlay || storyOverlay.style.display === 'none') {
+        chests.forEach(chest => {
+          chest.style.pointerEvents = 'auto';
+          chest.style.opacity = 1;
+        });
+      }
     }
 
     function loseHeart() {
@@ -567,7 +599,6 @@
         if (lives === 0) {
           gameOverScreen.style.display = "block";
           disableAllChests();
-          // Play evil laugh sound
           const evilLaugh = document.getElementById('evil-laugh-sound');
           evilLaugh.currentTime = 0;
           evilLaugh.play();
@@ -592,8 +623,6 @@
         btn.textContent = option;
         btn.classList.add('option-btn');
         btn.onclick = () => {
-          // No need to add to openedChests here, do it in click handler
-
           if (option === puzzle.answer) {
             keysCollected++;
             const keyImg = document.getElementById(`key${keysCollected}`);
@@ -603,7 +632,6 @@
             const correctSound = document.getElementById('correct-sound');
             correctSound.currentTime = 0;
             correctSound.play();
-            // Check for victory condition:
             if (keysCollected === 5) {
               showVictoryAnimation();
             }
@@ -621,9 +649,10 @@
       modal.style.display = "flex";
     }
 
-    // Chest click handler
+    // Chest click handler (unchanged logic)
     chests.forEach((chest, index) => {
       chest.addEventListener('click', () => {
+        // if chest was already opened visually
         if (openedChests.has(index)) {
           chest.src = "images/openedChest.png";
           return;
@@ -635,7 +664,7 @@
           return;
         }
 
-        openedChests.add(index); // Mark chest opened here
+        openedChests.add(index);
 
         if (chestData.type === 'trap') {
           chest.src = "images/openedChest.png";
@@ -677,19 +706,14 @@
       .catch(error => {
         console.error('Error loading quest.json:', error);
       });
+
     function showVictoryAnimation() {
-      // Disable all chests
       disableAllChests();
-
-      // Hide puzzle modal
       modal.style.display = 'none';
-
-      // Play victory sound
       const victorySound = document.getElementById('victory-sound');
       victorySound.currentTime = 0;
       victorySound.play();
 
-      // Create a victory overlay
       const victoryOverlay = document.createElement('div');
       victoryOverlay.id = 'victory-overlay';
       victoryOverlay.style.position = 'fixed';
@@ -708,7 +732,6 @@
       victoryOverlay.style.textAlign = 'center';
       victoryOverlay.style.padding = '20px';
 
-      // Princess image
       const princessImg = document.createElement('img');
       princessImg.src = 'images/princessRita.png';
       princessImg.style.width = '200px';
@@ -716,7 +739,6 @@
       princessImg.style.marginBottom = '20px';
       princessImg.style.animation = 'glow-pulse 2s infinite ease-in-out';
 
-      // Thank you text
       const thankYouText = document.createElement('div');
       thankYouText.innerHTML =
         'Thank you, George, the Superhero! You saved me!<br>Here is the password to unlock the Magic Kitchen Show: hero789';
@@ -734,7 +756,6 @@
       victoryOverlay.appendChild(thankYouText);
       document.body.appendChild(victoryOverlay);
     }
-
   </script>
 
 </body>

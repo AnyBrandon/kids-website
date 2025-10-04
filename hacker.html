@@ -611,7 +611,7 @@
                 <div id="introOverlay" class="overlay">
                     <div class="dialog" id="introStep1">
                         <h2>SECURITY ALERT — Odlav is attacking!</h2>
-                        <p>Adlov, a dangerous hacker, is trying to steal all your money, but your best friend <em>Ado
+                        <p>Odlav, a dangerous hacker, is trying to steal all your money, but your best friend <em>Ado
                                 Adi</em> left you a secret message to help stop him!</p>
                         <div style="display:flex;justify-content:flex-end;margin-top:12px;">
                             <button id="readMessageBtn" class="btn">Read message</button>
@@ -621,11 +621,13 @@
                     <div class="dialog" id="introStep2" style="display:none;">
                         <h2>SECURITY ALERT — Odlav is attacking!</h2>
                         <p style="font-style:italic; color:#bff8e9">
-                            “My best friends, we are being attacked. I am counting on you to defeat the hacker and save the money. You just
+                            “My best friends, we are being attacked. I am counting on you to defeat the hacker and save
+                            the money. You just
                             need to be smart, fast and be you.”
                         </p>
                         <p>
-                            Shield S26 program <strong>*Instructions*</strong>: <br>Each screen will show a <strong>letter</strong>
+                            Shield S26 program <strong>*Instructions*</strong>: <br>Each screen will show a
+                            <strong>letter</strong>
                             <strong>and a sign</strong> next
                             to it:
                         </p>
@@ -687,6 +689,7 @@
             const restartBtn = document.getElementById('restartBtn');
             const introOverlayBtn = document.getElementById('introStart');
             const muteBtn = document.getElementById('muteBtn');
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
             // game config
             const TOTAL_TIME = 60; // seconds
@@ -727,7 +730,7 @@
 
                 const utterance = new SpeechSynthesisUtterance(textToSpeak);
                 utterance.rate = 0.8;
-                utterance.pitch = 0.1;
+                utterance.pitch = 0.5;
                 utterance.volume = 1;     // full volume
                 utterance.lang = 'en-US'; // language
 
@@ -1023,10 +1026,16 @@
             }
 
 
-            // Friendly focus and capturing input
             function focusInput() {
-                typeInput.focus();
+                if (!isTouchDevice) {
+                    // On desktop/laptop – safe to focus
+                    typeInput.focus();
+                } else {
+                    // On tablet – prevent showing virtual keyboard
+                    typeInput.blur(); // ensure it's not focused
+                }
             }
+
 
             // build on-screen keyboard
             function buildKeyboard() {
