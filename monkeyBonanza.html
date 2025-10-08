@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monkey Bonanza 🍌</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: url('images/bonanzaBackground.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+
+        h1 {
+            text-align: center;
+            color: #4d2600;
+            font-size: 2em;
+            margin: 20px 0 10px;
+        }
+
+        #players {
+            font-size: 1.5em;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 10px;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+            color: #4b2e00;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        #currentPlayer {
+            color: #ff6600;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+
+        #drawSection {
+            margin: 15px 0;
+        }
+
+        #barrels {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            padding: 10px;
+            width: 95%;
+            max-width: 600px;
+            box-sizing: border-box;
+            /* Include padding and border in width */
+            overflow-x: hidden;
+        }
+
+        .barrel {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .barrel img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+
+        .barrel-number {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 5px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        #drawBtn {
+            padding: 12px 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: linear-gradient(145deg, #fada5e, #ffd700);
+            color: #4b2e00;
+            border: 3px solid #a87000;
+            border-radius: 12px;
+            box-shadow: 0 4px 0 #a87000;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #drawBtn:hover {
+            background: linear-gradient(145deg, #ffe066, #ffcc00);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #a87000;
+        }
+
+        #drawBtn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #a87000;
+        }
+
+
+        #drawResult {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background: rgba(255, 255, 153, 0.9);
+            color: #4b2e00;
+            padding: 12px 20px;
+            border: 3px dashed #ff9900;
+            border-radius: 12px;
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+            animation: popResult 0.4s ease;
+            display: inline-block;
+        }
+
+        @keyframes popResult {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #cc0000;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+
+        #drawSection {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .draw-box {
+            width: 60px;
+            height: 60px;
+            background: #fff8dc;
+            border: 3px solid #a87000;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #4b2e00;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .shake {
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            10% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            20% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            30% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+
+            40% {
+                transform: translate(1px, -1px) rotate(1deg);
+            }
+
+            50% {
+                transform: translate(-1px, 2px) rotate(-1deg);
+            }
+
+            60% {
+                transform: translate(-3px, 1px) rotate(0deg);
+            }
+
+            70% {
+                transform: translate(3px, 1px) rotate(-1deg);
+            }
+
+            80% {
+                transform: translate(-1px, -1px) rotate(1deg);
+            }
+
+            90% {
+                transform: translate(1px, 2px) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(1px, -2px) rotate(-1deg);
+            }
+        }
+
+        .pop {
+            animation: popResult 0.4s ease;
+        }
+
+        /* Main container with flex layout */
+        #gameContainer {
+            flex: 0 0 280px;
+            /* fixed width */
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #fff8dc, #ffe066);
+            border-radius: 15px;
+            box-shadow: inset 0 0 10px #ffda66;
+        }
+
+        /* Sidebar on the left */
+        #sidebar {
+            flex: 0 0 280px;
+            /* fixed width */
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #fff8dc, #ffe066);
+            border-radius: 15px;
+            box-shadow: inset 0 0 10px #ffda66;
+        }
+
+        /* Barrels grid takes remaining space */
+        #barrels {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            overflow-y: auto;
+            max-height: 100%;
+        }
+
+        /* Ensure drawSection aligns nicely in sidebar */
+        #drawSection {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 5px;
+        }
+
+        /* Adjust drawBox size for sidebar */
+        .draw-box {
+            width: 50px;
+            height: 50px;
+            font-size: 1.4em;
+        }
+
+        /* Keep players styling */
+        #players {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #4b2e00;
+            text-align: center;
+        }
+
+        /* Draw result styling */
+        #drawResult {
+            font-size: 1.3em;
+            font-weight: bold;
+            background: rgba(255, 255, 153, 0.9);
+            color: #4b2e00;
+            padding: 12px 20px;
+            border: 3px dashed #ff9900;
+            border-radius: 12px;
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+            animation: popResult 0.4s ease;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #mainWrapper {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 80vh;
+        }
+
+        .barrel.shake {
+            animation: shake 0.5s infinite;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.hidden {
+            display: none !important;
+        }
+
+        .modal-content {
+            background: #fff8dc;
+            border: 4px solid #a87000;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #safeBarrels {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #4b2e00;
+            font-weight: bold;
+        }
+
+        button#revealBtn,
+        button#doneBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: #ffe066;
+            border: 2px solid #a87000;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <h1>🐵 Monkey Bonanza 🍌</h1>
+    <div id="mainWrapper">
+        <div id="gameContainer">
+            <!-- Sidebar content here -->
+            <div id="players">Current Player: <span id="currentPlayer">George</span></div>
+
+            <div id="drawSection">
+                <button id="drawBtn">🎲 Draw</button>
+                <div id="drawBox" class="draw-box">?</div>
+            </div>
+
+            <div id="drawResult"></div>
+        </div>
+
+        <div id="barrels"></div>
+    </div>
+
+
+    <div id="message"></div>
+    <audio id="diceSound" src="sounds/dice.wav" preload="auto"></audio>
+    <audio id="bangSound" src="sounds/bang.mp3" preload="auto"></audio>
+
+    <!-- Magic Card Modal -->
+    <div id="magicModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="magicTitle">Player has unlocked the Foresight Spell</h2>
+            <p id="magicSubtext">Other player must look away.</p>
+            <button id="revealBtn">Reveal!</button>
+            <div id="safeBarrels" class="hidden"></div>
+            <button id="doneBtn" class="hidden">Done</button>
+        </div>
+    </div>
+    <!-- Power Modal -->
+    <div id="powerModal" class="modal hidden"
+        style="position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:1000;">
+        <div
+            style="background:#fff8dc; padding: 20px 30px; border-radius:15px; box-shadow:0 0 15px #ffda66; max-width: 350px; text-align:center;">
+            <h2 id="powerTitle" style="color:#4b2e00; margin-bottom: 15px;">Power Unlocked!</h2>
+            <p id="powerText" style="font-size: 1.1em; margin-bottom: 20px; color:#4b2e00;"></p>
+            <button id="powerDoneBtn"
+                style="padding: 10px 25px; font-weight:bold; background: linear-gradient(145deg, #fada5e, #ffd700); border:none; border-radius:10px; cursor:pointer; color:#4b2e00;">Got
+                it!</button>
+        </div>
+    </div>
+
+    <script>
+        const barrelTypes = [
+            ...Array(19).fill('banana'),
+            'monkey',
+            ...Array(2).fill('reverse'),
+            ...Array(2).fill('magic'),
+            'power'
+        ];
+
+        let currentPlayer = 'George';
+        let otherPlayer = 'Rita';
+        let drawCount = 0;
+        let barrelsLeftToOpen = 0;
+        let gameEnded = false;
+        let reverseBonus = false;
+        let knownBananas = [];
+        const drawChances = [0, 1, 2, 3];
+        const drawProbabilities = [15, 30, 30, 25];
+
+        const drawBtn = document.getElementById("drawBtn");
+        const drawResult = document.getElementById("drawResult");
+        const barrelsDiv = document.getElementById("barrels");
+        const currentPlayerSpan = document.getElementById("currentPlayer");
+        const message = document.getElementById("message");
+
+        let barrelData = [];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function pickWeightedRandom() {
+            const total = drawProbabilities.reduce((a, b) => a + b, 0);
+            const r = Math.random() * total;
+            let sum = 0;
+            for (let i = 0; i < drawChances.length; i++) {
+                sum += drawProbabilities[i];
+                if (r < sum) return drawChances[i];
+            }
+            return 0;
+        }
+
+        function createBarrels() {
+            barrelsDiv.innerHTML = '';
+            const shuffled = shuffle([...barrelTypes]);
+            barrelData = shuffled.map((type, index) => ({
+                id: index + 1,
+                type,
+                revealed: false,
+                element: null
+            }));
+
+            barrelData.forEach((barrel, i) => {
+                const div = document.createElement('div');
+                div.classList.add('barrel', 'hidden');
+                div.dataset.index = i;
+
+                const img = document.createElement('img');
+                img.src = 'images/barrel.png';
+
+                const numberLabel = document.createElement('div');
+                numberLabel.className = 'barrel-number';
+                numberLabel.textContent = barrel.id;
+
+                div.appendChild(img);
+                div.appendChild(numberLabel);
+                barrelsDiv.appendChild(div);
+
+                barrel.element = div;
+                div.addEventListener('click', () => handleBarrelClick(i));
+            });
+        }
+
+        function handleBarrelClick(index) {
+            if (gameEnded || barrelsLeftToOpen <= 0) return;
+
+            const barrel = barrelData[index];
+            if (barrel.revealed) return;
+
+            // Start shake animation
+            barrel.element.classList.add('shake');
+            document.getElementById('bangSound').play();
+
+            // Prevent multiple clicks
+            barrelsLeftToOpen--;
+            barrel.revealed = true;
+
+            // Delay actual reveal by 3 seconds
+            setTimeout(() => {
+                barrel.element.classList.remove('shake');
+
+                let img = barrel.element.querySelector('img');
+                img.src = `images/${getImageForType(barrel.type)}.png`;
+
+                switch (barrel.type) {
+                    case 'banana':
+                        if (barrelsLeftToOpen === 0) endTurn();
+                        break;
+                    case 'monkey':
+                        gameEnded = true;
+                        message.textContent = `${currentPlayer} opened the Crazy Monkey 🐒! ${otherPlayer} wins!`;
+                        break;
+                    case 'reverse':
+                        const wasLastPick = barrelsLeftToOpen === 0;
+                        reverseBonus = wasLastPick;
+                        barrelsLeftToOpen = 0;
+                        endTurn();
+                        break;
+                    case 'magic':
+                        // Pick safe barrels after a short delay for suspense
+                        setTimeout(() => {
+                            const unopened = barrelData.filter(b => !b.revealed && b.type === 'banana');
+                            shuffle(unopened);
+                            const count = unopened.length < 10 ? 1 : 2;
+                            knownBananas = unopened.slice(0, count).map(b => b.id);
+
+                            // Show modal and pass a callback to end turn after modal closes
+                            showMagicModal(currentPlayer, otherPlayer, knownBananas, () => {
+                                endTurn();
+                            });
+                        }, 500);
+
+                        // DO NOT call endTurn() here! Wait for modal to finish.
+                        break;
+                    case 'power':
+                        // Show power modal and call endTurn after closing
+                        showPowerModal(otherPlayer,() => {
+                            endTurn();
+                        });
+                        // Don't call endTurn immediately, wait for modal
+                        break;
+                }
+            }, 300); // Reveal after 3 seconds of shaking
+        }
+
+        // Modal elements
+        const magicModal = document.getElementById('magicModal');
+        const magicTitle = document.getElementById('magicTitle');
+        const magicSubtext = document.getElementById('magicSubtext');
+        const revealBtn = document.getElementById('revealBtn');
+        const safeBarrelsDiv = document.getElementById('safeBarrels');
+        const doneBtn = document.getElementById('doneBtn');
+
+        function showMagicModal(player, other, safeBarrelIds, onClose) {
+            magicTitle.textContent = `${player} has unlocked the Foresight Spell`;
+            magicSubtext.textContent = `${other} must look away.`;
+            safeBarrelsDiv.textContent = '';
+            safeBarrelsDiv.classList.add('hidden');
+
+            revealBtn.classList.remove('hidden');
+            doneBtn.classList.add('hidden');
+
+            magicModal.classList.remove('hidden');
+
+            revealBtn.onclick = () => {
+                safeBarrelsDiv.textContent = `Safe barrels: ${safeBarrelIds.join(', ')}`;
+                safeBarrelsDiv.classList.remove('hidden');
+
+                revealBtn.classList.add('hidden');
+                doneBtn.classList.remove('hidden');
+            };
+
+            doneBtn.onclick = () => {
+                magicModal.classList.add('hidden');
+                if (typeof onClose === 'function') {
+                    onClose(); // call the callback to continue the game
+                }
+            };
+        }
+
+        // Power Modal elements
+        const powerModal = document.getElementById('powerModal');
+        const powerDoneBtn = document.getElementById('powerDoneBtn');
+
+        function showPowerModal(otherPlayerName, onClose) {
+            powerModal.classList.remove('hidden');
+            // Update the message to include the other player's name
+    document.getElementById('powerText').textContent = `You may tell ${otherPlayerName} which barrels to open next turn!`;
+            powerDoneBtn.onclick = () => {
+                powerModal.classList.add('hidden');
+                if (typeof onClose === 'function') onClose();
+            };
+        }
+
+
+        function getImageForType(type) {
+            switch (type) {
+                case 'banana': return 'goldenBanana';
+                case 'monkey': return 'crazyMonkey';
+                case 'reverse': return 'reverseCard';
+                case 'magic': return 'magicCard';
+                case 'power': return 'powerCard';
+                default: return 'barrel';
+            }
+        }
+
+        function drawNumber() {
+            document.getElementById('diceSound').play();
+
+            if (gameEnded) return;
+            if (barrelsLeftToOpen > 0) return;
+
+            const drawBox = document.getElementById('drawBox');
+            drawBox.textContent = '?';
+            drawBox.classList.add('shake');
+
+            setTimeout(() => {
+                let num = pickWeightedRandom();
+                if (reverseBonus) {
+                    num += 2;
+                    reverseBonus = false;
+                }
+
+                drawCount = num;
+                barrelsLeftToOpen = num;
+
+                drawBox.classList.remove('shake');
+                drawBox.textContent = num;
+
+                drawResult.classList.remove('pop');
+                void drawResult.offsetWidth; // Force reflow to restart animation
+                drawResult.classList.add('pop');
+                drawResult.textContent = `${currentPlayer} must open ${num} barrel${num !== 1 ? 's' : ''}`;
+
+
+                if (num === 0) {
+                    setTimeout(() => {
+                        endTurn();
+                    }, 1000);
+                }
+            }, 2000); // 2 second shake
+        }
+
+
+        function endTurn() {
+            [currentPlayer, otherPlayer] = [otherPlayer, currentPlayer];
+            currentPlayerSpan.textContent = currentPlayer;
+            drawResult.textContent = '';
+            barrelsLeftToOpen = 0;
+            document.getElementById('drawBox').textContent = '?';
+        }
+
+        drawBtn.addEventListener("click", drawNumber);
+        createBarrels();
+    </script>
+</body>
+
+</html>

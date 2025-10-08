@@ -130,16 +130,31 @@ function gameOver(won) {
   const chickenDisplay = document.getElementById("chicken-display");
   chickenDisplay.innerHTML = '';
 
-  if (!won) {
+  if (won) {
+    // Show static victory chicken image (no animation)
+    const victoryImg = document.createElement("img");
+    victoryImg.src = "images/victoryChicken.png";
+    victoryImg.alt = "Victory Chicken";
+    victoryImg.classList.add("victory-chicken");
+    chickenDisplay.appendChild(victoryImg);
+
+    // Play victory sound
+    const victorySound = new Audio("sounds/victoryChicken.wav");
+    victorySound.play();
+  } else {
     const chickenImg = document.createElement("img");
     chickenImg.src = "images/chickenBicken.png";
     chickenImg.alt = "Angry Chicken Bicken";
+    chickenImg.classList.add("loss-chicken");
     chickenDisplay.appendChild(chickenImg);
-    // Play chicken.wav sound on loss
+
+    // Play chicken sound on loss
     const chickenSound = new Audio("sounds/chicken.wav");
     chickenSound.play();
   }
 }
+
+
 
 
 function resetGame() {

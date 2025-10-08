@@ -151,10 +151,10 @@ function gameLost() {
   // Hide the game board
   document.getElementById("gameBoard").classList.add("hide-board");
 
-// Show chicken animation and message
-chickenAnim.classList.remove("hidden");
-chickenAnim.classList.add("show");
-chickenMessage.classList.remove("hidden");
+  // Show chicken animation and message
+  chickenAnim.classList.remove("hidden");
+  chickenAnim.classList.add("show");
+  chickenMessage.classList.remove("hidden");
 
 
   // Play chicken sound
@@ -189,7 +189,7 @@ function startGame(difficulty) {
 
   if (!timeMap[difficulty]) return;
 
-    // Store the current difficulty
+  // Store the current difficulty
   currentDifficulty = difficulty;
 
   // Reset state
