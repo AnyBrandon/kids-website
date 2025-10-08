@@ -375,6 +375,17 @@
             cursor: pointer;
         }
 
+        .hiddenMonkey {
+            display: none !important;
+        }
+
+        .hiddenRevealBtn {
+            display: none !important;
+        }
+
+        .hiddenDoneBtn {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -396,11 +407,17 @@
 
         <div id="barrels"></div>
     </div>
+    <div id="endGameScreen" class="hiddenMonkey" style="text-align: center; margin-top: 30px;">
+        <img id="monkeyImage" src="images/crazyMonkey.png" alt="Crazy Monkey"
+            style="max-width: 300px; display: block; margin: 0 auto 20px;">
+        <div id="endGameMessage" style="font-size: 1.6em; font-weight: bold; color: #cc0000;"></div>
+    </div>
 
 
     <div id="message"></div>
     <audio id="diceSound" src="sounds/dice.wav" preload="auto"></audio>
     <audio id="bangSound" src="sounds/bang.mp3" preload="auto"></audio>
+    <audio id="monkeySound" src="sounds/monkey.mp3" preload="auto"></audio>
 
     <!-- Magic Card Modal -->
     <div id="magicModal" class="modal hidden">
@@ -529,8 +546,37 @@
                         break;
                     case 'monkey':
                         gameEnded = true;
-                        message.textContent = `${currentPlayer} opened the Crazy Monkey 🐒! ${otherPlayer} wins!`;
+
+                        // Play monkey sound
+                        document.getElementById('monkeySound').play();
+
+                        // Get container
+                        const mainWrapper = document.getElementById('mainWrapper');
+
+                        // Clear main content
+                        mainWrapper.innerHTML = '';
+
+                        // Create centered wrapper for end screen
+                        const endWrapper = document.createElement('div');
+                        endWrapper.style.display = 'flex';
+                        endWrapper.style.flexDirection = 'column';
+                        endWrapper.style.alignItems = 'center';
+                        endWrapper.style.justifyContent = 'center';
+                        endWrapper.style.flex = '1';
+                        endWrapper.style.width = '100%';
+
+                        // Prepare end screen elements
+                        const endGameScreen = document.getElementById('endGameScreen');
+                        const endGameMessage = document.getElementById('endGameMessage');
+                        endGameMessage.textContent = `${currentPlayer} released the Crazy Monkey 🐒! ${otherPlayer} wins!`;
+                        endGameScreen.classList.remove('hiddenMonkey');
+
+                        // Move the endGameScreen into the new wrapper
+                        endWrapper.appendChild(endGameScreen);
+                        mainWrapper.appendChild(endWrapper);
                         break;
+
+
                     case 'reverse':
                         const wasLastPick = barrelsLeftToOpen === 0;
                         reverseBonus = wasLastPick;
@@ -547,21 +593,23 @@
 
                             // Show modal and pass a callback to end turn after modal closes
                             showMagicModal(currentPlayer, otherPlayer, knownBananas, () => {
-                                endTurn();
+                                if (barrelsLeftToOpen === 0) endTurn();
                             });
+
                         }, 500);
 
                         // DO NOT call endTurn() here! Wait for modal to finish.
                         break;
                     case 'power':
                         // Show power modal and call endTurn after closing
-                        showPowerModal(otherPlayer,() => {
-                            endTurn();
+                        showPowerModal(otherPlayer, () => {
+                            if (barrelsLeftToOpen === 0) endTurn();
                         });
+
                         // Don't call endTurn immediately, wait for modal
                         break;
                 }
-            }, 300); // Reveal after 3 seconds of shaking
+            }, 2000); // Reveal after 2 seconds of shaking
         }
 
         // Modal elements
@@ -578,8 +626,8 @@
             safeBarrelsDiv.textContent = '';
             safeBarrelsDiv.classList.add('hidden');
 
-            revealBtn.classList.remove('hidden');
-            doneBtn.classList.add('hidden');
+            revealBtn.classList.remove('hiddenRevealBtn');
+            doneBtn.classList.add('hiddenDoneBtn');
 
             magicModal.classList.remove('hidden');
 
@@ -587,8 +635,8 @@
                 safeBarrelsDiv.textContent = `Safe barrels: ${safeBarrelIds.join(', ')}`;
                 safeBarrelsDiv.classList.remove('hidden');
 
-                revealBtn.classList.add('hidden');
-                doneBtn.classList.remove('hidden');
+                revealBtn.classList.add('hiddenRevealBtn');
+                doneBtn.classList.remove('hiddenDoneBtn');
             };
 
             doneBtn.onclick = () => {
@@ -606,7 +654,7 @@
         function showPowerModal(otherPlayerName, onClose) {
             powerModal.classList.remove('hidden');
             // Update the message to include the other player's name
-    document.getElementById('powerText').textContent = `You may tell ${otherPlayerName} which barrels to open next turn!`;
+            document.getElementById('powerText').textContent = `You may tell ${otherPlayerName} which barrels to open next turn!`;
             powerDoneBtn.onclick = () => {
                 powerModal.classList.add('hidden');
                 if (typeof onClose === 'function') onClose();
