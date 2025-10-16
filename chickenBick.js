@@ -122,7 +122,7 @@ function gameOver(won) {
   document.getElementById("end-screen").classList.remove("hidden");
 
   const message = won
-    ? "🎉 You Win! All the gold is yours! 🥇"
+    ? "🎉 You Win! All the gold is yours! 🥇<br>Here's the password to unlock Monkey Bonanza: banana888"
     : "💥 You Chicken Bicken! Game Over!";
 
   document.getElementById("end-message").innerText = message;

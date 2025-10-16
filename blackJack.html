@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blackjack Deluxe</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: url('images/bb.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+
+        h1 {
+            margin-bottom: 10px;
+            font-size: 2.2em;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.7);
+        }
+
+        .game-wrapper {
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chip-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .chip {
+            display: inline-block;
+            padding: 6px 14px;
+            background: radial-gradient(circle at center, #f1c40f 0%, #f39c12 100%);
+            color: #111;
+            font-weight: bold;
+            border-radius: 30px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            font-size: 1.1em;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .chip.bet {
+            background: radial-gradient(circle at center, #3498db 0%, #2980b9 100%);
+            color: #fff;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .top-controls {
+            margin-bottom: 10px;
+        }
+
+        .bottom-controls {
+            margin-top: 15px;
+        }
+
+        .controls button {
+            padding: 12px 24px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            background: #227a59;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        /* 🎯 Specific button colors with higher specificity */
+        .controls .hit-btn {
+            background: #28a745;
+        }
+
+        .controls .hit-btn:hover {
+            background: #34d063;
+        }
+
+        .controls .stand-btn {
+            background: #c0392b;
+        }
+
+        .controls .stand-btn:hover {
+            background: #e74c3c;
+        }
+
+
+        .controls button:hover {
+            background: #2ca47c;
+            transform: translateY(-2px);
+        }
+
+        .controls input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            font-size: 1em;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+
+
+        .status {
+            margin: 15px 0;
+            font-size: 1.3em;
+            height: 1.5em;
+            text-align: center;
+        }
+
+        .hands {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hand-container {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .hand-title {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .hand {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            min-height: 120px;
+            position: relative;
+        }
+
+        .card {
+            width: 60px;
+            height: 90px;
+            background: linear-gradient(145deg, #ffffff, #e2e2e2);
+            border-radius: 8px;
+            box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.4);
+            color: #111;
+            font-size: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+        }
+
+        .card.hidden {
+            background: #333;
+            color: #333;
+        }
+
+        .card.flip {
+            animation: flipCard 0.6s forwards;
+        }
+
+        @keyframes flipCard {
+            0% {
+                transform: rotateY(0deg);
+            }
+
+            50% {
+                transform: rotateY(90deg);
+            }
+
+            100% {
+                transform: rotateY(0deg);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .card {
+                width: 70px;
+                height: 100px;
+                font-size: 22px;
+            }
+
+            .controls button {
+                font-size: 1.1em;
+                padding: 14px 28px;
+            }
+
+            .controls input[type="number"] {
+                width: 100px;
+            }
+
+            .chip {
+                font-size: 1.2em;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Blackjack Deluxe</h1>
+    <div class="game-wrapper">
+
+        <!-- 💰 Fancy money display -->
+        <div class="chip-stack">
+            💵 Money: <span id="money" class="chip">$1000</span>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            🎯 Bet: <span id="current-bet" class="chip bet">$0</span>
+        </div>
+
+        <!-- 💵 Betting & Start Round -->
+        <div class="controls top-controls">
+            <input type="number" id="bet-input" min="50" max="250" step="50" value="50" />
+            <button id="place-bet">Place Bet</button>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div class="hands">
+            <!-- Dealer -->
+            <div class="hand-container">
+                <div class="hand-title">Dealer's Hand <span id="dealer-score"></span></div>
+                <div id="dealer-hand" class="hand"></div>
+            </div>
+
+            <!-- Player -->
+            <div class="hand-container">
+                <div class="hand-title">Your Hand <span id="player-score"></span></div>
+                <div id="player-hand" class="hand"></div>
+                <div class="controls bottom-controls">
+                    <button id="hit" class="hit-btn" disabled>Hit</button>
+                    <button id="stand" class="stand-btn" disabled>Stand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+        let deck = [], playerHand = [], dealerHand = [];
+        let money = 1000, currentBet = 0, inRound = false;
+
+        const moneySpan = document.getElementById('money');
+        const betSpan = document.getElementById('current-bet');
+        const betInput = document.getElementById('bet-input');
+        const btnPlaceBet = document.getElementById('place-bet');
+        const btnHit = document.getElementById('hit');
+        const btnStand = document.getElementById('stand');
+        const statusDiv = document.getElementById('status');
+        const dealerHandDiv = document.getElementById('dealer-hand');
+        const playerHandDiv = document.getElementById('player-hand');
+        const dealerScoreSpan = document.getElementById('dealer-score');
+        const playerScoreSpan = document.getElementById('player-score');
+
+        btnPlaceBet.addEventListener('click', placeBet);
+        btnHit.addEventListener('click', onHit);
+        btnStand.addEventListener('click', onStand);
+
+        function createDeck() {
+            const d = [];
+            for (let s of suits)
+                for (let v of values)
+                    d.push({ suit: s, value: v });
+            return shuffle(d);
+        }
+
+        function shuffle(a) {
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function cardValue(card) {
+            if (['J', 'Q', 'K'].includes(card.value)) return 10;
+            if (card.value === 'A') return 11;
+            return parseInt(card.value);
+        }
+
+        function handValue(hand) {
+            let sum = 0, aces = 0;
+            for (let c of hand) {
+                sum += cardValue(c);
+                if (c.value === 'A') aces++;
+            }
+            while (sum > 21 && aces > 0) {
+                sum -= 10;
+                aces--;
+            }
+            return sum;
+        }
+
+        function updateMoneyDisplay() {
+            moneySpan.textContent = `$${money}`;
+            betSpan.textContent = `$${currentBet}`;
+        }
+
+        function clearHands() {
+            dealerHandDiv.innerHTML = '';
+            playerHandDiv.innerHTML = '';
+        }
+
+        function placeBet() {
+            if (inRound) {
+                statusDiv.textContent = "Finish current round first.";
+                return;
+            }
+
+            const bet = parseInt(betInput.value);
+
+            if (isNaN(bet) || bet < 50 || bet > 250 || bet > money) {
+                statusDiv.textContent = "Bet must be between $50 and $250, and not exceed your money.";
+                return;
+            }
+
+            currentBet = bet;
+            money -= bet;
+            updateMoneyDisplay();
+            statusDiv.textContent = "Dealing cards...";
+            startRound();
+        }
+
+
+        function startRound() {
+            inRound = true;
+            deck = createDeck();
+            playerHand = [deck.pop(), deck.pop()];
+            dealerHand = [deck.pop(), deck.pop()];
+            clearHands();
+            dealerScoreSpan.textContent = "";
+            playerScoreSpan.textContent = "";
+            renderHand(playerHand, playerHandDiv);
+            renderDealerFirstDeal();
+            btnHit.disabled = false;
+            btnStand.disabled = false;
+        }
+
+        function renderCardElement(card, hidden = false, delay = 0, flip = false) {
+            const div = document.createElement('div');
+            div.className = 'card';
+            if (hidden) {
+                div.classList.add('hidden');
+                div.textContent = '🂠';
+            } else {
+                div.textContent = card.value + card.suit;
+            }
+            if (delay > 0) {
+                div.style.opacity = '0';
+                setTimeout(() => {
+                    div.style.transition = 'opacity 0.3s';
+                    div.style.opacity = '1';
+                }, delay);
+            }
+            if (flip && hidden) {
+                setTimeout(() => {
+                    div.classList.remove('hidden');
+                    div.classList.add('flip');
+                    div.textContent = card.value + card.suit;
+                }, delay + 200);
+            }
+            return div;
+        }
+
+        function renderHand(hand, container) {
+            container.innerHTML = '';
+            hand.forEach((card, idx) => {
+                const el = renderCardElement(card, false, idx * 150);
+                container.appendChild(el);
+            });
+            const val = handValue(hand);
+            if (container === playerHandDiv)
+                playerScoreSpan.textContent = `(${val})`;
+        }
+
+        function renderDealerFirstDeal() {
+            dealerHandDiv.innerHTML = '';
+            dealerHandDiv.appendChild(renderCardElement(dealerHand[0]));
+            dealerHandDiv.appendChild(renderCardElement(dealerHand[1], true, 300));
+        }
+
+        function onHit() {
+            if (!inRound) return;
+            playerHand.push(deck.pop());
+            renderHand(playerHand, playerHandDiv);
+            const pVal = handValue(playerHand);
+            if (pVal > 21) finishRound();
+        }
+
+        function onStand() {
+            if (!inRound) return;
+            btnHit.disabled = true;
+            btnStand.disabled = true;
+            revealDealerAll().then(() => {
+                finishRound();
+            });
+        }
+
+        function revealDealerAll() {
+            return new Promise(resolve => {
+                dealerHandDiv.innerHTML = '';
+                dealerHand.forEach((card, idx) => {
+                    const el = renderCardElement(card, idx === 1, idx * 300, idx === 1);
+                    dealerHandDiv.appendChild(el);
+                });
+                let drawDelay = dealerHand.length * 300 + 400;
+                const drawLoop = () => {
+                    const val = handValue(dealerHand);
+                    if (val < 17) {
+                        const newCard = deck.pop();
+                        dealerHand.push(newCard);
+                        const el = renderCardElement(newCard, false, drawDelay);
+                        dealerHandDiv.appendChild(el);
+                        drawDelay += 400;
+                        setTimeout(drawLoop, 400);
+                    } else {
+                        setTimeout(resolve, 400);
+                    }
+                };
+                setTimeout(drawLoop, drawDelay);
+            });
+        }
+
+        function finishRound() {
+            inRound = false;
+            const pVal = handValue(playerHand);
+            const dVal = handValue(dealerHand);
+            dealerScoreSpan.textContent = `(${dVal})`;
+            playerScoreSpan.textContent = `(${pVal})`;
+
+            let msg = '';
+            if (pVal > 21) {
+                msg = "You busted! Dealer wins.";
+            } else if (dVal > 21) {
+                msg = "Dealer busted! You win.";
+                money += currentBet * 2;
+            } else if (pVal > dVal) {
+                msg = "You win!";
+                money += currentBet * 2;
+            } else if (pVal < dVal) {
+                msg = "Dealer wins.";
+            } else {
+                msg = "Push! Bet returned.";
+                money += currentBet;
+            }
+            currentBet = 0;
+            updateMoneyDisplay();
+            statusDiv.textContent = msg;
+        }
+
+        function resetGame() {
+            inRound = false;
+            currentBet = 0;
+            statusDiv.textContent = "";
+            clearHands();
+            dealerScoreSpan.textContent = "";
+            playerScoreSpan.textContent = "";
+            updateMoneyDisplay();
+            btnHit.disabled = true;
+            btnStand.disabled = true;
+        }
+
+        resetGame();
+    </script>
+</body>
+
+</html>
