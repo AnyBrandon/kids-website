@@ -14,7 +14,7 @@
         }
 
         body {
-            background: url('images/bb.jpg') no-repeat center center fixed;
+            background: url('images/blackjackWallpaper.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #f5f5f5;
             display: flex;
@@ -130,11 +130,21 @@
 
 
         .status {
-            margin: 15px 0;
-            font-size: 1.3em;
-            height: 1.5em;
+            margin: 20px 0;
+            padding: 12px 24px;
+            font-size: 1.6em;
+            font-weight: bold;
             text-align: center;
+            min-height: 50px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            color: #fff;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.4);
+            display: inline-block;
         }
+
 
         .hands {
             width: 100%;
@@ -224,6 +234,71 @@
                 padding: 8px 16px;
             }
         }
+
+        .status.win {
+            background: linear-gradient(45deg, #28a745, #34d063);
+            box-shadow: 0 0 20px #34d063;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .status.lose {
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+            box-shadow: 0 0 20px #e74c3c;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .status.push {
+            background: linear-gradient(45deg, #34495e, #2c3e50);
+            box-shadow: 0 0 20px #95a5a6;
+            color: #ecf0f1;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+        }
+
+        #place-bet.shine {
+            animation: shinePulse 1.2s infinite alternate;
+            box-shadow: 0 0 12px 3px rgba(255, 215, 0, 0.7);
+            border-color: gold;
+        }
+
+        @keyframes shinePulse {
+            0% {
+                box-shadow: 0 0 5px 2px rgba(255, 215, 0, 0.4);
+            }
+
+            100% {
+                box-shadow: 0 0 15px 5px rgba(255, 215, 0, 1);
+            }
+        }
+
+        #bet-input {
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: 2px solid gold;
+            border-radius: 10px;
+            padding: 10px 15px;
+            font-size: 1.2em;
+            width: 120px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        #bet-input:focus,
+        #bet-input:hover {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            outline: none;
+        }
+
+        .double-btn {
+            background: #f39c12;
+        }
+
+        .double-btn:hover {
+            background: #f1c40f;
+        }
     </style>
 </head>
 
@@ -257,13 +332,20 @@
             <div class="hand-container">
                 <div class="hand-title">Your Hand <span id="player-score"></span></div>
                 <div id="player-hand" class="hand"></div>
-                <div class="controls bottom-controls">
+                <div id="action-buttons" class="controls bottom-controls" style="display: none;">
                     <button id="hit" class="hit-btn" disabled>Hit</button>
                     <button id="stand" class="stand-btn" disabled>Stand</button>
+                    <button id="double" class="double-btn" disabled>Double</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <audio id="hit-sound" src="sounds/hitCard.wav" preload="auto"></audio>
+    <audio id="stand-sound" src="sounds/crack.wav" preload="auto"></audio>
+    <audio id="win-sound" src="sounds/bjWin.wav" preload="auto"></audio>
+    <audio id="lose-sound" src="sounds/bjLost.mp3" preload="auto"></audio>
+    <audio id="placebet-sound" src="sounds/placeBet.wav" preload="auto"></audio>
 
     <script>
         const suits = ['♠', '♥', '♦', '♣'];
@@ -283,10 +365,12 @@
         const playerHandDiv = document.getElementById('player-hand');
         const dealerScoreSpan = document.getElementById('dealer-score');
         const playerScoreSpan = document.getElementById('player-score');
+        const btnDouble = document.getElementById('double');
 
         btnPlaceBet.addEventListener('click', placeBet);
         btnHit.addEventListener('click', onHit);
         btnStand.addEventListener('click', onStand);
+        btnDouble.addEventListener('click', onDoubleDown);
 
         function createDeck() {
             const d = [];
@@ -334,6 +418,8 @@
         }
 
         function placeBet() {
+            document.getElementById('placebet-sound').play();
+
             if (inRound) {
                 statusDiv.textContent = "Finish current round first.";
                 return;
@@ -353,6 +439,9 @@
             startRound();
         }
 
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
         function startRound() {
             inRound = true;
@@ -364,8 +453,16 @@
             playerScoreSpan.textContent = "";
             renderHand(playerHand, playerHandDiv);
             renderDealerFirstDeal();
+            // Only allow double down on first move and if player has enough money
+            if (money >= currentBet) {
+                btnDouble.disabled = false;
+            } else {
+                btnDouble.disabled = true;
+            }
             btnHit.disabled = false;
             btnStand.disabled = false;
+            document.getElementById('action-buttons').style.display = 'flex';
+            setBetGlow(false);
         }
 
         function renderCardElement(card, hidden = false, delay = 0, flip = false) {
@@ -413,20 +510,35 @@
 
         function onHit() {
             if (!inRound) return;
+            btnDouble.disabled = true;
+            document.getElementById('hit-sound').play();
             playerHand.push(deck.pop());
             renderHand(playerHand, playerHandDiv);
             const pVal = handValue(playerHand);
             if (pVal > 21) finishRound();
         }
 
-        function onStand() {
+        async function onStand() {
             if (!inRound) return;
+
             btnHit.disabled = true;
             btnStand.disabled = true;
-            revealDealerAll().then(() => {
-                finishRound();
-            });
+            btnDouble.disabled = true;
+
+            // Reveal dealer's hidden card with delay
+            renderHand(dealerHand, dealerHandDiv);
+            await sleep(800);
+
+            // Dealer hits until 17 or more, dealing cards one by one with delay
+            while (handValue(dealerHand) < 17) {
+                dealerHand.push(deck.pop());
+                renderHand(dealerHand, dealerHandDiv);
+                await sleep(800);
+            }
+
+            finishRound();
         }
+
 
         function revealDealerAll() {
             return new Promise(resolve => {
@@ -455,13 +567,25 @@
 
         function finishRound() {
             inRound = false;
+
             const pVal = handValue(playerHand);
             const dVal = handValue(dealerHand);
+            const playerBJ = isBlackjack(playerHand);
+            const dealerBJ = isBlackjack(dealerHand);
+
             dealerScoreSpan.textContent = `(${dVal})`;
             playerScoreSpan.textContent = `(${pVal})`;
 
             let msg = '';
-            if (pVal > 21) {
+
+            // Check for Blackjacks first
+            if (playerBJ && dealerBJ) {
+                msg = "Both have Blackjack! Push.";
+                money += currentBet; // return bet
+            } else if (playerBJ) {
+                msg = "Blackjack! You win 3:2!";
+                money += currentBet + currentBet * 1.5;
+            } else if (pVal > 21) {
                 msg = "You busted! Dealer wins.";
             } else if (dVal > 21) {
                 msg = "Dealer busted! You win.";
@@ -475,10 +599,62 @@
                 msg = "Push! Bet returned.";
                 money += currentBet;
             }
+
             currentBet = 0;
             updateMoneyDisplay();
             statusDiv.textContent = msg;
+            statusDiv.className = 'status'; // reset style
+
+            if (msg.includes("win")) {
+                statusDiv.classList.add('win');
+                document.getElementById('win-sound').play();
+            } else if (msg.includes("Dealer wins") || msg.includes("busted")) {
+                statusDiv.classList.add('lose');
+                document.getElementById('lose-sound').play();
+            } else if (msg.includes("Push")) {
+                statusDiv.classList.add('push');
+            }
+
+            document.getElementById('action-buttons').style.display = 'none';
         }
+
+
+        function isBlackjack(hand) {
+            return hand.length === 2 && handValue(hand) === 21 &&
+                hand.some(card => card.value === 1) && // has Ace
+                hand.some(card => card.value >= 10);   // has 10, J, Q, or K
+        }
+
+
+        function onDoubleDown() {
+            if (!inRound) return;
+
+            if (money < currentBet) {
+                statusDiv.textContent = "Not enough money to double.";
+                return;
+            }
+
+            // Deduct additional bet
+            money -= currentBet;
+            currentBet *= 2;
+            updateMoneyDisplay();
+
+            // Deal one card, disable buttons, then stand
+            playerHand.push(deck.pop());
+            renderHand(playerHand, playerHandDiv);
+            const pVal = handValue(playerHand);
+
+            btnHit.disabled = true;
+            btnStand.disabled = true;
+            btnDouble.disabled = true;
+
+            if (pVal > 21) {
+                finishRound(); // auto bust
+            } else {
+                onStand(); // auto stand after one card
+            }
+        }
+
 
         function resetGame() {
             inRound = false;
@@ -490,9 +666,21 @@
             updateMoneyDisplay();
             btnHit.disabled = true;
             btnStand.disabled = true;
+            btnDouble.disabled = true;
+            setBetGlow(true);
         }
 
         resetGame();
+
+        function setBetGlow(active) {
+            const btn = document.getElementById('place-bet');
+            if (active) {
+                btn.classList.add('shine');
+            } else {
+                btn.classList.remove('shine');
+            }
+        }
+
     </script>
 </body>
 
