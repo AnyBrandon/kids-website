@@ -299,6 +299,16 @@
         .double-btn:hover {
             background: #f1c40f;
         }
+
+        .suit.red-suit {
+            color: #e74c3c;
+            /* red */
+        }
+
+        .suit.black-suit {
+            color: #111;
+            /* dark black/gray */
+        }
     </style>
 </head>
 
@@ -308,7 +318,7 @@
 
         <!-- 💰 Fancy money display -->
         <div class="chip-stack">
-            💵 Money: <span id="money" class="chip">$1000</span>
+            💵 Money: <span id="money" class="chip">$2500</span>
             &nbsp;&nbsp;|&nbsp;&nbsp;
             🎯 Bet: <span id="current-bet" class="chip bet">$0</span>
         </div>
@@ -352,7 +362,10 @@
         const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
         let deck = [], playerHand = [], dealerHand = [];
-        let money = 1000, currentBet = 0, inRound = false;
+        const STORAGE_KEY = "bjBalance";
+        let money = parseInt(localStorage.getItem(STORAGE_KEY)) || 2500;
+        let currentBet = 0, inRound = false;
+
 
         const moneySpan = document.getElementById('money');
         const betSpan = document.getElementById('current-bet');
@@ -410,7 +423,9 @@
         function updateMoneyDisplay() {
             moneySpan.textContent = `$${money}`;
             betSpan.textContent = `$${currentBet}`;
+            localStorage.setItem(STORAGE_KEY, money); // 💾 Save balance
         }
+
 
         function clearHands() {
             dealerHandDiv.innerHTML = '';
@@ -465,14 +480,14 @@
             setBetGlow(false);
         }
 
-        function renderCardElement(card, hidden = false, delay = 0, flip = false) {
+        function renderCardElement(card, hidden = false, delay = 800, flip = false) {
             const div = document.createElement('div');
             div.className = 'card';
             if (hidden) {
                 div.classList.add('hidden');
                 div.textContent = '🂠';
             } else {
-                div.textContent = card.value + card.suit;
+                div.innerHTML = `${card.value}<span class="suit ${getSuitClass(card.suit)}">${card.suit}</span>`;
             }
             if (delay > 0) {
                 div.style.opacity = '0';
@@ -488,7 +503,24 @@
                     div.textContent = card.value + card.suit;
                 }, delay + 200);
             }
+            if (!hidden) {
+                const suitClass = ['♥', '♦'].includes(card.suit) ? 'red' : 'black';
+                div.classList.add(suitClass);
+            }
+
             return div;
+        }
+
+        function getSuitClass(suit) {
+            switch (suit) {
+                case '♥':
+                case '♦':
+                    return 'red-suit';
+                case '♠':
+                case '♣':
+                default:
+                    return 'black-suit';
+            }
         }
 
         function renderHand(hand, container) {
@@ -504,9 +536,12 @@
 
         function renderDealerFirstDeal() {
             dealerHandDiv.innerHTML = '';
+            // first card face-up
             dealerHandDiv.appendChild(renderCardElement(dealerHand[0]));
+            // second card face-down (hidden)
             dealerHandDiv.appendChild(renderCardElement(dealerHand[1], true, 300));
         }
+
 
         function onHit() {
             if (!inRound) return;
@@ -525,36 +560,42 @@
             btnStand.disabled = true;
             btnDouble.disabled = true;
 
-            // Reveal dealer's hidden card with delay
-            renderHand(dealerHand, dealerHandDiv);
+            // Reveal dealer's hidden card in-place (flip)
+            revealDealerSecondCard(350);
+            // show updated dealer score after revealing
             await sleep(800);
+            dealerScoreSpan.textContent = `(${handValue(dealerHand)})`;
 
-            // Dealer hits until 17 or more, dealing cards one by one with delay
+            // Dealer hits until 17 or more, append cards one by one without re-rendering existing ones
             while (handValue(dealerHand) < 17) {
-                dealerHand.push(deck.pop());
-                renderHand(dealerHand, dealerHandDiv);
-                await sleep(800);
+                const newCard = deck.pop();
+                dealerHand.push(newCard);
+                // append the card (with a small animation delay so it doesn't pop instantly)
+                appendCardElement(newCard, dealerHandDiv, 300);
+                // update visible dealer score
+                dealerScoreSpan.textContent = `(${handValue(dealerHand)})`;
+                // allow time for animation between cards
+                await sleep(1500);
             }
 
             finishRound();
         }
 
 
+
         function revealDealerAll() {
             return new Promise(resolve => {
-                dealerHandDiv.innerHTML = '';
-                dealerHand.forEach((card, idx) => {
-                    const el = renderCardElement(card, idx === 1, idx * 300, idx === 1);
-                    dealerHandDiv.appendChild(el);
-                });
-                let drawDelay = dealerHand.length * 300 + 400;
+                // flip/replace the second card
+                revealDealerSecondCard(500);
+
+                // start appending additional cards if necessary
+                let drawDelay = 600; // time after flip to start drawing
                 const drawLoop = () => {
                     const val = handValue(dealerHand);
                     if (val < 17) {
                         const newCard = deck.pop();
                         dealerHand.push(newCard);
-                        const el = renderCardElement(newCard, false, drawDelay);
-                        dealerHandDiv.appendChild(el);
+                        appendCardElement(newCard, dealerHandDiv, drawDelay);
                         drawDelay += 400;
                         setTimeout(drawLoop, 400);
                     } else {
@@ -564,6 +605,7 @@
                 setTimeout(drawLoop, drawDelay);
             });
         }
+
 
         function finishRound() {
             inRound = false;
@@ -605,7 +647,7 @@
             statusDiv.textContent = msg;
             statusDiv.className = 'status'; // reset style
 
-            if (msg.includes("win")) {
+            if (msg.includes("You win")) {
                 statusDiv.classList.add('win');
                 document.getElementById('win-sound').play();
             } else if (msg.includes("Dealer wins") || msg.includes("busted")) {
@@ -620,9 +662,13 @@
 
 
         function isBlackjack(hand) {
-            return hand.length === 2 && handValue(hand) === 21 &&
-                hand.some(card => card.value === 1) && // has Ace
-                hand.some(card => card.value >= 10);   // has 10, J, Q, or K
+            if (hand.length !== 2) return false;
+
+            const valuesOnly = hand.map(c => c.value);
+            const hasAce = valuesOnly.includes('A');
+            const hasTenValue = valuesOnly.some(v => ['10', 'J', 'Q', 'K'].includes(v));
+
+            return hasAce && hasTenValue;
         }
 
 
@@ -654,6 +700,32 @@
                 onStand(); // auto stand after one card
             }
         }
+
+        // Append a single card element to a container (does NOT clear existing cards)
+        function appendCardElement(card, container, delay = 0, flip = false) {
+            const el = renderCardElement(card, false, delay, flip);
+            container.appendChild(el);
+            return el;
+        }
+
+        // Reveal (flip) the dealer's second card in-place (the one initially rendered as hidden)
+        function revealDealerSecondCard(delay = 500) {
+            // find the second element inside dealerHandDiv, if any
+            const secondEl = dealerHandDiv.children[1];
+            if (!secondEl) return;
+
+            // If it's the hidden element (shows 🂠), animate/flip it into the real card
+            // We'll replace it with a proper element so we get the flip behaviour already defined in renderCardElement
+            // Keep the timing similar to your other animations
+            const secondCard = dealerHand[1];
+            // create a new element that will flip (renderCardElement handles flip when hidden -> revealed)
+            const newEl = renderCardElement(secondCard, true, 0, true);
+            // replace the hidden element after a short delay so animation looks natural
+            setTimeout(() => {
+                dealerHandDiv.replaceChild(newEl, secondEl);
+            }, delay);
+        }
+
 
 
         function resetGame() {
