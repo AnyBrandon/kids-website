@@ -356,13 +356,14 @@
     <audio id="win-sound" src="sounds/bjWin.wav" preload="auto"></audio>
     <audio id="lose-sound" src="sounds/bjLost.mp3" preload="auto"></audio>
     <audio id="placebet-sound" src="sounds/placeBet.wav" preload="auto"></audio>
+    <audio id="double-sound" src="sounds/bjDouble.wav" preload="auto"></audio>
 
     <script>
         const suits = ['♠', '♥', '♦', '♣'];
         const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
         let deck = [], playerHand = [], dealerHand = [];
-        const STORAGE_KEY = "bjBalance";
+        const STORAGE_KEY = "bjBalanceX";
         let money = parseInt(localStorage.getItem(STORAGE_KEY)) || 2500;
         let currentBet = 0, inRound = false;
 
@@ -478,6 +479,7 @@
             btnStand.disabled = false;
             document.getElementById('action-buttons').style.display = 'flex';
             setBetGlow(false);
+             btnDouble.style.display = "inline-block"; // make double btn visible again
         }
 
         function renderCardElement(card, hidden = false, delay = 800, flip = false) {
@@ -551,6 +553,8 @@
             renderHand(playerHand, playerHandDiv);
             const pVal = handValue(playerHand);
             if (pVal > 21) finishRound();
+            // ❌ Disable double after first hit
+            btnDouble.style.display = "none";
         }
 
         async function onStand() {
@@ -559,7 +563,7 @@
             btnHit.disabled = true;
             btnStand.disabled = true;
             btnDouble.disabled = true;
-
+            document.getElementById('stand-sound').play();
             // Reveal dealer's hidden card in-place (flip)
             revealDealerSecondCard(350);
             // show updated dealer score after revealing
@@ -674,7 +678,8 @@
 
         function onDoubleDown() {
             if (!inRound) return;
-
+            // 🔊 Play double sound
+            document.getElementById('double-sound').play();
             if (money < currentBet) {
                 statusDiv.textContent = "Not enough money to double.";
                 return;
