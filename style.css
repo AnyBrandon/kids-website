@@ -376,7 +376,7 @@ p {
   }
 }
 
-  /* Cool Monkey Bonanza button styling */
+/* Cool Monkey Bonanza button styling */
 .monkey-btn {
   background: linear-gradient(135deg, #00ffcc, #da6600, #f1f90b);
   background-size: 300% 300%;
@@ -391,4 +391,38 @@ p {
   box-shadow: 0 0 15px rgba(0, 255, 200, 0.7), 0 0 25px rgba(255, 0, 200, 0.6);
   transition: all 0.4s ease-in-out;
   animation: gradientShift 5s ease infinite;
+}
+
+.blackJack-button {
+  background: linear-gradient(135deg, #1b1b1b, #2c2c2c);
+  /* dark casino feel */
+  color: #4caf50;
+  /* blackjack table green accent */
+  border: 2px solid #4caf50;
+  border-radius: 10px;
+  padding: 12px 26px;
+  font-size: 1.15em;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 10px rgba(76, 175, 80, 0.4);
+  transition: all 0.2s ease-in-out;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  letter-spacing: 1px;
+}
+
+.countdown-button {
+  background: linear-gradient(135deg, #ff4e50, #f9d423);
+  /* urgent red-orange gradient */
+  color: #fff;
+  border: 2px solid #ff4e50;
+  border-radius: 12px;
+  padding: 14px 28px;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(255, 78, 80, 0.6), 0 0 20px rgba(249, 212, 35, 0.5);
+  transition: all 0.2s ease-in-out;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+  animation: pulse 1.2s infinite;
 }
