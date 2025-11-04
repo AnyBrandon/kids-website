@@ -256,6 +256,11 @@
 
     <div id="modalRoot" style="display:none"></div>
 
+    <audio id="tickSound" src="sounds/clockTimer.wav" loop></audio>
+    <audio id="last5Sound" src="sounds/5Timer.wav"></audio>
+    <audio id="eventSound" src="sounds/event.wav"></audio>
+    <audio id="bombSound" src="sounds/bomb.wav"></audio>
+
     <script>
         // --- Game state ---
         const PLAYERS = 4;
@@ -330,6 +335,27 @@
             }
 
             renderLives();
+        }
+
+        const tickSound = document.getElementById('tickSound');
+        const last5Sound = document.getElementById('last5Sound');
+
+        function startTickSound() {
+            tickSound.currentTime = 0; // restart from beginning
+            tickSound.play().catch(err => console.log("Audio play prevented:", err));
+        }
+
+        function stopTickSound() {
+            tickSound.pause();
+        }
+
+        function startLast5Sound() {
+            last5Sound.currentTime = 0;
+            last5Sound.play().catch(err => console.log("Audio play prevented:", err));
+        }
+
+        function stopLast5Sound() {
+            last5Sound.pause();
         }
 
 
@@ -456,6 +482,8 @@
             timerEl.textContent = fmtTime(120);
             timerSeconds = 120;
             eventIndex = 0;
+            // 🔁 Reset event usage for the new round
+            eventUsage = Array(eventFunctions.length).fill(0);
         }
 
         // Reveal: Player p chooses one box (not their own) to peek. UI must be private.
@@ -521,7 +549,7 @@
             });
 
             // Show modal
-            showModal(`Player ${p + 1} — Private Reveal (50% chance)`, container, { hideContinue: true });
+            showModal(`Player ${p + 1} — Private Reveal (50% success chance)`, container, { hideContinue: true });
         }
 
 
@@ -534,49 +562,128 @@
 
         // --- Timer ---
         function startCountdown() {
-            // countdown starts => reveal phase is over
             revealPhase = false;
-            renderBoard(); // ensure reveal buttons disappear immediately and stay hidden during swaps
+            renderBoard();
 
-            timerSeconds = 120; timerEl.textContent = fmtTime(timerSeconds);
-            // schedule events at 105,90,...15,1
-            eventTimes = [105, 90, 75, 60, 45, 30, 15, 1]; eventIndex = 0;
+            timerSeconds = 120;
+            timerEl.textContent = fmtTime(timerSeconds);
+            eventTimes = [105, 90, 75, 60, 45, 30, 15, 1];
+            eventIndex = 0;
+
+            startTickSound(); // 🔊 start ticking sound
+
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
-                timerSeconds--; timerEl.textContent = fmtTime(timerSeconds);
+                timerSeconds--;
+                timerEl.textContent = fmtTime(timerSeconds);
+
+                // Switch sounds at 5 seconds
+                if (timerSeconds === 5) {
+                    stopTickSound();      // stop normal ticking
+                    startLast5Sound();    // play final countdown sound
+                }
+
                 if (eventIndex < eventTimes.length && timerSeconds === eventTimes[eventIndex]) {
                     clearInterval(timerInterval);
-                    triggerRandomEvent(() => { if (timerSeconds > 0) { startCountdownResume(); } });
+                    stopTickSound(); // ⏸ stop sound during event
+                    stopLast5Sound();      // stop any sound during modal
+                    triggerRandomEvent(() => { if (timerSeconds > 0) startCountdownResume(); });
                     eventIndex++;
                 }
-                if (timerSeconds <= 0) { clearInterval(timerInterval); resolveExplosion(); }
+
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    stopTickSound(); // ⏹ stop at end
+                    stopLast5Sound();
+                    resolveExplosion();
+                }
             }, 1000);
         }
 
         function startCountdownResume() {
-            // ensure revealPhase remains false while resuming
             revealPhase = false;
             renderBoard();
 
+            startTickSound(); // 🔊 resume ticking sound
+
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
-                timerSeconds--; timerEl.textContent = fmtTime(timerSeconds);
+                timerSeconds--;
+                timerEl.textContent = fmtTime(timerSeconds);
+
+                // Switch sounds at 5 seconds
+                if (timerSeconds === 5) {
+                    stopTickSound();      // stop normal ticking
+                    startLast5Sound();    // play final countdown sound
+                }
+
                 if (eventIndex < eventTimes.length && timerSeconds === eventTimes[eventIndex]) {
                     clearInterval(timerInterval);
+                    stopTickSound(); // ⏸ stop sound during event
                     triggerRandomEvent(() => { if (timerSeconds > 0) startCountdownResume(); });
                     eventIndex++;
                 }
-                if (timerSeconds <= 0) { clearInterval(timerInterval); resolveExplosion(); }
+
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    stopTickSound(); // ⏹ stop at end
+                    resolveExplosion();
+                }
             }, 1000);
         }
 
 
+
         // --- Events ---
         // We'll pick randomly from the set of event functions below
+        // --- Event tracking ---
+        const eventFunctions = [
+            eventMutualChoiceTrade,
+            eventForcedChooserTrade,
+            eventForcedSwapTwo,
+            eventOptionalChooserTrade,
+            eventAgreedMakeOthersSwap,
+            eventChooserMakeTwoSwap,
+            eventRandomBoxSwapWithOne,
+            eventRumor,
+            eventChainSwap,
+            eventSpyReport,
+        ];
+
+        // Track how many times each event has been used this round
+        let eventUsage = Array(eventFunctions.length).fill(0);
+        const MAX_EVENT_PER_ROUND = 2;
+        const eventSound = document.getElementById('eventSound');
+
+        // --- Trigger random event with per-round cap ---
         function triggerRandomEvent(done) {
             notice.textContent = 'Event triggered!';
-            const events = [eventMutualChoiceTrade, eventForcedChooserTrade, eventForcedSwapTwo, eventOptionalChooserTrade, eventAgreedMakeOthersSwap, eventChooserMakeTwoSwap, eventRandomBoxSwapWithOne, eventRumor, eventChainSwap, eventSpyReport];
-            const ev = events[Math.floor(Math.random() * events.length)];
+
+            // Play event sound once
+            eventSound.currentTime = 0;
+            eventSound.play().catch(err => console.log("Event audio play prevented:", err));
+
+            // Filter only events that haven't reached the cap
+            const availableIndices = eventFunctions
+                .map((_, i) => i)
+                .filter(i => eventUsage[i] < MAX_EVENT_PER_ROUND);
+
+            if (availableIndices.length === 0) {
+                // All events used twice — just skip triggering
+                showModal('No More Events', `<div class='notice'>All event types have already occurred twice this round. The countdown continues.</div>`, {
+                    onClose: () => { startCountdownResume(); }
+                });
+                return;
+            }
+
+            // Pick random event index from available ones
+            const chosenIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+            const ev = eventFunctions[chosenIndex];
+
+            // Increment its usage count
+            eventUsage[chosenIndex]++;
+
+            // Trigger it
             ev(done);
         }
 
@@ -793,12 +900,17 @@
             const ownerPlayer = boxOwners[bombBox];
             lives[ownerPlayer] = Math.max(0, lives[ownerPlayer] - 1);
             renderLives();
+
+            const bombSound = document.getElementById('bombSound');
+            bombSound.currentTime = 0;
+            bombSound.play().catch(err => console.log("Bomb audio play prevented:", err));
+
             showModal('Explosion', `<div class='notice'>BOOM! Box ${String.fromCharCode(65 + bombBox)} exploded. Player ${ownerPlayer + 1} loses 1 life.</div>`, {
                 onClose: () => {
                     // check for elimination (player with 0 lives)
                     const eliminated = lives.findIndex(l => l === 0);
                     if (eliminated !== -1) {
-                        showModal('Game Over', `<div class='notice'>Player ${eliminated + 1} lost all lives. Game over.</div>`, {
+                        showModal('Game Over', `<div class='notice'>Player ${eliminated + 1} lost all lives. They are OOOUUUUTTT.</div>`, {
                             onClose: () => {
                                 resetGame();
                             }
