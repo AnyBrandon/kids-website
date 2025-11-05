@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <title>Last Decision — Prototype</title>
+    <style>
+        :root {
+            --bg: #0f1724;
+            --panel: #0b1220;
+            --accent: #1fb6ff;
+            --accent2: #ff7b6b;
+            --card: #111827;
+            --glass: rgba(255, 255, 255, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(180deg, #071024 0%, #081426 100%);
+            color: #e6eef8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1200px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 8px 30px rgba(2, 6, 23, 0.7)
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px
+        }
+
+        .h-title {
+            font-size: 20px;
+            font-weight: 700
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .btn {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 8px 12px;
+            border-radius: 10px;
+            color: inherit;
+            font-weight: 600
+        }
+
+        .status {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            padding: 12px
+        }
+
+        .card {
+            background: linear-gradient(180deg, #0b1220, #0d1624);
+            border-radius: 12px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 8px;
+            position: relative;
+            user-select: none
+        }
+
+        .card .id {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            font-size: 12px;
+            opacity: 0.6
+        }
+
+        .card .face {
+            font-size: 14px
+        }
+
+        .picked-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .panel {
+            display: flex;
+            gap: 10px;
+            padding: 12px
+        }
+
+        .side {
+            width: 320px;
+            background: linear-gradient(180deg, #071428, #07101a);
+            border-radius: 10px;
+            padding: 12px
+        }
+
+        .team {
+            padding: 8px;
+            border-radius: 8px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+            margin-bottom: 10px
+        }
+
+        .team h3 {
+            margin: 0 0 6px 0
+        }
+
+        .small {
+            font-size: 13px;
+            opacity: 0.85
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.6)
+        }
+
+        .modal .card {
+            width: 90%;
+            max-width: 640px
+        }
+
+        .hidden {
+            display: none
+        }
+
+        .powers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px
+        }
+
+        .power {
+            background: #0b1724;
+            padding: 6px 8px;
+            border-radius: 8px;
+            font-size: 12px
+        }
+
+        .timer {
+            font-weight: 800;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03)
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px
+        }
+
+        .small-muted {
+            opacity: 0.7;
+            font-size: 12px
+        }
+
+        @media (max-width:900px) {
+            .app {
+                padding: 8px
+            }
+
+            .panel {
+                flex-direction: column
+            }
+
+            .side {
+                width: 100%
+            }
+
+            .board {
+                grid-template-columns: repeat(3, 1fr)
+            }
+        }
+
+        .turn-label {
+            font-weight: 900;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            transition: all 0.4s ease;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+        }
+
+        .turn-label.teamA {
+            color: var(--accent);
+            /* blue */
+            text-shadow: 0 0 12px rgba(31, 182, 255, 0.8), 0 0 25px rgba(31, 182, 255, 0.6);
+        }
+
+        .turn-label.teamB {
+            color: var(--accent2);
+            /* red */
+            text-shadow: 0 0 12px rgba(255, 123, 107, 0.8), 0 0 25px rgba(255, 123, 107, 0.6);
+        }
+
+        /* Glowing pick labels inside briefcases */
+        .pick-label {
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+            text-transform: uppercase;
+            margin-top: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .pick-label.teamA {
+            color: var(--accent);
+            text-shadow: 0 0 8px rgba(31, 182, 255, 0.8), 0 0 15px rgba(31, 182, 255, 0.6);
+        }
+
+        .pick-label.teamB {
+            color: var(--accent2);
+            text-shadow: 0 0 8px rgba(255, 123, 107, 0.8), 0 0 15px rgba(255, 123, 107, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app" id="app">
+        <div class="header">
+            <div class="h-title">Last Decision — Prototype</div>
+            <div class="controls">
+                <div class="status small-muted" id="infoText">Preparing...</div>
+                <button class="btn" id="restartBtn">Restart</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div style="flex:1">
+                <div class="board" id="board"></div>
+                <div class="footer">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="small-muted" id="roundInfo">Round 1</div>
+                        <div style="display:inline-block; margin-left:10px;">
+                            <button class="btn" id="startRoundBtn">Start Round</button>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <div class="timer" id="turnTimer">—</div>
+                        <div class="small-muted">Turn: <span id="turnLabel">—</span></div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="side">
+                <div class="team" id="teamABox"></div>
+                <div class="team" id="teamBBox"></div>
+                <div class="team small-muted">
+                    <div style="font-weight:700">Instructions</div>
+                    <div class="small">Three rounds: Money → Powerups → Points. Private reveals show only to the active
+                        team. 15s per pick. Press <strong>Start Round</strong> to begin each round.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Private modal -->
+        <div id="modal" class="modal hidden">
+            <div class="card" id="modalCard">
+                <div style="padding:12px">
+                    <h2 id="modalTitle">Private Briefcases Reveal</h2>
+                    <div id="modalContent"></div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script>
+        // Last Decision — prototype implementation (single file)
+        const app = document.getElementById('app');
+        const boardEl = document.getElementById('board');
+        const infoText = document.getElementById('infoText');
+        const teamABox = document.getElementById('teamABox');
+        const teamBBox = document.getElementById('teamBBox');
+        const roundInfo = document.getElementById('roundInfo');
+        const turnLabel = document.getElementById('turnLabel');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const turnTimer = document.getElementById('turnTimer');
+        const restartBtn = document.getElementById('restartBtn');
+
+        let STATE = null;
+        let timerInterval = null;
+        const PICK_TIME = 15; // seconds
+        let STARTED_THIS_ROUND = false; // controls start-round button
+
+        function randChoice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]] } return a }
+
+        // configurations
+        const MONEY_CASES = [100, 100, 100, 100, 300, 300, 300, 300, 700, 700, 700, 1500]; // 12
+        const MONEY_EMPTY = 5; // 5 empty
+        const MONEY_POWERUP_TOKEN = 1; // 1 token
+
+        const POWERUP_POOL = [
+            { id: 'peek', name: 'Peek', rarity: 'common', cost: 200, type: 'pre', desc: 'Inspect one unpicked briefcase.' },
+            { id: 'plus2', name: 'Plus +2', rarity: 'uncommon', cost: 500, type: 'pre', desc: 'Add +2 points to one unpicked briefcase.' },
+            { id: 'replace', name: 'Replace(-1/-2)', rarity: 'uncommon', cost: 500, type: 'pre', desc: 'Replace content of one unpicked briefcase with -1 or -2 points.' },
+            { id: 'doublepick', name: 'Double Pick', rarity: 'rare', cost: 1000, type: 'pre', desc: 'Take an extra immediate pick.' },
+            { id: 'sabotage', name: 'Sabotage(empty)', rarity: 'rare', cost: 1000, type: 'pre', desc: 'Convert one unpicked briefcase to empty/0.' },
+            { id: 'timebomb', name: 'Time Bomb', rarity: 'super', cost: 2000, type: 'pre', desc: 'Place a -3 trap on a briefcase; if opponent picks it they lose 3 points.' },
+            { id: 'pickpocket', name: 'PickPocket', rarity: 'super', cost: 2000, type: 'pre', desc: 'Gain +1 pick in final round (6 instead of 5).' },
+            { id: 'powersteal', name: 'Power Steal', rarity: 'super', cost: 2000, type: 'pre', desc: 'Steal a random power-up from opponent (used in final round).' },
+            { id: 'steal', name: 'Steal Case', rarity: 'rare', cost: 1000, type: 'post', desc: 'Steal one already picked briefcase from opponent.' },
+            { id: 'swap', name: 'Swap Case', rarity: 'uncommon', cost: 500, type: 'post', desc: 'Swap one of your picked briefcases with one of the opponent.' },
+            { id: 'invert', name: 'Invert', rarity: 'rare', cost: 1000, type: 'post', desc: 'Multiply one opponent picked briefcase by -1.' },
+            { id: 'forcereveal', name: 'Force Reveal', rarity: 'uncommon', cost: 500, type: 'post', desc: 'Force opponent to reveal one of their power-ups.' },
+            { id: 'shield', name: 'Shield', rarity: 'uncommon', cost: 500, type: 'post', desc: 'Shield one of your picked briefcases from opponent targeting.' },
+            { id: 'hammer', name: 'Hammer', rarity: 'super', cost: 2000, type: 'post', desc: 'Break a shielded case and steal its content (only targets shielded).' },
+            { id: 'peekswap', name: 'Peek&Swap', rarity: 'super', cost: 2000, type: 'pre', desc: 'Peek all remaining and swap one of your picks.' }
+        ];
+
+        const POINT_DISTRIBUTION = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 4, 4, 5]; // 17 plus one x2
+
+        function newGame() {
+            STATE = {
+                round: 1,
+                boards: {}, // each round board array of 18 items
+                teams: [
+                    { id: 0, name: 'Team A', color: '#1fb6ff', money: 0, picks: [], inventory: [], points: 0, shielded: [], pickLimit: 5 },
+                    { id: 1, name: 'Team B', color: '#ff7b6b', money: 0, picks: [], inventory: [], points: 0, shielded: [], pickLimit: 5 }
+                ],
+                activeTeam: Math.random() < 0.5 ? 0 : 1,
+                turnPickIndex: 0, // number of picks made this round
+                phasePickLimit: 5,
+                pickOrder: [],
+                step: 'picking' // 'picking','revealA','revealB','buying','finalizing'
+            };
+            STARTED_THIS_ROUND = false;
+            setupRound1();
+            renderAll();
+        }
+
+        function makeBoard1() {
+            // 18 slots: 12 money (MONEY_CASES), 5 empty, 1 token
+            const items = [];
+            MONEY_CASES.forEach(v => items.push({ type: 'money', value: v }));
+            for (let i = 0; i < MONEY_EMPTY; i++) items.push({ type: 'empty' });
+            items.push({ type: 'power-token' });
+            shuffle(items);
+            while (items.length < 18) items.push({ type: 'empty' });
+            return items.map((it, idx) => ({ ...it, id: idx, revealed: false, owner: null }));
+        }
+
+        function makeBoard2() {
+            // 12 power-ups, 5 empty, 1 super
+            const pool = [];
+            for (let i = 0; i < 12; i++) { pool.push({ ...randChoice(POWERUP_POOL) }); }
+            pool[Math.floor(Math.random() * 12)] = randChoice(POWERUP_POOL.filter(p => p.rarity === 'super'));
+            const items = pool.map((p, idx) => ({ type: 'powerup', power: { ...p }, id: idx, revealed: false, owner: null }));
+            for (let i = 0; i < 5; i++) items.push({ type: 'empty', id: items.length });
+            while (items.length < 18) items.push({ type: 'empty', id: items.length });
+            shuffle(items);
+            return items.map((it, idx) => ({ ...it, id: idx, revealed: false, owner: null }));
+        }
+
+        function makeBoard3() {
+            // 17 points + 1 multiplier
+            const pts = [...POINT_DISTRIBUTION];
+            const arr = pts.map((v, idx) => ({ type: 'points', value: v, id: idx, revealed: false }));
+            arr.push({ type: 'mult', id: arr.length, revealed: false });
+            shuffle(arr);
+            return arr.map((it, idx) => ({ ...it, id: idx, revealed: false, owner: null, modifiedBy: null }));
+        }
+
+        function setupRound1() {
+            STATE.boards[1] = makeBoard1();
+            STATE.boards[2] = makeBoard2();
+            STATE.boards[3] = makeBoard3();
+            STATE.round = 1;
+            STATE.turnPickIndex = 0;
+            STATE.phasePickLimit = 5;
+            STATE.step = 'picking';
+            // reset teams
+            STATE.teams.forEach(t => { t.money = 0; t.picks = []; t.inventory = []; t.points = 0; t.shielded = []; t.pickLimit = 5 });
+            STATE.activeTeam = Math.random() < 0.5 ? 0 : 1;
+            STARTED_THIS_ROUND = false;
+        }
+
+        function renderAll() {
+            roundInfo.innerText = `Round ${STATE.round}`;
+            infoText.innerText = `${STATE.teams[STATE.activeTeam].name}'s turn to pick`;
+            renderBoard();
+            renderTeams();
+            updateStartButtonVisibility();
+        }
+
+        function renderBoard() {
+            boardEl.innerHTML = '';
+            const board = STATE.boards[STATE.round];
+            board.forEach((slot, idx) => {
+                const el = document.createElement('div'); el.className = 'card'; el.dataset.idx = idx;
+                const idSpan = document.createElement('div'); idSpan.className = 'id'; idSpan.innerText = idx + 1; el.appendChild(idSpan);
+                const face = document.createElement('div'); face.className = 'face';
+                if (slot.revealed) {
+                    if (slot.type === 'money') face.innerText = slot.value + "¢";
+                    else if (slot.type === 'power-token') face.innerText = '🔹 Token';
+                    else if (slot.type === 'empty') face.innerText = '—';
+                    else if (slot.type === 'powerup') face.innerText = slot.power.name;
+                    else if (slot.type === 'points') face.innerText = slot.value + ' pt';
+                    else if (slot.type === 'mult') face.innerText = 'x2';
+                    if (slot.modifiedBy) { const m = document.createElement('div'); m.className = 'small-muted'; m.style.fontSize = '12px'; m.innerText = slot.modifiedBy; el.appendChild(m); }
+                } else {
+                    // Use image for unrevealed briefcase
+                    const img = document.createElement('img');
+                    img.src = 'images/briefcase.png';
+                    img.alt = 'Briefcase';
+                    img.style.width = '90px';    // adjust size as needed
+                    img.style.height = '90px';
+                    face.appendChild(img);
+                }
+                el.appendChild(face);
+                if (slot.picked) {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'picked-overlay';
+
+                    // Determine team color class
+                    const teamClass = slot.ownerName === 'Team A' ? 'teamA' : 'teamB';
+
+                    overlay.innerHTML = `
+        <div style="text-align:center">
+            <div style="font-weight:800;font-size:14px;">Picked</div>
+            <div class="pick-label ${teamClass}">
+                by ${slot.ownerName || '—'}
+            </div>
+        </div>`;
+                    el.appendChild(overlay);
+                }
+
+
+                // only allow click if round started and still picking phase
+                el.addEventListener('click', () => {
+                    if (!STARTED_THIS_ROUND) { return; }
+                    onSlotClick(idx);
+                });
+                boardEl.appendChild(el);
+            });
+        }
+
+        function renderTeams() {
+            teamABox.innerHTML = `<h3 style="color:var(--accent)">Team A</h3>
+        <div class="small">Money: ${STATE.teams[0].money}¢</div>
+        <div class="small">Picks: ${STATE.teams[0].picks.length}/${STATE.teams[0].pickLimit || 5}</div>
+        <div style="margin-top:6px"><strong>Inventory</strong>
+            <div class="powers">${STATE.teams[0].inventory.map(p => `<div class="power">${p.name} (${p.cost})</div>`).join('') || '<span class="small-muted">—</span>'}
+            </div>
+        </div>`;
+
+            teamBBox.innerHTML = `<h3 style="color:var(--accent2)">Team B</h3>
+        <div class="small">Money: ${STATE.teams[1].money}¢</div>
+        <div class="small">Picks: ${STATE.teams[1].picks.length}/${STATE.teams[1].pickLimit || 5}</div>
+        <div style="margin-top:6px"><strong>Inventory</strong>
+            <div class="powers">${STATE.teams[1].inventory.map(p => `<div class="power">${p.name} (${p.cost})</div>`).join('') || '<span class="small-muted">—</span>'}
+            </div>
+        </div>`;
+
+            turnLabel.innerText = STATE.teams[STATE.activeTeam].name;
+
+            // reset classes first
+            turnLabel.classList.remove('teamA', 'teamB');
+            turnLabel.classList.add('turn-label');
+
+            // apply team-specific glow
+            if (STATE.activeTeam === 0) {
+                turnLabel.classList.add('teamA');
+            } else {
+                turnLabel.classList.add('teamB');
+            }
+
+        }
+
+
+        function onSlotClick(idx) {
+            const slot = STATE.boards[STATE.round][idx];
+            if (STATE.step !== 'picking') { return; }
+            if (slot.picked) return;
+            if (!STARTED_THIS_ROUND) return; // must press Start Round to enable picks
+            // handle pick action
+            doPick(idx);
+        }
+
+        function doPick(idx) {
+            const team = STATE.teams[STATE.activeTeam];
+            const board = STATE.boards[STATE.round];
+            const slot = board[idx];
+            slot.picked = true; slot.owner = STATE.activeTeam; slot.ownerName = team.name;
+
+            // behavior depends on round
+            if (STATE.round === 1) {
+                // don't reveal now
+                // mark and advance
+                team.picks.push({ slot: idx, revealed: false });
+                STATE.turnPickIndex++;
+                nextTurnOrPhase();
+            } else if (STATE.round === 2) {
+                // reveal to picking team only
+                slot.revealed = true;
+                if (slot.type === 'powerup') {
+                    // show modal to let them buy or pass
+                    showPrivateModal(STATE.activeTeam, `${slot.power.name} — ${slot.power.desc}<br>Cost: ${slot.power.cost}¢`, {
+                        buttons: [{ label: 'Buy', action: () => { buyPowerUpForTeam(STATE.activeTeam, slot.power); slot.ownerPower = slot.power; modalHide(); finalizePickPostReveal(idx); } }, { label: 'Pass', action: () => { modalHide(); finalizePickPostReveal(idx); } }]
+                    });
+                } else if (slot.type === 'empty') {
+                    showPrivateModal(STATE.activeTeam, `Empty case. No power-up.`, { buttons: [{ label: 'OK', action: () => { modalHide(); finalizePickPostReveal(idx); } }] });
+                }
+            } else if (STATE.round === 3) {
+                // final round picks: do not reveal to other team; reveal only to picker as feedback
+                slot.revealed = true; // visible to picker in private modal
+                team.picks.push({ slot: idx, revealed: true });
+                showPrivateModal(STATE.activeTeam, `You picked slot ${idx + 1}.`, { buttons: [{ label: 'OK', action: () => { modalHide(); finalizePickPostReveal(idx); } }] });
+            }
+            startTimerForNext();
+            renderAll();
+        }
+
+        function finalizePickPostReveal(idx) {
+            STATE.turnPickIndex++;
+            nextTurnOrPhase();
+        }
+
+        function buyPowerUpForTeam(teamIdx, power) {
+            const t = STATE.teams[teamIdx];
+            if (t.money >= power.cost) { t.money -= power.cost; t.inventory.push({ ...power }); } else {
+                // can't buy
+            }
+        }
+
+        function nextTurnOrPhase() {
+            // determine turn switch and phase transitions
+            STATE.teams.forEach(t => { if (!t.pickLimit) t.pickLimit = 5; });
+
+            // check if round finished
+            const picksMade = STATE.boards[STATE.round].filter(s => s.picked).length;
+            const totalAllowed = STATE.teams.reduce((acc, t) => acc + (t.pickLimit), 0);
+            if (picksMade >= totalAllowed) {
+                // round finished
+                STARTED_THIS_ROUND = false; // stop round and show start button for next
+                updateStartButtonVisibility();
+                if (STATE.round === 1) {
+                    // show private reveal for each team sequentially
+                    STATE.step = 'revealA';
+                    showTeamReveal(0);
+                } else if (STATE.round === 2) {
+                    // after powerup picks done -> proceed to round3
+                    STATE.round = 3; STATE.step = 'picking'; STATE.turnPickIndex = 0;
+                    // set pick limits maybe modified by pickpocket powerups
+                    STATE.teams.forEach(t => { t.pickLimit = 5 + (t.inventory.filter(p => p.id === 'pickpocket').length > 0 ? 1 : 0); });
+                    renderAll();
+                } else if (STATE.round === 3) {
+                    // final picks done -> post-pick powerup phase
+                    STATE.step = 'postplay';
+                    // allow teams to use post-pick powers sequentially (not fully automated)
+                    showPostPlayMenu();
+                }
+                return;
+            }
+
+            // alternate strictly: if the other team has picks remaining, switch to other; otherwise keep current
+            const other = 1 - STATE.activeTeam;
+            if (STATE.teams[other].picks.length < STATE.teams[other].pickLimit) {
+                STATE.activeTeam = other;
+            } else if (STATE.teams[STATE.activeTeam].picks.length < STATE.teams[STATE.activeTeam].pickLimit) {
+                // keep same
+            } else {
+                // fallback: find any with remaining
+                const next = STATE.teams.findIndex(t => t.picks.length < t.pickLimit);
+                if (next >= 0) STATE.activeTeam = next;
+            }
+            renderAll();
+        }
+
+        function showTeamReveal(teamIdx) {
+            const t = STATE.teams[teamIdx];
+            const picks = STATE.boards[1].filter(s => s.owner === teamIdx);
+
+            // Step 1: Show modal with just "Reveal" button
+            let html = `<div><strong>${t.name} — Private Reveal</strong></div>
+                <div style="margin-top:8px" id="revealContent"></div>`;
+
+            showPrivateModal(teamIdx, html, {
+                buttons: [
+                    {
+                        label: 'Reveal',
+                        action: () => {
+                            // Step 2: Reveal the picked briefcases
+                            let total = 0;
+                            let contentHtml = '<ul style="margin-top:6px">';
+                            picks.forEach(p => {
+                                let text = '';
+                                if (p.type === 'money') { text = `${p.value}¢`; total += p.value; }
+                                else if (p.type === 'empty') text = 'Empty';
+                                else if (p.type === 'power-token') text = 'Power Token';
+                                // Use "Case #" instead of NaN
+                                contentHtml += `<li>Case ${p.id + 1}: ${text}</li>`;
+                            });
+                            contentHtml += `</ul><div style="margin-top:6px"><strong>Total: ${total}¢</strong></div>`;
+                            document.getElementById('revealContent').innerHTML = contentHtml;
+
+                            STATE.teams[teamIdx].money = total; // assign money
+
+                            // Step 3: Replace buttons with only "Done"
+                            const btnArea = modalContent.querySelector('div'); // the button container
+                            btnArea.innerHTML = ''; // remove previous Reveal button
+                            const doneBtn = document.createElement('button');
+                            doneBtn.className = 'btn';
+                            doneBtn.innerText = 'Done — Pass Device';
+                            doneBtn.onclick = () => {
+                                modalHide();
+                                // Step 4: Show next team's reveal if first team
+                                if (teamIdx === 0) {
+                                    setTimeout(() => showTeamReveal(1), 200); // small delay for smooth transition
+                                } else {
+                                    // After Team B done, proceed to round 2
+                                    STATE.round = 2;
+                                    STATE.step = 'picking';
+                                    STATE.turnPickIndex = 0;
+                                    STARTED_THIS_ROUND = false;
+                                    renderAll();
+                                }
+                            };
+                            btnArea.appendChild(doneBtn);
+
+                        }
+                    }
+                ]
+            });
+        }
+
+
+
+        function showPrivateModal(teamIdx, htmlContent, opts = {}) {
+            // modalTitle.innerText = `${STATE.teams[teamIdx].name} — Private Reveallll`;
+            modalTitle.innerText = `Private Reveal`;
+            modalContent.innerHTML = htmlContent + '<div style="height:8px"></div>';
+            // add buttons
+            const btnArea = document.createElement('div'); btnArea.style.display = 'flex'; btnArea.style.justifyContent = 'flex-end'; btnArea.style.gap = '8px';
+            if (opts.buttons) { opts.buttons.forEach(b => { const el = document.createElement('button'); el.className = 'btn'; el.innerText = b.label; el.onclick = b.action; btnArea.appendChild(el); }); }
+            modalContent.appendChild(btnArea);
+            modal.classList.remove('hidden');
+            stopTimer();
+            if (opts.onShow) opts.onShow();
+        }
+        function modalHide() { modal.classList.add('hidden'); startTimerForNext(); }
+
+
+        function startTimerForNext() {
+            stopTimer(); // start only if the round has been started by Start Round button
+            if (!STARTED_THIS_ROUND) return; let time = PICK_TIME; turnTimer.innerText = time + 's'; timerInterval = setInterval(() => {
+                time--; if (time <= 0) {
+                    clearInterval(timerInterval); turnTimer.innerText = '0s'; // auto-skip: try to simulate a pass
+                    // if in picking round, auto-skip by passing pick (pick random available)
+                    if (STATE.step === 'picking') { autoPickForActive(); }
+                } else turnTimer.innerText = time + 's';
+            }, 1000);
+        }
+        function stopTimer() { if (timerInterval) clearInterval(timerInterval); timerInterval = null; turnTimer.innerText = '15s'; }
+
+        function autoPickForActive() { // pick random available slot
+            const avail = STATE.boards[STATE.round].map((s, i) => ({ s, i })).filter(x => !x.s.picked);
+            if (avail.length === 0) return;
+            const choice = randChoice(avail).i;
+            doPick(choice);
+        }
+
+        function showPostPlayMenu() {
+            // For prototype, show simple menu letting each team use one post power sequentially
+            STATE.postPlayIndex = 0;
+            nextPostPlayAction();
+        }
+
+        function nextPostPlayAction() {
+            if (STATE.postPlayIndex >= 2) { // both done
+                finalizeGame(); return;
+            }
+            const teamIdx = STATE.postPlayIndex; // team A then B
+            const t = STATE.teams[teamIdx];
+            // show their inventory and let them pick a post power to use if any
+            let html = `<div><strong>${t.name} — Post-play</strong></div><div style="margin-top:8px">Inventory:<div class="powers">${t.inventory.map((p, i) => `<div class="power">${p.name} <button class="btn" data-idx="${i}">Use</button></div>`).join('') || '<div class="small-muted">No power-ups</div>'}</div></div>`;
+            html += `<div style="margin-top:8px"><button class="btn" id="skipPost">Skip</button></div>`;
+            showPrivateModal(teamIdx, html, {
+                onShow: () => {
+                    modalContent.querySelectorAll('button[data-idx]').forEach(btn => btn.addEventListener('click', (e) => {
+                        const idx = Number(btn.dataset.idx); usePowerPost(teamIdx, idx); modalHide(); STATE.postPlayIndex++; setTimeout(nextPostPlayAction, 300);
+                    }));
+                    const skip = document.getElementById('skipPost'); skip.addEventListener('click', () => { modalHide(); STATE.postPlayIndex++; setTimeout(nextPostPlayAction, 300); });
+                }
+            });
+        }
+
+        function usePowerPost(teamIdx, invIdx) {
+            const t = STATE.teams[teamIdx];
+            const p = t.inventory[invIdx];
+            if (!p) return;
+            if (p.id === 'steal') {
+                const opp = STATE.teams[1 - teamIdx];
+                if (opp.picks.length === 0) return;
+                const stolen = opp.picks.pop();
+                t.picks.push(stolen);
+                alert(`${t.name} stole a briefcase from ${opp.name}`);
+                t.inventory.splice(invIdx, 1);
+            } else if (p.id === 'swap') {
+                const opp = STATE.teams[1 - teamIdx];
+                if (opp.picks.length === 0 || t.picks.length === 0) return;
+                const a = t.picks.pop(); const b = opp.picks.pop(); t.picks.push(b); opp.picks.push(a);
+                alert(`${t.name} swapped a briefcase.`);
+                t.inventory.splice(invIdx, 1);
+            } else if (p.id === 'invert') {
+                const opp = STATE.teams[1 - teamIdx];
+                if (opp.picks.length === 0) return; const target = opp.picks[0]; const slot = STATE.boards[3][target.slot]; slot.modifiedBy = 'Inverted'; slot.value = (slot.value || 0) * -1; t.inventory.splice(invIdx, 1);
+                alert(`${t.name} inverted one opponent case.`);
+            } else if (p.id === 'forcereveal') {
+                const opp = STATE.teams[1 - teamIdx]; if (opp.inventory.length > 0) { const stolen = opp.inventory[0]; alert(`${t.name} forced reveal: opponent has ${stolen.name}`); } else alert('Opponent has no inventory'); t.inventory.splice(invIdx, 1);
+            } else if (p.id === 'shield') {
+                if (t.picks.length === 0) return; const target = t.picks[0]; t.shielded.push(target.slot); alert(`${t.name} shielded slot ${target.slot + 1}`); t.inventory.splice(invIdx, 1);
+            } else if (p.id === 'hammer') {
+                const opp = STATE.teams[1 - teamIdx]; if (opp.shielded.length === 0) { alert('No shielded opponent cases'); return; }
+                const sh = opp.shielded.pop();
+                const pickIndex = opp.picks.findIndex(x => x.slot === sh);
+                if (pickIndex >= 0) { const stolen = opp.picks.splice(pickIndex, 1)[0]; t.picks.push(stolen); alert(`${t.name} hammered and stole slot ${sh + 1}`); }
+                t.inventory.splice(invIdx, 1);
+            } else if (p.id === 'powersteal') {
+                const opp = STATE.teams[1 - teamIdx]; if (opp.inventory.length > 0) { const idx = Math.floor(Math.random() * opp.inventory.length); const st = opp.inventory.splice(idx, 1)[0]; t.inventory.push(st); alert(`${t.name} stole ${st.name} from opponent!`); } else alert('Opponent had no power-ups'); t.inventory.splice(invIdx, 1);
+            }
+            renderAll();
+        }
+
+        function finalizeGame() {
+            // reveal all final round slots
+            const b = STATE.boards[3];
+            b.forEach(s => s.revealed = true);
+            // compute points from picks
+            STATE.teams.forEach((t, ti) => {
+                let pts = 0;
+                t.picks.forEach(p => {
+                    const slot = b[p.slot];
+                    if (slot.type === 'points') { pts += (slot.value || 0); }
+                    else if (slot.type === 'mult') { pts += 2; }
+                    if (slot.modifiedBy === 'Inverted') pts += 0;
+                });
+                pts += Math.floor(t.money / 1000);
+                t.points = pts;
+            });
+            let resHtml = `<div><strong>Final Results</strong></div>`;
+            STATE.teams.forEach(t => resHtml += `<div style="margin-top:6px"><strong>${t.name}</strong> – Points: ${t.points}</div>`);
+            const winner = STATE.teams[0].points > STATE.teams[1].points ? STATE.teams[0].name : STATE.teams[1].points > STATE.teams[0].points ? STATE.teams[1].name : 'Tie';
+            resHtml += `<div style="margin-top:10px;font-size:18px">Winner: ${winner}</div>`;
+            showPrivateModal(0, resHtml, { buttons: [{ label: 'Close', action: () => { modalHide(); } }] });
+            renderAll();
+        }
+
+        // Start Round button behavior
+        const startBtn = document.getElementById('startRoundBtn');
+        startBtn.addEventListener('click', () => {
+            STARTED_THIS_ROUND = true; startBtn.style.display = 'none'; startTimerForNext(); infoText.innerText = `${STATE.teams[STATE.activeTeam].name}'s turn to pick`;
+        });
+
+        function updateStartButtonVisibility() {
+            const startBtn = document.getElementById('startRoundBtn');
+            const picksMade = STATE.boards[STATE.round].filter(s => s.picked).length;
+            if (STATE.step === 'picking' && picksMade === 0 && !STARTED_THIS_ROUND) { startBtn.style.display = 'inline-block'; } else { startBtn.style.display = 'none'; }
+        }
+
+        restartBtn.addEventListener('click', () => { newGame(); });
+
+        newGame();
+        // initial: do not auto-start timer; wait for Start Round
+
+    </script>
+</body>
+
+</html>
