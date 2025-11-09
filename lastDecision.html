@@ -251,6 +251,42 @@
             color: var(--accent2);
             text-shadow: 0 0 8px rgba(255, 123, 107, 0.8), 0 0 15px rgba(255, 123, 107, 0.6);
         }
+
+        /* Epic "Done — Pass Device" button styling */
+        .btn-done {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            color: white;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            box-shadow: 0 0 10px rgba(31, 182, 255, 0.6), 0 0 20px rgba(255, 123, 107, 0.4);
+            animation: pulseGlow 1.8s infinite ease-in-out;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-done:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 20px rgba(31, 182, 255, 0.9), 0 0 30px rgba(255, 123, 107, 0.8);
+            filter: brightness(1.2);
+        }
+
+        @keyframes pulseGlow {
+            0% {
+                box-shadow: 0 0 10px rgba(31, 182, 255, 0.6), 0 0 20px rgba(255, 123, 107, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 25px rgba(31, 182, 255, 0.9), 0 0 35px rgba(255, 123, 107, 0.8);
+            }
+
+            100% {
+                box-shadow: 0 0 10px rgba(31, 182, 255, 0.6), 0 0 20px rgba(255, 123, 107, 0.4);
+            }
+        }
     </style>
 </head>
 
@@ -643,8 +679,9 @@
                             const btnArea = modalContent.querySelector('div'); // the button container
                             btnArea.innerHTML = ''; // remove previous Reveal button
                             const doneBtn = document.createElement('button');
-                            doneBtn.className = 'btn';
-                            doneBtn.innerText = 'Done — Pass Device';
+                            doneBtn.className = 'btn btn-done';
+                            doneBtn.innerHTML = '✅ Done — <span style="opacity:0.9">Pass Device</span>';
+
                             doneBtn.onclick = () => {
                                 modalHide();
                                 // Step 4: Show next team's reveal if first team

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wheel of Chaos</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            /* Background image with gradient overlay */
+            background: linear-gradient(to bottom right, rgba(255, 154, 158, 0.1), rgba(250, 208, 196, 0.1)),
+                url('images/wheelBackground.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        /* Ultra Cool H1 Title */
+        h1 {
+            font-size: 4em;
+            font-family: 'Orbitron', sans-serif;
+            /* futuristic/game font */
+            font-weight: 900;
+            background: linear-gradient(270deg, #ff416c, #ff4b2b, #ffdd57, #33ffdd, #3357ff, #8f33ff);
+            background-size: 1200% 1200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientAnimation 8s ease infinite, glowPulse 2s ease-in-out infinite alternate;
+            text-align: center;
+            text-shadow: 0 0 10px #fff, 0 0 20px #ff416c, 0 0 30px #ff4b2b, 0 0 40px #ffdd57, 0 0 50px #33ffdd;
+            margin-top: 20px;
+        }
+
+        /* Smooth gradient movement */
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Glowing pulse effect */
+        @keyframes glowPulse {
+            0% {
+                text-shadow: 0 0 10px #fff, 0 0 20px #ff416c, 0 0 30px #ff4b2b, 0 0 40px #ffdd57;
+            }
+
+            100% {
+                text-shadow: 0 0 20px #fff, 0 0 40px #ff416c, 0 0 60px #ff4b2b, 0 0 80px #ffdd57;
+            }
+        }
+
+
+        #setup,
+        #game,
+        #modalOverlay {
+            width: 90%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        /* Cool Number of Players Label */
+        #setup label {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+            margin-right: 15px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        #setup label:hover {
+            color: #ffdd57;
+            transform: scale(1.1);
+        }
+
+        /* Cool Start Game Button */
+        #startBtn {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+        }
+
+        #startBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(45deg, #ff4b2b, #ff416c);
+        }
+
+        #startBtn:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+
+
+        select,
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            margin: 10px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #wheelCanvas {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            touch-action: manipulation;
+            margin-top: 20px;
+        }
+
+        #wheelContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            /* space from top if needed */
+        }
+
+        #spinBtn {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b, #ffdd57);
+            font-size: 1.5em;
+            /* smaller than before */
+            font-weight: bold;
+            color: #fff;
+            padding: 15px 30px;
+            /* slightly smaller */
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 65, 108, 0.6), 0 6px 20px rgba(255, 221, 87, 0.6);
+            transition: all 0.3s ease;
+            animation: pulseSpin 1.5s infinite alternate;
+            margin-top: 30px;
+            /* space between wheel and button */
+        }
+
+        #spinBtn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 10px 30px rgba(255, 65, 108, 0.8), 0 10px 30px rgba(255, 221, 87, 0.8);
+        }
+
+        #spinBtn:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(255, 65, 108, 0.5), 0 4px 15px rgba(255, 221, 87, 0.5);
+        }
+
+        @keyframes pulseSpin {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.05);
+            }
+        }
+
+
+
+        #modalOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #modal {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 90%;
+            box-shadow: 0 0 20px #000;
+        }
+
+        #modal button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 10px;
+        }
+
+        #timer {
+            font-size: 2em;
+            margin-top: 10px;
+            color: #e74c3c;
+        }
+
+        /* Container for player lives in top-right corner */
+        #playerLives {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            /* stack vertically */
+            align-items: flex-end;
+            gap: 10px;
+            /* space between lives */
+            z-index: 50;
+        }
+
+        /* Individual player life boxes */
+        .playerLife {
+            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            cursor: default;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* Hover effect: lift and glow */
+        .playerLife:hover {
+            transform: translateX(5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 75, 43, 0.6), 0 8px 25px rgba(255, 65, 108, 0.6);
+        }
+
+
+        @keyframes pulseHeart {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.3);
+            }
+        }
+
+
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 200;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Wheel of Chaos</h1>
+
+    <div id="setup">
+        <label for="numPlayers">Number of Players: </label>
+        <select id="numPlayers">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+        <button id="startBtn">Start Game</button>
+    </div>
+
+    <div id="game" style="display:none;">
+        <div id="wheelContainer" style="position: relative; width: 100%; max-width: 500px; margin: 0 auto;">
+            <canvas id="wheelCanvas"></canvas>
+            <button id="spinBtn">SPIN</button>
+        </div>
+        <div id="playerLives"></div>
+    </div>
+
+    <canvas id="confettiCanvas"></canvas>
+
+    <div id="modalOverlay">
+        <div id="modal">
+            <div id="modalContent"></div>
+            <div id="modalButtons"></div>
+        </div>
+    </div>
+
+    <script>
+        const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#FF8F33", "#8F33FF", "#33FFF3", "#FF3333", "#33FF8F", "#FFD433"];
+        let players = [];
+        let currentPlayerIndex = null;
+        let wheelRotation = 0;
+        let spinning = false;
+        let numPlayers = 0;
+
+        const wheelCanvas = document.getElementById('wheelCanvas');
+        const ctx = wheelCanvas.getContext('2d');
+
+        const confettiCanvas = document.getElementById('confettiCanvas');
+        const confettiCtx = confettiCanvas.getContext('2d');
+        let confettiParticles = [];
+
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalContent = document.getElementById('modalContent');
+        const modalButtons = document.getElementById('modalButtons');
+        const playerLivesDiv = document.getElementById('playerLives');
+
+        function resizeCanvas() {
+            wheelCanvas.width = wheelCanvas.offsetWidth;
+            wheelCanvas.height = wheelCanvas.offsetWidth;
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            drawWheel();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            numPlayers = parseInt(document.getElementById('numPlayers').value);
+            players = [];
+            for (let i = 1; i <= numPlayers; i++) {
+                players.push({ name: "Player " + i, lives: 3 });
+            }
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            updateLives();
+            resizeCanvas();
+        });
+
+        document.getElementById('spinBtn').addEventListener('click', () => {
+            if (spinning) return;
+            spinning = true;
+            let spins = Math.random() * 360 + 720;
+            let duration = 3000;
+            let start = null;
+            let initialRotation = wheelRotation;
+
+            function animate(timestamp) {
+                if (!start) start = timestamp;
+                let progress = timestamp - start;
+                let ease = 1 - Math.pow(1 - progress / duration, 3);
+                wheelRotation = initialRotation + spins * ease;
+                drawWheel();
+                if (progress < duration) {
+                    requestAnimationFrame(animate);
+                } else {
+                    wheelRotation %= 360;
+                    determineWinner();
+                    spinning = false;
+                }
+            }
+            requestAnimationFrame(animate);
+        });
+
+         function drawWheel() {
+            const cx = wheelCanvas.width / 2;
+            const cy = wheelCanvas.height / 2;
+            const radius = wheelCanvas.width / 2 - 10;
+            ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+            const sliceAngle = 2 * Math.PI / players.length;
+
+            for (let i = 0; i < players.length; i++) {
+                // 3D shading for slice
+                let grad = ctx.createRadialGradient(cx, cy, radius * 0.3, cx, cy, radius);
+                grad.addColorStop(0, colors[i % colors.length]);
+                grad.addColorStop(1, shadeColor(colors[i % colors.length], -20));
+                ctx.fillStyle = grad;
+
+                function shadeColor(color, percent) {
+                    let f = parseInt(color.slice(1), 16),
+                        t = percent < 0 ? 0 : 255,
+                        p = Math.abs(percent) / 100,
+                        R = f >> 16,
+                        G = f >> 8 & 0x00FF,
+                        B = f & 0x0000FF;
+                    return "#" + (0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 + (Math.round((t - G) * p) + G) * 0x100 + (Math.round((t - B) * p) + B)).toString(16).slice(1);
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, radius, i * sliceAngle + wheelRotation * Math.PI / 180, (i + 1) * sliceAngle + wheelRotation * Math.PI / 180);
+                ctx.closePath();
+                ctx.fill();
+
+                // ----- Cool Player Labels -----
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(i * sliceAngle + sliceAngle / 2 + wheelRotation * Math.PI / 180);
+
+                // Text settings
+                ctx.font = `${radius / 10}px Orbitron, Arial`;
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+
+               // Neon gradient
+                let gradient = ctx.createLinearGradient(radius - 10, -20, radius - 10, 20);
+                gradient.addColorStop(0, "#ff416c");
+                gradient.addColorStop(0.5, "#ffdd57");
+                gradient.addColorStop(1, "#33ffdd");
+                ctx.fillStyle = gradient;
+
+                // Glow and outline
+                ctx.shadowColor = "#ffffff";
+                ctx.shadowBlur = 10;
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#000000"; // subtle outline
+                ctx.strokeText(players[i].name, radius - 10, 0);
+                ctx.fillText(players[i].name, radius - 10, 0);
+
+                ctx.restore();
+            }
+
+            drawArrow();
+        }
+
+
+        function determineWinner() {
+            const sliceAngle = 360 / players.length;
+            // Calculate which slice the arrow is pointing at
+            let arrowAngle = 270; // top of the wheel
+            let adjustedRotation = (wheelRotation % 360 + 360) % 360; // ensure 0-360
+            let angleUnderArrow = (arrowAngle - adjustedRotation + 360) % 360;
+            let index = Math.floor(angleUnderArrow / sliceAngle);
+            currentPlayerIndex = index;
+            showChoiceModal(players[index]);
+        }
+
+        function drawArrow() {
+            const cx = wheelCanvas.width / 2;
+            const cy = wheelCanvas.height / 2;
+            const radius = wheelCanvas.width / 2 - 15;
+
+            ctx.fillStyle = "#000";
+            ctx.beginPath();
+            // Arrow pointing downward, just above the top of the wheel
+            ctx.moveTo(cx, cy - radius - 15);     // tip of the arrow (down)
+            ctx.lineTo(cx - 15, cy - radius + 25); // left corner
+            ctx.lineTo(cx + 15, cy - radius); // right corner
+            ctx.closePath();
+            ctx.fill();
+        }
+
+
+
+
+
+        function showChoiceModal(player) {
+            modalContent.innerHTML = `<h2>${player.name}, choose:</h2>`;
+            modalButtons.innerHTML = `
+    <button onclick="chooseOption('task')">Task</button>
+    <button onclick="chooseOption('question')">Question</button>
+  `;
+            modalOverlay.style.display = 'flex';
+            document.getElementById('spinBtn').style.display = 'none';
+
+        }
+
+        async function chooseOption(option) {
+            modalContent.innerHTML = `<p>Loading...</p>`;
+            modalButtons.innerHTML = '';
+            const data = await fetch(option === 'task' ? 'wheelTasks.json' : 'wheelQuestions.json').then(r => r.json());
+            const item = data[Math.floor(Math.random() * data.length)];
+            startTimer(item, option);
+        }
+
+        let timerInterval;
+
+        function startTimer(item, option) {
+            let time = item.time;
+            modalContent.innerHTML = `<p>${option === 'task' ? item.task : item.question}</p><div id="timer">${time}</div>`;
+            modalButtons.innerHTML = `<button onclick="doneEarly()">Done</button>`;
+            const timerDiv = document.getElementById('timer');
+
+            timerInterval = setInterval(() => {
+                time--;
+                timerDiv.textContent = time;
+                if (time <= 0) {
+                    clearInterval(timerInterval);
+                    showResultModal();
+                }
+            }, 1000);
+        }
+
+        function doneEarly() {
+            clearInterval(timerInterval);
+            showResultModal();
+        }
+
+        function showResultModal() {
+            modalContent.innerHTML = `<h3>Did ${players[currentPlayerIndex].name} succeed?</h3>`;
+            modalButtons.innerHTML = `
+    <button onclick="result(true)">Success</button>
+    <button onclick="result(false)">Fail</button>
+  `;
+        }
+
+        function result(success) {
+            modalOverlay.style.display = 'none';
+            document.getElementById('spinBtn').style.display = 'block'; // Show spin button again
+            if (success) {
+                startConfetti();
+            } else {
+                players[currentPlayerIndex].lives--;
+                if (players[currentPlayerIndex].lives <= 0) {
+                    players.splice(currentPlayerIndex, 1);
+                }
+            }
+            updateLives();
+            if (players.length === 1) {
+                alert(players[0].name + " wins the Wheel of Chaos!");
+                location.reload();
+            }
+        }
+
+        function updateLives() {
+            playerLivesDiv.innerHTML = '';
+            players.forEach(p => {
+                let hearts = '❤️'.repeat(p.lives); // repeat heart for current lives
+                playerLivesDiv.innerHTML += `<div class="playerLife">${p.name}: ${hearts}</div>`;
+            });
+        }
+
+
+        // -------------------- Confetti --------------------
+        function startConfetti() {
+            confettiParticles = [];
+            for (let i = 0; i < 150; i++) {
+                confettiParticles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    r: Math.random() * 6 + 4,
+                    d: Math.random() * 150 + 50,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.random() * 10 - 10,
+                    tiltAngleIncrement: Math.random() * 0.07 + 0.05,
+                    tiltAngle: 0
+                });
+            }
+            requestAnimationFrame(drawConfetti);
+            setTimeout(() => { confettiParticles = []; }, 3000);
+        }
+
+        function drawConfetti() {
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            for (let i = 0; i < confettiParticles.length; i++) {
+                let p = confettiParticles[i];
+                confettiCtx.beginPath();
+                confettiCtx.lineWidth = p.r;
+                confettiCtx.strokeStyle = p.color;
+                confettiCtx.moveTo(p.x + p.tilt + p.r / 2, p.y);
+                confettiCtx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 2);
+                confettiCtx.stroke();
+                p.tiltAngle += p.tiltAngleIncrement;
+                p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+                p.x += Math.sin(p.d);
+            }
+            if (confettiParticles.length > 0) {
+                requestAnimationFrame(drawConfetti);
+            }
+        }
+    </script>
+</body>
+
+</html>
