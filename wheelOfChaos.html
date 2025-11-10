@@ -197,21 +197,73 @@
             z-index: 100;
         }
 
+        /* --- COOLER PLAYER CHOICE MODAL --- */
         #modal {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
+            background: rgba(15, 15, 20, 0.95);
+            border-radius: 20px;
+            padding: 30px 25px;
             text-align: center;
-            max-width: 90%;
-            box-shadow: 0 0 20px #000;
+            box-shadow: 0 0 30px rgba(255, 65, 108, 0.6), inset 0 0 20px rgba(51, 87, 255, 0.3);
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(15, 15, 20, 0.95), rgba(15, 15, 20, 0.95)),
+                linear-gradient(135deg, #ff416c, #ffdd57, #33ffdd, #3357ff);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            animation: floatModal 3s ease-in-out infinite alternate, fadeIn 0.4s ease;
+        }
+
+        @keyframes floatModal {
+            0% {
+                transform: translateY(0px);
+            }
+
+            100% {
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        #modal h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8em;
+            color: #fff;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #33ffdd, 0 0 20px #ff416c;
+            letter-spacing: 1px;
         }
 
         #modal button {
+            background: linear-gradient(45deg, #ff416c, #ffdd57, #33ffdd);
+            background-size: 200% 200%;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            padding: 12px 30px;
+            border-radius: 15px;
             margin: 10px;
-            padding: 10px 20px;
-            font-size: 1em;
-            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(255, 221, 87, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-position 0.5s;
+            cursor: pointer;
         }
+
+        #modal button:hover {
+            background-position: 100% 0%;
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(255, 65, 108, 0.7), 0 0 25px rgba(51, 255, 221, 0.6);
+        }
+
 
         #timer {
             font-size: 2em;
@@ -275,6 +327,25 @@
             pointer-events: none;
             z-index: 200;
         }
+
+        /* Make modal text white and readable */
+        #modal p,
+        #modal h3 {
+            color: #fff;
+            font-size: 1.2em;
+            line-height: 1.5em;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+        }
+
+        /* Slightly bigger and bolder for the "Did player succeed?" prompt */
+        #modal h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 0 0 10px #ff416c, 0 0 20px #33ffdd;
+        }
     </style>
 </head>
 
@@ -314,6 +385,13 @@
             <div id="modalButtons"></div>
         </div>
     </div>
+
+    <audio id="spinSound" src="sounds/wheelSpin.mp3" preload="auto"></audio>
+    <audio id="modalSound" src="sounds/event.wav" preload="auto"></audio>
+    <audio id="successSound" src="sounds/correct.wav" preload="auto"></audio>
+    <audio id="failSound" src="sounds/lifeLost.wav" preload="auto"></audio>
+    <audio id="clickSound" src="sounds/click.wav" preload="auto"></audio>
+
 
     <script>
         const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A1", "#FF8F33", "#8F33FF", "#33FFF3", "#FF3333", "#33FF8F", "#FFD433"];
@@ -360,6 +438,14 @@
         document.getElementById('spinBtn').addEventListener('click', () => {
             if (spinning) return;
             spinning = true;
+            spinSound.currentTime = 0;  // start from beginning
+            spinSound.play().catch(() => { });
+
+            // Stop sound after 3 seconds
+            setTimeout(() => {
+                spinSound.pause();
+            }, 2700);
+
             let spins = Math.random() * 360 + 720;
             let duration = 3000;
             let start = null;
@@ -382,7 +468,7 @@
             requestAnimationFrame(animate);
         });
 
-         function drawWheel() {
+        function drawWheel() {
             const cx = wheelCanvas.width / 2;
             const cy = wheelCanvas.height / 2;
             const radius = wheelCanvas.width / 2 - 10;
@@ -423,7 +509,7 @@
                 ctx.textAlign = "right";
                 ctx.textBaseline = "middle";
 
-               // Neon gradient
+                // Neon gradient
                 let gradient = ctx.createLinearGradient(radius - 10, -20, radius - 10, 20);
                 gradient.addColorStop(0, "#ff416c");
                 gradient.addColorStop(0.5, "#ffdd57");
@@ -476,15 +562,20 @@
 
 
         function showChoiceModal(player) {
-            modalContent.innerHTML = `<h2>${player.name}, choose:</h2>`;
+            // 🎵 Play modal sound
+            const modalSound = document.getElementById('modalSound');
+            modalSound.currentTime = 0; // start from beginning
+            modalSound.play().catch(() => { });
+            modalContent.innerHTML = `
+        <h2>🎯 ${player.name}, Choose!</h2>`;
             modalButtons.innerHTML = `
-    <button onclick="chooseOption('task')">Task</button>
-    <button onclick="chooseOption('question')">Question</button>
-  `;
+        <button onclick="chooseOption('task')">🔥 Task</button>
+        <button onclick="chooseOption('question')">🧠 Question</button>
+    `;
             modalOverlay.style.display = 'flex';
             document.getElementById('spinBtn').style.display = 'none';
-
         }
+
 
         async function chooseOption(option) {
             modalContent.innerHTML = `<p>Loading...</p>`;
@@ -513,9 +604,15 @@
         }
 
         function doneEarly() {
+            // 🎵 Play click sound
+            const clickSound = document.getElementById('clickSound');
+            clickSound.currentTime = 0;
+            clickSound.play().catch(() => { });
+
             clearInterval(timerInterval);
             showResultModal();
         }
+
 
         function showResultModal() {
             modalContent.innerHTML = `<h3>Did ${players[currentPlayerIndex].name} succeed?</h3>`;
@@ -526,22 +623,37 @@
         }
 
         function result(success) {
+            // Play appropriate sound
+            if (success) {
+                const successSound = document.getElementById('successSound');
+                successSound.currentTime = 0;
+                successSound.play().catch(() => { });
+            } else {
+                const failSound = document.getElementById('failSound');
+                failSound.currentTime = 0;
+                failSound.play().catch(() => { });
+            }
+
             modalOverlay.style.display = 'none';
             document.getElementById('spinBtn').style.display = 'block'; // Show spin button again
-            if (success) {
-                startConfetti();
-            } else {
+
+            if (!success) {
                 players[currentPlayerIndex].lives--;
                 if (players[currentPlayerIndex].lives <= 0) {
                     players.splice(currentPlayerIndex, 1);
                 }
+            } else {
+                startConfetti();
             }
+
             updateLives();
+
             if (players.length === 1) {
                 alert(players[0].name + " wins the Wheel of Chaos!");
                 location.reload();
             }
         }
+
 
         function updateLives() {
             playerLivesDiv.innerHTML = '';
