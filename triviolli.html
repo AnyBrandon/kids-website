@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+    <title>Triviolli — Tablet Trivia Duel</title>
+    <style>
+        :root {
+            --bg1: #0f1724;
+            --bg2: #0b1220;
+            --card: #0f1b2b;
+            --muted: #9aa8bf;
+            --accent: #6ee7b7;
+            --easy: #4ade80;
+            --med: #f59e0b;
+            --hard: #ef4444;
+            --glass: rgba(255, 255, 255, 0.04);
+            --radius: 20px;
+            --max-width: 1100px;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            -webkit-font-smoothing: antialiased;
+            color: #e6eef8;
+            background: linear-gradient(180deg, var(--bg1), var(--bg2));
+        }
+
+        .app {
+            max-width: var(--max-width);
+            margin: 20px auto;
+            padding: 18px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 18px
+        }
+
+        /* Header / players */
+        .players {
+            display: flex;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .player {
+            flex: 1;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+            padding: 12px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 84px
+        }
+
+        .player.active {
+            box-shadow: 0 0 20px rgba(110, 231, 183, 0.8), 0 6px 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid var(--accent);
+            transition: all 0.3s ease;
+        }
+
+
+        .avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass);
+            font-weight: 700;
+            font-size: 20px
+        }
+
+        .meta {
+            flex: 1
+        }
+
+        .meta h3 {
+            margin: 0;
+            font-size: 16px
+        }
+
+        .score {
+            font-size: 20px;
+            font-weight: 700
+        }
+
+        .progress {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            margin-top: 8px;
+            overflow: hidden
+        }
+
+        .progress>i {
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #60a5fa);
+            width: 0%
+        }
+
+        /* central board */
+        .board {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border-radius: 20px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            min-height: 420px
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: 700
+        }
+
+        .sub {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .btn {
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            cursor: pointer
+        }
+
+        .btn:active {
+            transform: translateY(1px)
+        }
+
+        /* question modal card */
+        .card {
+            width: 100%;
+            max-width: 880px;
+            background: linear-gradient(180deg, #0c1630, #071223);
+            border-radius: 18px;
+            padding: 18px;
+            color: #e6eef8;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6)
+        }
+
+        .card .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .tag {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            padding: 6px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            font-weight: 600
+        }
+
+        .difficulty {
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-weight: 700
+        }
+
+        .question-text {
+            font-size: 20px;
+            font-weight: 700
+        }
+
+        /* timer ring */
+        .timer-wrap {
+            display: flex;
+            gap: 18px;
+            align-items: center
+        }
+
+        .timer-ring {
+            width: 92px;
+            height: 92px;
+            display: grid;
+            place-items: center;
+            position: relative
+        }
+
+        .timer-ring svg {
+            transform: rotate(-90deg)
+        }
+
+        .timer-num {
+            position: absolute;
+            font-size: 22px;
+            font-weight: 800
+        }
+
+        /* options labels (not clickable) */
+        .options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 6px
+        }
+
+        .option-label {
+            padding: 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.03);
+            min-height: 52px;
+            display: flex;
+            align-items: center
+        }
+
+        .option-label.hidden {
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none
+        }
+
+        /* final buttons */
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px
+        }
+
+        .success {
+            background: linear-gradient(90deg, #10b981, #34d399);
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 800
+        }
+
+        .fail {
+            background: linear-gradient(90deg, #ef4444, #fb7185);
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 800
+        }
+
+        /* overlay and modals */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(0deg, rgba(2, 6, 23, 0.65), rgba(2, 6, 23, 0.2));
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px
+        }
+
+        .overlay.show {
+            display: flex
+        }
+
+        .small {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        /* win screen */
+        .win {
+            background: linear-gradient(90deg, #111827, #0b1220);
+            padding: 18px;
+            border-radius: 18px;
+            text-align: center;
+            color: #e6eef8
+        }
+
+        .confetti {
+            position: fixed;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none
+        }
+
+        footer.note {
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+            margin-top: 8px
+        }
+
+        @media(min-width:900px) {
+            .app {
+                padding: 28px
+            }
+
+            .players {
+                gap: 18px
+            }
+        }
+
+        /* small helpers */
+        .muted {
+            color: var(--muted)
+        }
+
+        .caps {
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 12px
+        }
+
+        /* START SCREEN */
+        .start-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #111a2f 0%, #0a1120 80%);
+            z-index: 50;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        .start-inner {
+            text-align: center;
+            color: #e6eef8;
+            animation: popIn 0.8s ease forwards;
+        }
+
+        .game-title {
+            font-size: 42px;
+            font-weight: 900;
+            background: linear-gradient(90deg, #60a5fa, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .tagline {
+            color: var(--muted);
+            margin-bottom: 28px;
+            font-size: 16px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .start-btn {
+            font-size: 20px;
+            padding: 16px 36px;
+            border-radius: 18px;
+            font-weight: 800;
+            color: #fff;
+            background: linear-gradient(90deg, #34d399, #60a5fa);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(100, 220, 255, 0.4);
+            transition: all 0.3s ease;
+            animation: pulseGlow 1.8s infinite ease-in-out;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 30px rgba(100, 220, 255, 0.6);
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 15px rgba(100, 220, 255, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 30px rgba(100, 220, 255, 0.7);
+            }
+        }
+
+        /* COOLER OPTIONS BUTTON */
+        #optionsBtn {
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            color: var(--accent);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 6px rgba(110, 231, 183, 0.3);
+            animation: pulseAccent 2s infinite ease-in-out;
+        }
+
+        #optionsBtn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(110, 231, 183, 0.4), transparent);
+            transition: 0.4s;
+        }
+
+        #optionsBtn:hover::before {
+            left: 100%;
+        }
+
+        #optionsBtn:hover {
+            color: #34d399;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(110, 231, 183, 0.4);
+        }
+
+        @keyframes pulseAccent {
+
+            0%,
+            100% {
+                box-shadow: 0 0 6px rgba(110, 231, 183, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 18px rgba(110, 231, 183, 0.6);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app" role="application" aria-label="Triviolli game">
+        <div class="start-screen" id="startScreen">
+            <div class="start-inner">
+                <h1 class="game-title">🎉 Triviolli</h1>
+                <p class="tagline">Tablet Trivia Duel</p>
+                <button class="start-btn" id="startBtn">Start Game</button>
+                <p class="small muted" style="margin-top:12px; max-width:300px; line-height:1.4;">
+                    Turn-based. First to 30 points wins. 13s per question. Click Options to show answers (reduces points).
+                </p>
+            </div>
+        </div>
+
+        <div class="players">
+            <div class="player active" id="player1">
+                <div class="avatar">P1</div>
+                <div class="meta">
+                    <h3>Player 1</h3>
+                    <div class="score" id="score1">0</div>
+                    <div class="progress" aria-hidden="true"><i id="prog1"></i></div>
+                </div>
+            </div>
+
+            <div style="width:12px"></div>
+
+            <div class="player" id="player2">
+                <div class="avatar">P2</div>
+                <div class="meta">
+                    <h3>Player 2</h3>
+                    <div class="score" id="score2">0</div>
+                    <div class="progress" aria-hidden="true"><i id="prog2"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="board">
+            <div class="title">Triviolli</div>
+            <div style="display:flex;justify-content:center;margin-top:10px">
+                <button class="btn" id="startBtn">Start Game</button>
+            </div>
+
+            <div class="card" id="questionCard" style="display:none">
+                <div class="row">
+                    <div class="tag" id="categoryTag">Category</div>
+                    <div class="difficulty caps" id="difficultyTag">Difficulty</div>
+                </div>
+
+                <div class="question-text" id="questionText">Loading questions...</div>
+
+                <div style="display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+                    <div class="timer-wrap">
+                        <div class="timer-ring" id="timerRing">
+                            <svg width="92" height="92">
+                                <circle cx="46" cy="46" r="40" stroke="rgba(255,255,255,0.06)" stroke-width="8"
+                                    fill="none" />
+                                <circle cx="46" cy="46" r="40" stroke="var(--accent)" stroke-width="8"
+                                    stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="0"
+                                    id="timerCircle" />
+                            </svg>
+                            <div class="timer-num" id="timerNum">10</div>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn" id="optionsBtn">Options</button>
+                            <div class="small muted" id="pointsLabel">Potential: -</div>
+                        </div>
+                    </div>
+
+                    <div style="flex:1;min-width:240px;display:flex;align-items:center;justify-content:center">
+                        <div class="small muted caps">Round</div>
+                        <div style="width:12px"></div>
+                        <div class="small" id="roundInfo">0 / 0</div>
+                    </div>
+                </div>
+
+                <div class="options" id="optionsGrid" aria-hidden="true">
+                    <!-- Option labels appear here (non-clickable) -->
+                </div>
+
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Overlays -->
+    <div class="overlay" id="answerOverlay" aria-hidden="true">
+        <div class="card" style="max-width:680px">
+            <div class="row" style="justify-content:center">
+                <div class="tag" id="ovCategory">Category</div>
+                <div style="width:12px"></div>
+                <div class="difficulty caps" id="ovDifficulty">Difficulty</div>
+            </div>
+
+            <div style="margin-top:12px" id="ovQuestion">Question here</div>
+
+            <div class="options" id="ovOptions">
+                <!-- non-clickable labels duplicated for reading -->
+            </div>
+
+            <div style="margin-top:12px;text-align:center" class="small muted">Correct answer:</div>
+            <div style="text-align:center;font-weight:800;font-size:18px;margin-top:6px" id="correctAnswer">—</div>
+
+            <div class="result-actions" style="margin-top:14px">
+                <button class="success" id="btnSuccess">Success</button>
+                <button class="fail" id="btnFail">Fail</button>
+            </div>
+
+            <div style="margin-top:10px;text-align:center" class="small muted" id="penaltyNotice">Penalty: -2 (chance)
+            </div>
+
+        </div>
+    </div>
+
+    <div class="overlay" id="winOverlay" aria-hidden="true">
+        <div class="card win" style="max-width:520px">
+            <div style="font-size:22px;font-weight:900" id="winTitle">Winner</div>
+            <div style="margin-top:8px" id="winSub">Player X reached 30 points</div>
+            <div style="margin-top:12px">
+                <button class="btn" id="replayBtn">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas class="confetti" id="confettiCanvas"></canvas>
+
+    <script>
+        // Triviolli single-file implementation
+        (function () {
+            const SCORE_TO_WIN = 30;
+            const TIMER_START = 13; // seconds
+            const PENALTY = 2; // points lost when penalty triggers
+            const PENALTY_CHANCE = 0.20; // default 20%
+            const startBtn = document.getElementById('startBtn');
+            const questionCard = document.getElementById('questionCard');
+            const startScreen = document.getElementById('startScreen');
+
+            // SOUND EFFECTS
+            const soundClick = new Audio('sounds/click.wav');
+            const soundCorrect = new Audio('sounds/correct.wav');
+            const soundIncorrect = new Audio('sounds/incorrect.wav');
+
+
+            // state
+            let questions = [];
+            let pool = [];
+            let used = new Set();
+            let current = null; // current question object
+            let currentIndex = -1;
+            let currentPlayer = 1; // 1 or 2
+            let scores = { 1: 0, 2: 0 };
+            let timer = null;
+            let timeLeft = TIMER_START;
+            let circleLength = 2 * Math.PI * 40; // r=40
+            const timerCircle = document.getElementById('timerCircle');
+
+            // DOM
+            const qText = document.getElementById('questionText');
+            const categoryTag = document.getElementById('categoryTag');
+            const diffTag = document.getElementById('difficultyTag');
+            const optionsGrid = document.getElementById('optionsGrid');
+            const optionsBtn = document.getElementById('optionsBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const timerNum = document.getElementById('timerNum');
+            const pointsLabel = document.getElementById('pointsLabel');
+            const roundInfo = document.getElementById('roundInfo');
+            const score1El = document.getElementById('score1');
+            const score2El = document.getElementById('score2');
+            const prog1 = document.getElementById('prog1');
+            const prog2 = document.getElementById('prog2');
+
+            const overlay = document.getElementById('answerOverlay');
+            const ovQuestion = document.getElementById('ovQuestion');
+            const ovOptions = document.getElementById('ovOptions');
+            const correctAnswerEl = document.getElementById('correctAnswer');
+            const btnSuccess = document.getElementById('btnSuccess');
+            const btnFail = document.getElementById('btnFail');
+            const penaltyNotice = document.getElementById('penaltyNotice');
+
+            const winOverlay = document.getElementById('winOverlay');
+            const winTitle = document.getElementById('winTitle');
+            const winSub = document.getElementById('winSub');
+            const replayBtn = document.getElementById('replayBtn');
+
+            const player1Card = document.getElementById('player1');
+            const player2Card = document.getElementById('player2');
+
+            const confettiCanvas = document.getElementById('confettiCanvas');
+
+            // util: shuffle
+            function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]] } return a }
+
+            // load questions
+            async function loadQuestions() {
+                try {
+                    const res = await fetch('triviaQuestions.json');
+                    if (!res.ok) throw new Error('Failed to load');
+                    const data = await res.json();
+                    questions = data.map(q => ({ ...q }));
+                    // ensure difficulty exists; if not assign randomly: 50% easy,30% medium,20% hard
+                    questions.forEach(q => {
+                        if (!q.difficulty) {
+                            const r = Math.random();
+                            q.difficulty = r < 0.5 ? 'easy' : (r < 0.8 ? 'medium' : 'hard');
+                        } else {
+                            q.difficulty = q.difficulty.toLowerCase();
+                        }
+                    });
+                    // inside loadQuestions()
+                    questions = data.map(q => ({ ...q }));
+                    questions.forEach(q => {
+                        if (!q.difficulty) {
+                            const r = Math.random();
+                            q.difficulty = r < 0.5 ? 'easy' : (r < 0.8 ? 'medium' : 'hard');
+                        } else q.difficulty = q.difficulty.toLowerCase();
+                    });
+                    // Instead of startNewGame();
+                    document.getElementById('startScreen').style.display = 'flex';
+
+                } catch (err) {
+                    qText.textContent = 'Could not load triviaQuestions.json — see tip below.';
+                    console.error(err);
+                }
+            }
+
+            startBtn.addEventListener('click', () => {
+                soundClick.play();
+                // Randomly select player 1 or 2
+                currentPlayer = Math.random() < 0.5 ? 1 : 2;
+                setActivePlayerUI();
+
+                // Cool fade-out animation for start screen
+                startScreen.style.opacity = '0';
+                startScreen.style.transition = 'opacity 0.8s ease';
+                setTimeout(() => { startScreen.style.display = 'none'; }, 800);
+
+                // Show main card and start game
+                questionCard.style.display = 'flex';
+                startNewGame();
+            });
+
+
+            function startNewGame() {
+                pool = shuffle(questions.slice());
+                used.clear();
+                currentIndex = -1;
+                scores = { 1: 0, 2: 0 };
+                currentPlayer = 1;
+                updateScores();
+                nextQuestion();
+            }
+
+            function nextQuestion() {
+                stopTimer();
+                // pick next unused random question
+                if (pool.length === 0) {
+                    qText.textContent = 'No more questions available.';
+                    optionsGrid.innerHTML = '';
+                    pointsLabel.textContent = 'Potential: -';
+                    roundInfo.textContent = '0 / 0';
+                    return;
+                }
+                current = pool.pop();
+                used.add(current.question);
+                currentIndex++;
+                renderQuestion();
+                resetTimer();
+                startTimer();
+                setActivePlayerUI();
+            }
+
+            function renderQuestion() {
+                categoryTag.textContent = current.category || 'General';
+                diffTag.textContent = (current.difficulty || 'easy').toUpperCase();
+                diffTag.style.background = current.difficulty === 'easy' ? 'var(--easy)' : (current.difficulty === 'medium' ? 'var(--med)' : 'var(--hard)');
+                qText.textContent = current.question;
+                // options hidden initially
+                optionsGrid.innerHTML = '';
+                if (Array.isArray(current.options)) {
+                    current.options.forEach(opt => {
+                        const el = document.createElement('div'); el.className = 'option-label hidden'; el.textContent = opt; optionsGrid.appendChild(el);
+                    });
+                }
+                // potential points before options shown
+                updatePotentialPoints(false);
+                roundInfo.textContent = (currentIndex + 1) + ' / ' + questions.length;
+            }
+
+            function updatePotentialPoints(optionsUsed) {
+                let pot = 0;
+                const d = current.difficulty;
+                if (d === 'easy') { pot = optionsUsed ? 1 : 2 }
+                else if (d === 'medium') { pot = optionsUsed ? 2 : 3 }
+                else { pot = optionsUsed ? 1 : 5 }
+                pointsLabel.textContent = 'Potential: ' + pot + ' pts';
+            }
+
+            // options reveal (non-clickable labels)
+            let optionsShown = false;
+            optionsBtn.addEventListener('click', () => {
+                soundClick.play();
+                if (!current) return;
+                if (optionsShown) return;
+                optionsShown = true;
+                const labels = optionsGrid.querySelectorAll('.option-label');
+                labels.forEach((el, i) => { setTimeout(() => { el.classList.remove('hidden') }, i * 80); });
+                updatePotentialPoints(true);
+            });
+
+
+            // timer functions
+            function startTimer() {
+                timeLeft = TIMER_START;
+                timerNum.textContent = timeLeft;
+                setCircleProgress(0);
+                timer = setInterval(() => {
+                    timeLeft -= 0.1; // smooth
+                    if (timeLeft <= 0) {
+                        timeLeft = 0; timerNum.textContent = 0; setCircleProgress(1); stopTimer(); onTimerEnd();
+                    } else {
+                        timerNum.textContent = Math.ceil(timeLeft);
+                        setCircleProgress((TIMER_START - timeLeft) / TIMER_START);
+                    }
+                }, 100);
+            }
+            function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
+            function resetTimer() {
+                stopTimer(); optionsShown = false; // hide options visuals
+                const labels = optionsGrid.querySelectorAll('.option-label'); labels.forEach(el => el.classList.add('hidden'));
+                updatePotentialPoints(false);
+            }
+            function setCircleProgress(fraction) { const dash = circleLength * (1 - fraction); timerCircle.style.strokeDashoffset = dash; }
+
+            // when timer ends, overlay shows correct answer and success/fail
+            function onTimerEnd() {
+                // populate overlay
+                ovQuestion.textContent = current.question;
+                document.getElementById('ovCategory').textContent = current.category || 'General';
+                document.getElementById('ovDifficulty').textContent = (current.difficulty || 'easy').toUpperCase();
+                ovOptions.innerHTML = '';
+                if (Array.isArray(current.options)) {
+                    current.options.forEach(opt => { const el = document.createElement('div'); el.className = 'option-label'; el.textContent = opt; ovOptions.appendChild(el); });
+                }
+                correctAnswerEl.textContent = current.answer || '—';
+                penaltyNotice.textContent = 'Penalty: -' + PENALTY + ' (chance ' + Math.round(PENALTY_CHANCE * 100) + '%)';
+                overlay.classList.add('show'); overlay.setAttribute('aria-hidden', 'false');
+            }
+
+            // scoring when Success/Fail pressed
+            function computePoints(optionsUsed) {
+                const d = current.difficulty;
+                if (d === 'easy') return optionsUsed ? 1 : 2;
+                if (d === 'medium') return optionsUsed ? 2 : 3;
+                return optionsUsed ? 1 : 5;
+            }
+
+            btnSuccess.addEventListener('click', () => {
+                soundCorrect.play();
+                overlay.classList.remove('show'); overlay.setAttribute('aria-hidden', 'true');
+                const pts = computePoints(optionsShown);
+                scores[currentPlayer] += pts;
+                checkFloor();
+                updateScores();
+                if (checkWin()) return;
+                switchTurn();
+                nextQuestion();
+            });
+
+            btnFail.addEventListener('click', () => {
+                soundIncorrect.play();
+                overlay.classList.remove('show'); overlay.setAttribute('aria-hidden', 'true');
+                // maybe apply penalty randomly
+                if (Math.random() < PENALTY_CHANCE) {
+                    scores[currentPlayer] = Math.max(0, scores[currentPlayer] - PENALTY);
+                    // show brief penalty feedback
+                    showTemporaryNotice('Penalty applied: -' + PENALTY);
+                }
+                updateScores();
+                if (checkWin()) return;
+                switchTurn();
+                nextQuestion();
+            });
+
+            function showTemporaryNotice(txt) {
+                const el = document.createElement('div'); el.className = 'card'; el.style.position = 'fixed'; el.style.left = '50%'; el.style.transform = 'translateX(-50%)'; el.style.bottom = '16px'; el.style.zIndex = 9999; el.style.padding = '10px 14px'; el.textContent = txt; document.body.appendChild(el);
+                setTimeout(() => { el.style.transition = 'all 200ms'; el.style.opacity = '0'; el.style.transform = 'translateX(-50%) translateY(20px)'; }, 1100);
+                setTimeout(() => el.remove(), 1500);
+            }
+
+            function switchTurn() { currentPlayer = currentPlayer === 1 ? 2 : 1; setActivePlayerUI(); }
+
+            function setActivePlayerUI() {
+                if (currentPlayer === 1) {
+                    player1Card.classList.add('active');
+                    player2Card.classList.remove('active');
+                } else {
+                    player2Card.classList.add('active');
+                    player1Card.classList.remove('active');
+                }
+            }
+
+
+            function updateScores() {
+                score1El.textContent = scores[1]; score2El.textContent = scores[2];
+                prog1.style.width = Math.min(100, Math.round(scores[1] / SCORE_TO_WIN * 100)) + '%';
+                prog2.style.width = Math.min(100, Math.round(scores[2] / SCORE_TO_WIN * 100)) + '%';
+            }
+
+            function checkFloor() { scores[1] = Math.max(0, scores[1]); scores[2] = Math.max(0, scores[2]); }
+
+            function checkWin() { if (scores[currentPlayer] >= SCORE_TO_WIN) { showWin(currentPlayer); return true } return false }
+
+            function showWin(player) { winTitle.textContent = 'Player ' + player + ' wins!'; winSub.textContent = 'Reached ' + scores[player] + ' points'; winOverlay.classList.add('show'); winOverlay.setAttribute('aria-hidden', 'false'); runConfetti(); }
+
+            replayBtn.addEventListener('click', () => {
+                winOverlay.classList.remove('show');
+                winOverlay.setAttribute('aria-hidden', 'true');
+                stopConfetti();
+                startScreen.style.display = 'flex';
+                startScreen.style.opacity = '1';
+                questionCard.style.display = 'none';
+            });
+
+
+            // confetti (very small lightweight)
+            let confettiCtx, confettiParticles = [], confettiAnim = null;
+            function runConfetti() {
+                confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; confettiCtx = confettiCanvas.getContext('2d'); confettiParticles = [];
+                for (let i = 0; i < 120; i++) { confettiParticles.push({ x: Math.random() * confettiCanvas.width, y: Math.random() * -confettiCanvas.height, vx: (Math.random() * 2 - 1) * 2, vy: Math.random() * 3 + 2, r: Math.random() * 7 + 4, color: ['#60a5fa', '#f472b6', '#fb7185', '#34d399', '#f59e0b'][Math.floor(Math.random() * 5)], rot: Math.random() * 360 }); }
+                confettiAnim = requestAnimationFrame(confettiFrame);
+            }
+            function confettiFrame() { confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height); confettiParticles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.03; confettiCtx.save(); confettiCtx.translate(p.x, p.y); confettiCtx.rotate(p.rot * Math.PI / 180); confettiCtx.fillStyle = p.color; confettiCtx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 1.6); confettiCtx.restore(); if (p.y > confettiCanvas.height + 40) { p.y = -20; p.x = Math.random() * confettiCanvas.width; p.vy = Math.random() * 3 + 2; } }); confettiAnim = requestAnimationFrame(confettiFrame); }
+            function stopConfetti() { if (confettiAnim) cancelAnimationFrame(confettiAnim); confettiParticles = []; confettiCtx && confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height); }
+
+            // initialize
+            loadQuestions();
+
+            // accessibility: close overlay on outside click
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) { overlay.classList.remove('show'); overlay.setAttribute('aria-hidden', 'true'); switchTurn(); nextQuestion(); } });
+
+            // small: update potential points dynamically if options are shown via other means
+            // done
+
+        })();
+    </script>
+</body>
+
+</html>
