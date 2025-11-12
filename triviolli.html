@@ -464,6 +464,41 @@
                 box-shadow: 0 0 18px rgba(110, 231, 183, 0.6);
             }
         }
+
+        /* COOL ORANGE DONE BUTTON */
+        #doneBtn {
+            font-size: 16px;
+            /* was 18px */
+            padding: 10px 24px;
+            /* was 14px 32px */
+            border-radius: 18px;
+            /* optional, slightly smaller */
+            font-weight: 800;
+            color: #fff;
+            background: linear-gradient(90deg, #f59e0b, #fb923c);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+            transition: all 0.3s ease;
+            animation: pulseOrange 1.8s infinite ease-in-out;
+        }
+
+        #doneBtn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 20px rgba(251, 146, 60, 0.7);
+        }
+
+        @keyframes pulseOrange {
+
+            0%,
+            100% {
+                box-shadow: 0 0 10px rgba(251, 146, 60, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(251, 146, 60, 0.8);
+            }
+        }
     </style>
 </head>
 
@@ -472,10 +507,11 @@
         <div class="start-screen" id="startScreen">
             <div class="start-inner">
                 <h1 class="game-title">🎉 Triviolli</h1>
-                <p class="tagline">Tablet Trivia Duel</p>
+                <p class="tagline">Trivia Duel</p>
                 <button class="start-btn" id="startBtn">Start Game</button>
                 <p class="small muted" style="margin-top:12px; max-width:300px; line-height:1.4;">
-                    Turn-based. First to 30 points wins. 13s per question. Click Options to show answers (reduces points).
+                    Turn-based. First to 45 points wins. 13s per question. Click Options to show answers (reduces
+                    points).
                 </p>
             </div>
         </div>
@@ -532,7 +568,9 @@
                         <div class="controls">
                             <button class="btn" id="optionsBtn">Options</button>
                             <div class="small muted" id="pointsLabel">Potential: -</div>
+
                         </div>
+
                     </div>
 
                     <div style="flex:1;min-width:240px;display:flex;align-items:center;justify-content:center">
@@ -545,7 +583,10 @@
                 <div class="options" id="optionsGrid" aria-hidden="true">
                     <!-- Option labels appear here (non-clickable) -->
                 </div>
-
+                <!-- DONE BUTTON -->
+                <div style="display:flex;justify-content:center;margin-top:20px">
+                    <button class="btn" id="doneBtn">Done</button>
+                </div>
             </div>
 
 
@@ -596,7 +637,7 @@
     <script>
         // Triviolli single-file implementation
         (function () {
-            const SCORE_TO_WIN = 30;
+            const SCORE_TO_WIN = 45;
             const TIMER_START = 13; // seconds
             const PENALTY = 2; // points lost when penalty triggers
             const PENALTY_CHANCE = 0.20; // default 20%
@@ -629,6 +670,7 @@
             const diffTag = document.getElementById('difficultyTag');
             const optionsGrid = document.getElementById('optionsGrid');
             const optionsBtn = document.getElementById('optionsBtn');
+            const doneBtn = document.getElementById('doneBtn');
             const nextBtn = document.getElementById('nextBtn');
             const timerNum = document.getElementById('timerNum');
             const pointsLabel = document.getElementById('pointsLabel');
@@ -729,7 +771,14 @@
                     roundInfo.textContent = '0 / 0';
                     return;
                 }
-                current = pool.pop();
+                // pool.pop()
+                // Keep picking until we get an unused question
+                let attempts = 0;
+                do {
+                    current = pool.pop();
+                    attempts++;
+                } while (used.has(current.question) && pool.length > 0 && attempts < 1000);
+
                 used.add(current.question);
                 currentIndex++;
                 renderQuestion();
@@ -760,7 +809,7 @@
                 const d = current.difficulty;
                 if (d === 'easy') { pot = optionsUsed ? 1 : 2 }
                 else if (d === 'medium') { pot = optionsUsed ? 2 : 3 }
-                else { pot = optionsUsed ? 1 : 5 }
+                else { pot = optionsUsed ? 3 : 5 }
                 pointsLabel.textContent = 'Potential: ' + pot + ' pts';
             }
 
@@ -815,12 +864,21 @@
                 overlay.classList.add('show'); overlay.setAttribute('aria-hidden', 'false');
             }
 
+            doneBtn.addEventListener('click', () => {
+                soundClick.play();
+                if (!current) return;
+                stopTimer();        // stop the countdown immediately
+                onTimerEnd();       // show the answer overlay right away
+            });
+
+
             // scoring when Success/Fail pressed
             function computePoints(optionsUsed) {
                 const d = current.difficulty;
                 if (d === 'easy') return optionsUsed ? 1 : 2;
                 if (d === 'medium') return optionsUsed ? 2 : 3;
-                return optionsUsed ? 1 : 5;
+                // hard
+                return optionsUsed ? 3 : 5;
             }
 
             btnSuccess.addEventListener('click', () => {
@@ -836,19 +894,24 @@
             });
 
             btnFail.addEventListener('click', () => {
-                soundIncorrect.play();
-                overlay.classList.remove('show'); overlay.setAttribute('aria-hidden', 'true');
-                // maybe apply penalty randomly
+                overlay.classList.remove('show');
+                overlay.setAttribute('aria-hidden', 'true');
+
                 if (Math.random() < PENALTY_CHANCE) {
                     scores[currentPlayer] = Math.max(0, scores[currentPlayer] - PENALTY);
-                    // show brief penalty feedback
                     showTemporaryNotice('Penalty applied: -' + PENALTY);
+                    const soundLifeLost = new Audio('sounds/lifeLost.wav');
+                    soundLifeLost.play();
+                } else {
+                    soundIncorrect.play();
                 }
+
                 updateScores();
                 if (checkWin()) return;
                 switchTurn();
                 nextQuestion();
             });
+
 
             function showTemporaryNotice(txt) {
                 const el = document.createElement('div'); el.className = 'card'; el.style.position = 'fixed'; el.style.left = '50%'; el.style.transform = 'translateX(-50%)'; el.style.bottom = '16px'; el.style.zIndex = 9999; el.style.padding = '10px 14px'; el.textContent = txt; document.body.appendChild(el);
