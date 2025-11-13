@@ -5512,6 +5512,272 @@
         "difficulty": "medium"
     },
     {
+    "category": "Forgotten Inventions",
+    "question": "Which early invention was designed to automate the weaving of fabric?",
+    "options": ["Jacquard Loom", "Spinning Jenny", "Cotton Gin", "Power Loom"],
+    "answer": "Jacquard Loom",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Who invented the first steam-powered vehicle in 1769?",
+    "options": ["Nicolas-Joseph Cugnot", "James Watt", "Richard Trevithick", "Robert Fulton"],
+    "answer": "Nicolas-Joseph Cugnot",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "What early invention helped send telegraph messages faster over long distances?",
+    "options": ["Morse Code", "Semaphore", "Heliograph", "Telephone"],
+    "answer": "Morse Code",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which device, invented in 1881, allowed photographers to take multiple photos in succession?",
+    "options": ["Kinetoscope", "Zoopraxiscope", "Cinematograph", "Photographic Shutter"],
+    "answer": "Zoopraxiscope",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which ancient invention was used for moving heavy stones in Egypt?",
+    "options": ["Shaduf", "Lever and Ramp", "Pulley System", "Sledge and Rollers"],
+    "answer": "Sledge and Rollers",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which early electrical invention was used to record sound in 1877?",
+    "options": ["Phonograph", "Gramophone", "Megaphone", "Cylinder Recorder"],
+    "answer": "Phonograph",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Who invented the first practical sewing machine in 1846?",
+    "options": ["Elias Howe", "Isaac Singer", "Walter Hunt", "Barthelemy Thimonnier"],
+    "answer": "Elias Howe",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which device was invented in the 1920s to help people with visual impairment read?",
+    "options": ["Optacon", "Braille Writer", "Talking Books", "Tactile Map"],
+    "answer": "Optacon",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention by Robert Fulton helped revolutionize river transport?",
+    "options": ["Steamboat", "Canal Lock", "Steam Locomotive", "Flatboat"],
+    "answer": "Steamboat",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "What was the first device to measure the intensity of an earthquake?",
+    "options": ["Seismoscope", "Seismograph", "Tremorometer", "Vibrameter"],
+    "answer": "Seismoscope",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which early device allowed people to send visual images over distances before television?",
+    "options": ["Phototelegraph", "Cinematograph", "Magic Lantern", "Fax Machine"],
+    "answer": "Phototelegraph",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which early invention allowed sailors to determine longitude at sea?",
+    "options": ["Marine Chronometer", "Astrolabe", "Sextant", "Compass"],
+    "answer": "Marine Chronometer",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which ancient invention was used to measure time using water flow?",
+    "options": ["Clepsydra", "Sundial", "Hourglass", "Waterwheel"],
+    "answer": "Clepsydra",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention allowed typewriters to automatically align text?",
+    "options": ["Tabulator", "Carriage Return Lever", "Line Spacer", "Shift Key"],
+    "answer": "Tabulator",
+    "difficulty": "easy"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which 19th-century invention helped sailors navigate at night without visible stars?",
+    "options": ["Gyrocompass", "Astrolabe", "Sextant", "Marine Chronometer"],
+    "answer": "Gyrocompass",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Who invented the first fax machine in 1843?",
+    "options": ["Alexander Bain", "Samuel Morse", "Elisha Gray", "Thomas Edison"],
+    "answer": "Alexander Bain",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention was used in the 18th century to make ice artificially?",
+    "options": ["Ice Machine", "Refrigerator", "Icebox", "Cryogenic Freezer"],
+    "answer": "Ice Machine",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention in 1890 allowed rapid multiplication of printed newspapers?",
+    "options": ["Rotary Press", "Linotype Machine", "Printing Press", "Offset Press"],
+    "answer": "Linotype Machine",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which forgotten invention helped blind people 'read' images in the early 20th century?",
+    "options": ["Tactile Graphics", "Braille Slate", "Talking Book", "Optacon"],
+    "answer": "Tactile Graphics",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention in the 19th century was a precursor to modern typewriters?",
+    "options": ["Writing Ball", "Sholes & Glidden", "QWERTY Keyboard", "Printing Telegraph"],
+    "answer": "Writing Ball",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention allowed early submarines to move underwater effectively?",
+    "options": ["Periscope", "Ballast Tank", "Steam Engine", "Propeller"],
+    "answer": "Ballast Tank",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which early invention helped broadcast sound to multiple receivers over long distances?",
+    "options": ["Phonograph", "Radio Transmitter", "Telegraph", "Megaphone"],
+    "answer": "Radio Transmitter",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which 18th-century invention helped measure temperature accurately indoors?",
+    "options": ["Alcohol Thermometer", "Mercury Thermometer", "Thermocouple", "Bimetallic Strip"],
+    "answer": "Alcohol Thermometer",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which early device allowed multiple people to watch moving images in the 19th century?",
+    "options": ["Kinetoscope", "Zoopraxiscope", "Magic Lantern", "Zoetrope"],
+    "answer": "Kinetoscope",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention allowed early photographers to reproduce multiple images from a single negative?",
+    "options": ["Photogravure", "Daguerreotype", "Calotype", "Collodion Process"],
+    "answer": "Photogravure",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Who invented the first internal combustion engine that ran on fuel?",
+    "options": ["Nikolaus Otto", "Gottlieb Daimler", "Karl Benz", "Étienne Lenoir"],
+    "answer": "Étienne Lenoir",
+    "difficulty": "medium"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which forgotten invention was an early precursor to the modern helicopter?",
+    "options": ["Aerial Screw", "Autogyro", "Gyrocopter", "Ornithopter"],
+    "answer": "Aerial Screw",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention in the 17th century helped predict tides for sailors?",
+    "options": ["Tide Table", "Marine Chronometer", "Astrolabe", "Sextant"],
+    "answer": "Tide Table",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which early invention allowed people to observe microscopic organisms for the first time?",
+    "options": ["Compound Microscope", "Simple Microscope", "Camera Obscura", "Magnifying Glass"],
+    "answer": "Compound Microscope",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention in the 19th century allowed faster communication without wires?",
+    "options": ["Optical Telegraph", "Semaphore", "Morse Code", "Wireless Telegraphy"],
+    "answer": "Optical Telegraph",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which 18th-century invention allowed early chemists to measure gas volumes accurately?",
+    "options": ["Gasometer", "Eudiometer", "Barometer", "Manometer"],
+    "answer": "Eudiometer",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which early invention helped 19th-century physicians take precise pulse measurements?",
+    "options": ["Sphygmograph", "Stethoscope", "Thermometer", "Blood Pressure Cuff"],
+    "answer": "Sphygmograph",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which forgotten invention allowed people to store photographic negatives safely?",
+    "options": ["Negative Album", "Dry Plate Box", "Glass Plate Case", "Photographic Portfolio"],
+    "answer": "Negative Album",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which 19th-century invention helped map the ocean floor accurately?",
+    "options": ["Echo Sounder", "Lead Line", "Marine Chronometer", "Sextant"],
+    "answer": "Echo Sounder",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention helped early pilots measure wind speed in the 19th century?",
+    "options": ["Anemometer", "Barometer", "Altimeter", "Wind Vane"],
+    "answer": "Anemometer",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which early invention allowed people to record moving images before movies?",
+    "options": ["Zoetrope", "Magic Lantern", "Phenakistoscope", "Kinetoscope"],
+    "answer": "Phenakistoscope",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which invention allowed early explorers to measure latitude and longitude accurately at sea?",
+    "options": ["Marine Chronometer", "Astrolabe", "Sextant", "Compass"],
+    "answer": "Marine Chronometer",
+    "difficulty": "hard"
+  },
+  {
+    "category": "Forgotten Inventions",
+    "question": "Which forgotten invention was an early attempt at a flying machine in the 15th century?",
+    "options": ["Da Vinci Ornithopter", "Hot Air Balloon", "Glider", "Aerial Screw"],
+    "answer": "Da Vinci Ornithopter",
+    "difficulty": "hard"
+  },
+    {
         "category": "Literature",
         "question": "Which book by George Orwell features talking animals?",
         "options": [
