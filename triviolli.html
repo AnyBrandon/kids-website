@@ -640,7 +640,7 @@
             const SCORE_TO_WIN = 45;
             const TIMER_START = 13; // seconds
             const PENALTY = 2; // points lost when penalty triggers
-            const PENALTY_CHANCE = 0.20; // default 20%
+            const PENALTY_CHANCE = 0.30; // default 30%
             const startBtn = document.getElementById('startBtn');
             const questionCard = document.getElementById('questionCard');
             const startScreen = document.getElementById('startScreen');
@@ -795,8 +795,12 @@
                 // options hidden initially
                 optionsGrid.innerHTML = '';
                 if (Array.isArray(current.options)) {
-                    current.options.forEach(opt => {
-                        const el = document.createElement('div'); el.className = 'option-label hidden'; el.textContent = opt; optionsGrid.appendChild(el);
+                    const shuffledOptions = shuffle(current.options.slice()); // make a copy and shuffle
+                    shuffledOptions.forEach(opt => {
+                        const el = document.createElement('div');
+                        el.className = 'option-label hidden';
+                        el.textContent = opt;
+                        optionsGrid.appendChild(el);
                     });
                 }
                 // potential points before options shown
@@ -898,8 +902,10 @@
                 overlay.setAttribute('aria-hidden', 'true');
 
                 if (Math.random() < PENALTY_CHANCE) {
-                    scores[currentPlayer] = Math.max(0, scores[currentPlayer] - PENALTY);
-                    showTemporaryNotice('Penalty applied: -' + PENALTY);
+                    // Randomly choose 2 or 3 points
+                    const randomPenalty = Math.random() < 0.5 ? 2 : 3;
+                    scores[currentPlayer] = Math.max(0, scores[currentPlayer] - randomPenalty);
+                    showTemporaryNotice('Penalty applied: -' + randomPenalty);
                     const soundLifeLost = new Audio('sounds/lifeLost.wav');
                     soundLifeLost.play();
                 } else {
