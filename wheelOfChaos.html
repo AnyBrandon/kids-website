@@ -286,25 +286,45 @@
         }
 
         /* Individual player life boxes */
+        /* Individual player life boxes - cooler version */
         .playerLife {
-            background: linear-gradient(135deg, #ff4b2b, #ff416c);
+            background: linear-gradient(135deg, #1a1a1a, #333333);
+            /* dark gradient background */
             color: #fff;
+            /* white text for readability */
             font-weight: bold;
-            font-size: 1.1em;
-            padding: 10px 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            font-size: 1.2em;
+            padding: 12px 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(255, 65, 108, 0.5), 0 4px 20px rgba(51, 255, 221, 0.3);
+            /* neon-ish glow */
             position: relative;
             overflow: hidden;
             cursor: default;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-shadow: 0 0 5px #ff416c, 0 0 10px #33ffdd;
+            /* subtle glow for text */
         }
 
         /* Hover effect: lift and glow */
         .playerLife:hover {
             transform: translateX(5px) scale(1.05);
-            box-shadow: 0 8px 25px rgba(255, 75, 43, 0.6), 0 8px 25px rgba(255, 65, 108, 0.6);
+            box-shadow: 0 8px 25px rgba(255, 75, 43, 0.8), 0 8px 25px rgba(51, 255, 221, 0.6);
         }
+
+        /* Make hearts pop a bit */
+        .playerLife::after {
+            content: "❤️";
+            /* decorative heart */
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            font-size: 1.4em;
+            text-shadow: 0 0 5px #ff0000, 0 0 10px #ff4b2b;
+            pointer-events: none;
+        }
+
 
 
         @keyframes pulseHeart {
@@ -346,12 +366,76 @@
             color: #fff;
             text-shadow: 0 0 10px #ff416c, 0 0 20px #33ffdd;
         }
+
+        @keyframes eliminationSlide {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.8);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translateY(0) scale(1.05);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+
+            60% {
+                transform: translateX(-5px) rotate(-1deg);
+            }
+
+            70% {
+                transform: translateX(5px) rotate(1deg);
+            }
+
+            80% {
+                transform: translateX(0px) rotate(0deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.8);
+            }
+        }
+
+        @keyframes eliminationGlowPulse {
+
+            0%,
+            100% {
+                text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0044;
+            }
+
+            50% {
+                text-shadow: 0 0 25px #ff4477, 0 0 50px #ff2244;
+            }
+        }
     </style>
+
 </head>
 
 <body>
 
     <h1>Wheel of Chaos</h1>
+
+    <div id="eliminationMessage" style="
+        display:none;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2.5em;
+        font-weight: 900;
+        color: #ff2b2b;
+        text-align: center;
+        margin-top: -5px;
+        letter-spacing: 2px;
+        text-shadow: 
+            0 0 10px #ff0000, 
+            0 0 20px #ff0033, 
+            0 0 40px #ff0055, 
+            0 0 60px #ff3377;
+        animation: none;
+     ">
+    </div>
 
     <div id="setup">
         <label for="numPlayers">Number of Players: </label>
@@ -386,6 +470,7 @@
         </div>
     </div>
 
+
     <audio id="spinSound" src="sounds/wheelSpin.mp3" preload="auto"></audio>
     <audio id="modalSound" src="sounds/event.wav" preload="auto"></audio>
     <audio id="successSound" src="sounds/correct.wav" preload="auto"></audio>
@@ -400,6 +485,14 @@
         let wheelRotation = 0;
         let spinning = false;
         let numPlayers = 0;
+        let remainingTasks = [];
+        let remainingQuestions = [];
+
+        let questionPickCount = 0;
+        // random number between 30–40 for question limit
+        let questionLimit = Math.floor(Math.random() * 11) + 30;
+
+        let questionsDisabled = false;
 
         const wheelCanvas = document.getElementById('wheelCanvas');
         const ctx = wheelCanvas.getContext('2d');
@@ -539,15 +632,58 @@
             let angleUnderArrow = (arrowAngle - adjustedRotation + 360) % 360;
             let index = Math.floor(angleUnderArrow / sliceAngle);
             currentPlayerIndex = index;
+            highlightCurrentPlayer();
             showChoiceModal(players[index]);
         }
+
+        function highlightCurrentPlayer() {
+            const lifeBoxes = document.querySelectorAll('.playerLife');
+
+            lifeBoxes.forEach((box, i) => {
+                if (i === currentPlayerIndex) {
+                    // Highlight current player
+                    box.style.boxShadow = '0 0 25px 5px gold, 0 0 50px 10px #FFD700';
+                    box.style.transform = 'scale(1.1)';
+                    box.style.transition = 'all 0.3s ease';
+                } else {
+                    // Reset others
+                    box.style.boxShadow = '0 4px 20px rgba(255, 65, 108, 0.5), 0 4px 20px rgba(51, 255, 221, 0.3)';
+                    box.style.transform = 'scale(1)';
+                }
+            });
+        }
+
+        function showEliminationMessage(playerName) {
+            const msgDiv = document.getElementById("eliminationMessage");
+            msgDiv.textContent = `${playerName} YOU ARE OOOUUUUTTTTT!`;
+
+            msgDiv.style.display = "block";
+
+            // Trigger animations
+            msgDiv.style.animation = `
+        eliminationSlide 4s ease forwards,
+        eliminationGlowPulse 1s ease-in-out infinite
+    `;
+
+            // Hide after 5 seconds
+            setTimeout(() => {
+                msgDiv.style.display = "none";
+                msgDiv.style.animation = "none"; // reset
+            }, 3000);
+        }
+
+
 
         function drawArrow() {
             const cx = wheelCanvas.width / 2;
             const cy = wheelCanvas.height / 2;
             const radius = wheelCanvas.width / 2 - 15;
 
-            ctx.fillStyle = "#000";
+            ctx.fillStyle = ctx.createLinearGradient(cx, cy - radius - 15, cx, cy - radius + 25);
+            ctx.fillStyle.addColorStop(0, '#FFD700'); // bright gold
+            ctx.fillStyle.addColorStop(0.5, '#FFEA70'); // shiny highlight
+            ctx.fillStyle.addColorStop(1, '#FFA500'); // deeper gold
+
             ctx.beginPath();
             // Arrow pointing downward, just above the top of the wheel
             ctx.moveTo(cx, cy - radius - 15);     // tip of the arrow (down)
@@ -562,28 +698,73 @@
 
 
         function showChoiceModal(player) {
-            // 🎵 Play modal sound
             const modalSound = document.getElementById('modalSound');
-            modalSound.currentTime = 0; // start from beginning
+            modalSound.currentTime = 0;
             modalSound.play().catch(() => { });
+
             modalContent.innerHTML = `
-        <h2>🎯 ${player.name}, Choose!</h2>`;
-            modalButtons.innerHTML = `
-        <button onclick="chooseOption('task')">🔥 Task</button>
-        <button onclick="chooseOption('question')">🧠 Question</button>
+        <h2>🎯 ${player.name}, Choose!</h2>
     `;
+
+            // If question limit reached, ONLY show Task button
+            if (questionsDisabled) {
+                modalButtons.innerHTML = `
+            <button onclick="chooseOption('task')">🔥 Task</button>
+        `;
+            } else {
+                modalButtons.innerHTML = `
+            <button onclick="chooseOption('task')">🔥 Task</button>
+            <button onclick="chooseOption('question')">🧠 Question</button>
+        `;
+            }
+
             modalOverlay.style.display = 'flex';
             document.getElementById('spinBtn').style.display = 'none';
         }
 
 
+
         async function chooseOption(option) {
-            modalContent.innerHTML = `<p>Loading...</p>`;
-            modalButtons.innerHTML = '';
-            const data = await fetch(option === 'task' ? 'wheelTasks.json' : 'wheelQuestions.json').then(r => r.json());
-            const item = data[Math.floor(Math.random() * data.length)];
+
+            if (option === 'question') {
+                questionPickCount++;
+                if (questionPickCount >= questionLimit) {
+                    questionsDisabled = true;
+                }
+            }
+
+            let dataArray;
+
+            if (option === 'task') {
+                if (remainingTasks.length === 0) {
+                    // Load and shuffle tasks for this game
+                    const tasks = await fetch('wheelTasks.json').then(r => r.json());
+                    remainingTasks = shuffleArray(tasks);
+                }
+                dataArray = remainingTasks;
+            } else {
+                if (remainingQuestions.length === 0) {
+                    // Load and shuffle questions for this game
+                    const questions = await fetch('wheelQuestions.json').then(r => r.json());
+                    remainingQuestions = shuffleArray(questions);
+                }
+                dataArray = remainingQuestions;
+            }
+
+            // Pick the first item (already shuffled)
+            const item = dataArray.shift();
             startTimer(item, option);
         }
+
+        function shuffleArray(array) {
+            // Fisher-Yates shuffle
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
 
         let timerInterval;
 
@@ -623,36 +804,51 @@
         }
 
         function result(success) {
-            // Play appropriate sound
             if (success) {
                 const successSound = document.getElementById('successSound');
                 successSound.currentTime = 0;
                 successSound.play().catch(() => { });
             } else {
-                const failSound = document.getElementById('failSound');
-                failSound.currentTime = 0;
-                failSound.play().catch(() => { });
+                const currentPlayer = players[currentPlayerIndex];
+                currentPlayer.lives--;
+
+                if (currentPlayer.lives <= 0) {
+                    const gameOverSound = new Audio('sounds/gameOver.wav');
+                    gameOverSound.play().catch(() => { });
+
+                    // Show elimination message for 3 seconds
+                    showEliminationMessage(currentPlayer.name);
+
+                    // Remove player from array
+                    players.splice(currentPlayerIndex, 1);
+                }
+                else {
+                    // Player still alive, play normal lifeLost sound
+                    const failSound = document.getElementById('failSound');
+                    failSound.currentTime = 0;
+                    failSound.play().catch(() => { });
+                }
             }
 
             modalOverlay.style.display = 'none';
-            document.getElementById('spinBtn').style.display = 'block'; // Show spin button again
-
-            if (!success) {
-                players[currentPlayerIndex].lives--;
-                if (players[currentPlayerIndex].lives <= 0) {
-                    players.splice(currentPlayerIndex, 1);
-                }
-            } else {
-                startConfetti();
-            }
+            document.getElementById('spinBtn').style.display = 'block'; // show spin button again
 
             updateLives();
 
             if (players.length === 1) {
-                alert(players[0].name + " wins the Wheel of Chaos!");
-                location.reload();
+                showWinnerModal(players[0].name);
+                return; // stop further execution
             }
+
         }
+
+        function showWinnerModal(playerName) {
+            modalContent.innerHTML = `
+        <h2>🏆 ${playerName} wins!</h2>`;
+            modalButtons.innerHTML = "";
+            modalOverlay.style.display = 'flex';
+        }
+
 
 
         function updateLives() {
