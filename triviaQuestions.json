@@ -4313,18 +4313,6 @@
     },
     {
         "category": "Literature",
-        "question": "Which Shakespeare play features the characters Rosencrantz and Guildenstern?",
-        "options": [
-            "Macbeth",
-            "King Lear",
-            "Othello",
-            "Hamlet"
-        ],
-        "answer": "Hamlet",
-        "difficulty": "medium"
-    },
-    {
-        "category": "Literature",
         "question": "What was the pen name of Samuel Clemens?",
         "options": [
             "Lewis Carroll",
@@ -5836,18 +5824,6 @@
         ],
         "answer": "Agatha Christie",
         "difficulty": "easy"
-    },
-    {
-        "category": "Literature",
-        "question": "Which Shakespeare play includes the characters Rosencrantz and Guildenstern?",
-        "options": [
-            "Othello",
-            "King Lear",
-            "Hamlet",
-            "Macbeth"
-        ],
-        "answer": "Hamlet",
-        "difficulty": "medium"
     },
     {
         "category": "Literature",

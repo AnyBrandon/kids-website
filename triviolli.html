@@ -227,12 +227,20 @@
         .option-label {
             padding: 12px;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px dashed rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             min-height: 52px;
             display: flex;
-            align-items: center
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s ease;
         }
+
+        .option-label:hover {
+            background: rgba(110, 231, 183, 0.15);
+            transform: scale(1.03);
+        }
+
 
         .option-label.hidden {
             opacity: 0;
@@ -499,6 +507,104 @@
                 box-shadow: 0 0 20px rgba(251, 146, 60, 0.8);
             }
         }
+
+        #overlayDoneBtn {
+            font-size: 16px;
+            padding: 12px 28px;
+            border-radius: 20px;
+            font-weight: 800;
+            color: #fff;
+            background: linear-gradient(90deg, #34d399, #10b981);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+            transition: all 0.3s ease;
+            animation: pulseGreen 1.8s infinite ease-in-out;
+        }
+
+        #overlayDoneBtn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
+        }
+
+        @keyframes pulseGreen {
+
+            0%,
+            100% {
+                box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+            }
+
+            50% {
+                box-shadow: 0 0 25px rgba(16, 185, 129, 0.9);
+            }
+        }
+
+        #categoryTag {
+            background: linear-gradient(90deg, #34d399, #10b981);
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(16, 185, 129, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .option-btn {
+            color: #fff;
+            /* white text */
+            font-weight: 700;
+            /* bold */
+            background: rgba(255, 255, 255, 0.05);
+            /* keep your current bg style */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .option-btn:hover {
+            color: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        #doneBtnFinalModal {
+            font-size: 18px;
+            /* slightly bigger text */
+            padding: 12px 36px;
+            /* wider button */
+            border-radius: 20px;
+            /* rounded corners */
+            font-weight: 800;
+            /* bold */
+            color: #fff;
+            /* white text */
+            background: linear-gradient(90deg, #f59e0b, #fb923c);
+            /* warm gradient */
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(251, 146, 60, 0.6);
+            transition: all 0.3s ease;
+            animation: pulseOrange 1.8s infinite ease-in-out;
+        }
+
+        #doneBtnFinalModal:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 24px rgba(251, 146, 60, 0.8);
+        }
+
+        @keyframes pulseOrange {
+
+            0%,
+            100% {
+                box-shadow: 0 0 12px rgba(251, 146, 60, 0.6);
+            }
+
+            50% {
+                box-shadow: 0 0 24px rgba(251, 146, 60, 0.8);
+            }
+        }
     </style>
 </head>
 
@@ -610,13 +716,19 @@
 
             <div style="margin-top:12px;text-align:center" class="small muted">Correct answer:</div>
             <div style="text-align:center;font-weight:800;font-size:18px;margin-top:6px" id="correctAnswer">—</div>
+            <!-- Add this under the correctAnswer div, hide it initially -->
+            <div style="display:flex;justify-content:center;margin-top:14px">
+                <button class="btn" id="doneBtnFinalModal" style="display:none">Done</button>
+            </div>
+
 
             <div class="result-actions" style="margin-top:14px">
                 <button class="success" id="btnSuccess">Success</button>
                 <button class="fail" id="btnFail">Fail</button>
             </div>
 
-            <div style="margin-top:10px;text-align:center" class="small muted" id="penaltyNotice">Penalty: -2 (chance)
+            <div style="margin-top:10px;text-align:center" class="small muted" id="penaltyNotice">Penalty: -2 or -3
+                (chance)
             </div>
 
         </div>
@@ -644,6 +756,7 @@
             const startBtn = document.getElementById('startBtn');
             const questionCard = document.getElementById('questionCard');
             const startScreen = document.getElementById('startScreen');
+            const doneBtnFinalModal = document.getElementById('doneBtnFinalModal');
 
             // SOUND EFFECTS
             const soundClick = new Audio('sounds/click.wav');
@@ -808,6 +921,63 @@
                 roundInfo.textContent = (currentIndex + 1) + ' / ' + questions.length;
             }
 
+            function showClickableOptions() {
+                if (!current || !Array.isArray(current.options)) return;
+                optionsGrid.innerHTML = ''; // clear old labels
+                const shuffledOptions = shuffle(current.options.slice());
+                shuffledOptions.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn option-btn';
+                    btn.textContent = opt;
+                    btn.style.flex = '1';
+                    btn.style.minHeight = '52px';
+                    btn.addEventListener('click', () => {
+                        const isCorrect = opt === current.answer;
+
+                        // Update score if correct
+                        if (isCorrect) {
+                            scores[currentPlayer] += computePoints(true); // use "options shown" points
+                            soundCorrect.play();
+                        } else {
+                            soundIncorrect.play(); // optional sound for wrong
+                            // No penalty here unless you want it
+                        }
+
+                        updateScores();
+
+                        // Show final modal
+                        ovQuestion.textContent = current.question;
+                        document.getElementById('ovCategory').textContent = current.category || 'General';
+                        document.getElementById('ovDifficulty').textContent = (current.difficulty || 'easy').toUpperCase();
+
+                        ovOptions.innerHTML = '';
+                        current.options.forEach(o => {
+                            const el = document.createElement('div');
+                            el.className = 'option-label';
+                            el.textContent = o;
+                            // Highlight the correct answer
+                            if (o === current.answer) el.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+                            ovOptions.appendChild(el);
+                        });
+
+                        correctAnswerEl.textContent = current.answer;
+
+                        // Hide Success/Fail buttons
+                        btnSuccess.style.display = 'none';
+                        btnFail.style.display = 'none';
+
+                        // Show Done button
+                        doneBtn.style.display = 'block';
+
+                        overlay.classList.add('show');
+                        overlay.setAttribute('aria-hidden', 'false');
+                    });
+
+                    optionsGrid.appendChild(btn);
+                });
+            }
+
+
             function updatePotentialPoints(optionsUsed) {
                 let pot = 0;
                 const d = current.difficulty;
@@ -819,15 +989,144 @@
 
             // options reveal (non-clickable labels)
             let optionsShown = false;
+
             optionsBtn.addEventListener('click', () => {
                 soundClick.play();
                 if (!current) return;
                 if (optionsShown) return;
                 optionsShown = true;
-                const labels = optionsGrid.querySelectorAll('.option-label');
-                labels.forEach((el, i) => { setTimeout(() => { el.classList.remove('hidden') }, i * 80); });
+
+                // Create clickable option buttons
+                optionsGrid.innerHTML = ''; // clear old labels
+                current.options.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn option-btn'; // add styling class
+                    btn.textContent = opt;
+                    optionsGrid.appendChild(btn);
+
+                    // click handler for each option
+                    btn.addEventListener('click', () => {
+                        stopTimer(); // stop timer immediately
+
+                        soundClick.play();
+                        const isCorrect = opt === current.answer;
+
+                        if (isCorrect) {
+                            soundCorrect.play();
+                            scores[currentPlayer] += computePoints(true);
+                        } else {
+                            // Apply penalty chance when answered wrong
+                            if (Math.random() < PENALTY_CHANCE) {
+                                const randomPenalty = Math.random() < 0.5 ? 2 : 3;
+                                scores[currentPlayer] = Math.max(0, scores[currentPlayer] - randomPenalty);
+                                showTemporaryNotice('Penalty applied: -' + randomPenalty);
+                                const soundLifeLost = new Audio('sounds/lifeLost.wav');
+                                soundLifeLost.play();
+                            } else {
+                                soundIncorrect.play();
+                            }
+                        }
+
+                        updateScores();
+
+                        // Show overlay with question, options, and correct answer
+                        overlay.classList.add('show');
+                        overlay.setAttribute('aria-hidden', 'false');
+
+                        ovQuestion.textContent = current.question;
+                        document.getElementById('ovCategory').textContent = current.category || 'General';
+                        document.getElementById('ovDifficulty').textContent = (current.difficulty || 'easy').toUpperCase();
+                        ovOptions.innerHTML = '';
+                        current.options.forEach(o => {
+                            const el = document.createElement('div');
+                            el.className = 'option-label';
+                            el.textContent = o;
+                            if (o === current.answer) {
+                                el.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+                                el.style.color = '#fff';
+                            }
+                            ovOptions.appendChild(el);
+                        });
+
+                        correctAnswerEl.textContent = current.answer || '—';
+
+                        // Hide Success/Fail buttons
+                        btnSuccess.style.display = 'none';
+                        btnFail.style.display = 'none';
+
+                        // Show Done button
+                        doneBtnFinalModal.style.display = 'block';
+                    });
+
+                });
+
                 updatePotentialPoints(true);
+                doneBtn.style.display = "none";
             });
+
+            doneBtnFinalModal.addEventListener('click', () => {
+                soundClick.play();
+
+                overlay.classList.remove('show');
+                overlay.setAttribute('aria-hidden', 'true');
+
+                // HIDE Done button again for next round
+                doneBtnFinalModal.style.display = 'none';
+
+                // Continue game
+                if (checkWin()) return;
+                switchTurn();
+                nextQuestion();
+            });
+
+
+            // Function to show overlay after option click
+            function showAnswerOverlay(isCorrect, optionsArray) {
+                // Populate question & category/difficulty
+                ovQuestion.textContent = current.question;
+                document.getElementById('ovCategory').textContent = current.category || 'General';
+                document.getElementById('ovDifficulty').textContent = (current.difficulty || 'easy').toUpperCase();
+
+                // Show options in overlay
+                ovOptions.innerHTML = '';
+                optionsArray.forEach(opt => {
+                    const el = document.createElement('div');
+                    el.className = 'option-label';
+                    el.textContent = opt;
+                    // Highlight correct answer
+                    if (opt === current.answer) {
+                        el.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+                        el.style.color = '#fff';
+                    }
+                    ovOptions.appendChild(el);
+                });
+
+                correctAnswerEl.textContent = current.answer;
+
+                // Hide success/fail buttons
+                btnSuccess.style.display = 'none';
+                btnFail.style.display = 'none';
+
+                // Add Done button under correct answer
+                let overlayDoneBtn = document.getElementById('overlayDoneBtn');
+                if (!overlayDoneBtn) {
+                    overlayDoneBtn = document.createElement('button');
+                    overlayDoneBtn.id = 'overlayDoneBtn';
+                    overlayDoneBtn.className = 'btn';
+                    overlayDoneBtn.textContent = 'Done';
+                    overlayDoneBtn.style.marginTop = '12px';
+                    overlayDoneBtn.addEventListener('click', () => {
+                        overlay.classList.remove('show');
+                        overlay.setAttribute('aria-hidden', 'true');
+                        switchTurn();
+                        nextQuestion();
+                    });
+                    correctAnswerEl.parentNode.appendChild(overlayDoneBtn);
+                }
+
+                overlay.classList.add('show');
+                overlay.setAttribute('aria-hidden', 'false');
+            }
 
 
             // timer functions
@@ -845,35 +1144,113 @@
                     }
                 }, 100);
             }
+
             function stopTimer() { if (timer) { clearInterval(timer); timer = null; } }
+
             function resetTimer() {
                 stopTimer(); optionsShown = false; // hide options visuals
                 const labels = optionsGrid.querySelectorAll('.option-label'); labels.forEach(el => el.classList.add('hidden'));
                 updatePotentialPoints(false);
+                // SHOW DONE BUTTON AGAIN FOR NEW QUESTION
+                doneBtn.style.display = "block";
             }
+
             function setCircleProgress(fraction) { const dash = circleLength * (1 - fraction); timerCircle.style.strokeDashoffset = dash; }
 
             // when timer ends, overlay shows correct answer and success/fail
             function onTimerEnd() {
-                // populate overlay
+                if (!current) return;
+
+                // Automatically consider the player answered incorrectly
+                if (Math.random() < PENALTY_CHANCE) {
+                    // Randomly choose 2 or 3 points as penalty
+                    const randomPenalty = Math.random() < 0.5 ? 2 : 3;
+                    scores[currentPlayer] = Math.max(0, scores[currentPlayer] - randomPenalty);
+                    showTemporaryNotice('Penalty applied: -' + randomPenalty);
+                    const soundLifeLost = new Audio('sounds/lifeLost.wav');
+                    soundLifeLost.play();
+                } else {
+                    // optional incorrect sound
+                    const soundIncorrect = new Audio('sounds/incorrect.wav');
+                    soundIncorrect.play();
+                }
+
+                updateScores();
+
+                // Populate overlay with question info
                 ovQuestion.textContent = current.question;
                 document.getElementById('ovCategory').textContent = current.category || 'General';
                 document.getElementById('ovDifficulty').textContent = (current.difficulty || 'easy').toUpperCase();
+
+                // Show options in overlay
                 ovOptions.innerHTML = '';
                 if (Array.isArray(current.options)) {
-                    current.options.forEach(opt => { const el = document.createElement('div'); el.className = 'option-label'; el.textContent = opt; ovOptions.appendChild(el); });
+                    current.options.forEach(opt => {
+                        const el = document.createElement('div');
+                        el.className = 'option-label';
+                        el.textContent = opt;
+                        if (opt === current.answer) {
+                            el.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+                            el.style.color = '#fff';
+                        }
+                        ovOptions.appendChild(el);
+                    });
                 }
+
                 correctAnswerEl.textContent = current.answer || '—';
-                penaltyNotice.textContent = 'Penalty: -' + PENALTY + ' (chance ' + Math.round(PENALTY_CHANCE * 100) + '%)';
-                overlay.classList.add('show'); overlay.setAttribute('aria-hidden', 'false');
+
+                // Hide success/fail buttons
+                btnSuccess.style.display = 'none';
+                btnFail.style.display = 'none';
+
+                // Show done button for proceeding
+                doneBtnFinalModal.style.display = 'block';
+
+                // Show the overlay
+                overlay.classList.add('show');
+                overlay.setAttribute('aria-hidden', 'false');
             }
 
+
+            // Updated Done button behavior in the main card
             doneBtn.addEventListener('click', () => {
                 soundClick.play();
                 if (!current) return;
-                stopTimer();        // stop the countdown immediately
-                onTimerEnd();       // show the answer overlay right away
+                stopTimer(); // stop the countdown immediately
+
+                // Populate overlay like before
+                ovQuestion.textContent = current.question;
+                document.getElementById('ovCategory').textContent = current.category || 'General';
+                document.getElementById('ovDifficulty').textContent = (current.difficulty || 'easy').toUpperCase();
+
+                // Show options in overlay
+                ovOptions.innerHTML = '';
+                const shuffledOptions = shuffle(current.options.slice());
+                shuffledOptions.forEach(opt => {
+                    const el = document.createElement('div');
+                    el.className = 'option-label';
+                    el.textContent = opt;
+                    if (opt === current.answer) {
+                        el.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+                        el.style.color = '#fff';
+                    }
+                    ovOptions.appendChild(el);
+                });
+
+                correctAnswerEl.textContent = current.answer;
+
+                // SHOW success/fail buttons, HIDE overlay Done button
+                btnSuccess.style.display = 'inline-flex';
+                btnFail.style.display = 'inline-flex';
+
+                const overlayDoneBtn = document.getElementById('overlayDoneBtn');
+                if (overlayDoneBtn) overlayDoneBtn.style.display = 'none';
+
+                overlay.classList.add('show');
+                overlay.setAttribute('aria-hidden', 'false');
             });
+
+
 
 
             // scoring when Success/Fail pressed
