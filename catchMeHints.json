@@ -1,0 +1,482 @@
+[
+    {
+        "number": 1,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 2,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 3,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 4,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 5,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 6,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 7,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 8,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 9,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 10,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 11,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 12,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 13,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 14,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 15,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 16,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 17,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 18,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 19,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    },
+        {
+        "number": 20,
+        "name": "Jack",
+        "gender": "boy",
+        "eyeColor": "black",
+        "eyeColorNot": [
+            "blue",
+            "green",
+            "brown"
+        ],
+        "clothingColors": [
+            "red",
+            "white",
+            "blue"
+        ],
+        "hasAccessories": "yes",
+        "hairColor": "brown",
+        "hairColorNot": [
+            "black",
+            "blonde"
+        ],
+        "glasses": "no",
+        "hat": "yes"
+    }
+]

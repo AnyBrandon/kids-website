@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catch Me If You Can!</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #0d0d0f;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Detective Noir Effect */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0.85) 90%);
+            z-index: 0;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 20px 0;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #e5e5e5;
+            text-shadow: 0 0 5px #222;
+        }
+
+        /* CHARACTER GRID */
+        #board {
+            width: 98%;
+            margin: auto;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            /* ALWAYS 5 columns */
+            grid-gap: 15px;
+            padding-bottom: 30px;
+        }
+
+        /* Character Card Size (tablet-optimized) */
+        .char-card {
+            background: #1a1a1d;
+            border: 2px solid #333;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            /* fills grid cell */
+        }
+
+        /* Force reasonable image scaling */
+        .char-card img {
+            width: 75%;
+            height: 75%;
+            /* adjust based on taste */
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .char-name {
+            margin-top: 6px;
+            font-size: 0.95em;
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            padding: 20px;
+        }
+
+        .modal {
+            background: #161618;
+            border: 2px solid #333;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal button {
+            margin-top: 15px;
+            padding: 12px 22px;
+            background: #222;
+            border: 2px solid #555;
+            color: white;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .modal button:hover {
+            background: #333;
+        }
+
+        .rumor-title {
+            color: #ff4d4d;
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        /* GUESS INPUT */
+        input[type="text"] {
+            margin-top: 15px;
+            padding: 10px;
+            width: 90%;
+            border-radius: 6px;
+            border: none;
+            outline: none;
+            font-size: 1em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Catch Me If You Can!</h1>
+
+    <div id="board"></div>
+
+    <!-- MODALS -->
+    <div id="hintModal" class="modal-overlay">
+        <div class="modal">
+            <div id="hintText">Reveal a hint</div>
+            <button id="revealHintBtn">Reveal Hint</button>
+            <button id="guessNowBtn">I Want to Guess Now</button>
+            <button id="hintDoneBtn" style="display:none;">Done</button>
+        </div>
+    </div>
+
+    <div id="shareModal" class="modal-overlay">
+        <div class="modal">
+            <p>You may share ONE hint with each other verbally if you agree.</p>
+            <button onclick="closeShareModal()">Okay</button>
+        </div>
+    </div>
+
+    <div id="guessModal" class="modal-overlay">
+        <div class="modal">
+            <p id="guessForPlayer"></p>
+            <input id="guessInput" type="text" placeholder="Enter character name..." />
+            <button onclick="submitGuess()">Done</button>
+        </div>
+    </div>
+
+    <div id="finalModal" class="modal-overlay">
+        <div class="modal">
+            <h2 id="finalResult"></h2>
+            <img id="finalImg" src="" style="width:80%; border-radius:8px; margin-top:15px;" />
+            <p id="finalName" style="margin-top:10px; font-size:1.3em;"></p>
+            <button onclick="location.reload()">Play Again</button>
+        </div>
+    </div>
+
+
+    <script>
+        /* -------------------- GLOBAL STATE -------------------- */
+
+        let characters = [];
+        let targetIndex = null;
+
+        let currentPlayer = 1;
+        let hintsGiven = { 1: 0, 2: 0 };
+        let usedHints = { 1: [], 2: [] };
+
+        let guesses = { 1: null, 2: null };
+        let isGuessingPhase = false;
+
+        /* -------------------- INITIALIZE GAME -------------------- */
+
+        window.onload = () => {
+            fetch("catchMeHints.json")
+                .then(r => r.json())
+                .then(data => {
+                    characters = data;
+                    setupBoard();
+                    chooseRandomCharacter();
+                    startNextTurn();
+                });
+        };
+
+        function setupBoard() {
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+
+            shuffleArray(characters).forEach((char) => {
+                const div = document.createElement("div");
+                div.className = "char-card";
+                div.innerHTML = `
+            <img src="images/catchMe/${char.number}.png" />
+            <div class="char-name">${char.name}</div>
+        `;
+                board.appendChild(div);
+            });
+        }
+
+        function chooseRandomCharacter() {
+            targetIndex = Math.floor(Math.random() * characters.length);
+        }
+
+        /* -------------------- TURN SYSTEM -------------------- */
+
+        function startNextTurn() {
+            if (hintsGiven[1] >= 4 && hintsGiven[2] >= 4) {
+                beginFinalGuessPhase();
+                return;
+            }
+
+            if (hintsGiven[1] === 2 && hintsGiven[2] === 2) {
+                showShareModal();
+                return;
+            }
+
+            openHintModal();
+        }
+
+        /* -------------------- MODAL CONTROLS -------------------- */
+
+        function openHintModal() {
+            document.getElementById("hintModal").style.display = "flex";
+            document.getElementById("hintText").innerText = `Player ${currentPlayer}, tap to reveal your hint`;
+            document.getElementById("revealHintBtn").style.display = "inline-block";
+            document.getElementById("guessNowBtn").style.display = "inline-block";
+            document.getElementById("hintDoneBtn").style.display = "none";
+        }
+
+        document.getElementById("revealHintBtn").onclick = () => {
+            const hint = generateHint(currentPlayer);
+            displayHint(hint);
+        };
+
+        document.getElementById("hintDoneBtn").onclick = () => {
+            document.getElementById("hintModal").style.display = "none";
+
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            startNextTurn();
+        };
+
+        /* -------------------- HINT GENERATION -------------------- */
+
+        function generateHint(player) {
+            const char = characters[targetIndex];
+
+            // Prevent repeats for this player
+            const possibleHints = [
+                "gender",
+                "eyeColor",
+                "eyeColorNot",
+                "clothingColors",
+                "hairColor",
+                "hairColorNot",
+                "hasAccessories",
+                "glasses",
+                "hat"
+            ].filter(h => !usedHints[player].includes(h));
+
+            const hintKey = possibleHints[Math.floor(Math.random() * possibleHints.length)];
+            usedHints[player].push(hintKey);
+            hintsGiven[player]++;
+
+            // Decide hint type
+            const r = Math.random();
+            if (r < 0.10) return generateEmptyHint();
+            if (r < 0.35) return generateRumorHint(char, hintKey);
+            return generateNormalHint(char, hintKey);
+        }
+
+        function generateNormalHint(char, key) {
+            switch (key) {
+                case "gender":
+                    return `The character is a ${char.gender}.`;
+
+                case "eyeColor":
+                    return `The character has ${char.eyeColor} eyes.`;
+
+                case "eyeColorNot":
+                    return `The character does NOT have ${randomFromArray(char.eyeColorNot)} eyes.`;
+
+                case "clothingColors":
+                    return `There is ${randomFromArray(char.clothingColors)} in the character's clothes.`;
+
+                case "hairColor":
+                    return `The character has ${char.hairColor} hair.`;
+
+                case "hairColorNot":
+                    return `The character does NOT have ${randomFromArray(char.hairColorNot)} hair.`;
+
+                case "hasAccessories":
+                    return char.hasAccessories === "yes" ?
+                        `The character is wearing accessories.` :
+                        `The character is NOT wearing accessories.`;
+
+                case "glasses":
+                    return char.glasses === "yes" ?
+                        `The character is wearing glasses.` :
+                        `The character is NOT wearing glasses.`;
+
+                case "hat":
+                    return char.hat === "yes" ?
+                        `The character is wearing a hat.` :
+                        `The character is NOT wearing a hat.`;
+            }
+        }
+
+        function generateRumorHint(char, key) {
+            let realHint = generateNormalHint(char, key);
+
+            const isTrue = Math.random() < 0.30;
+            if (isTrue) {
+                return { rumor: true, text: realHint };
+            }
+
+            // False rumor: invert logic
+            switch (key) {
+                case "gender":
+                    return { rumor: true, text: `They say the character is a ${char.gender === "boy" ? "girl" : "boy"}.` };
+
+                case "eyeColor":
+                    return { rumor: true, text: `Someone claims the character has green eyes.` };
+
+                case "eyeColorNot":
+                    return { rumor: true, text: `Someone claims the character does NOT have black eyes.` };
+
+                case "clothingColors":
+                    return { rumor: true, text: `Rumor says the clothes contain purple.` };
+
+                case "hairColor":
+                    return { rumor: true, text: `Someone says the character has blonde hair.` };
+
+                case "hairColorNot":
+                    return { rumor: true, text: `They say the character does NOT have brown hair.` };
+
+                case "hasAccessories":
+                    return { rumor: true, text: `Rumor: the character is wearing accessories.` };
+
+                case "glasses":
+                    return { rumor: true, text: `Someone claims the character is wearing glasses.` };
+
+                case "hat":
+                    return { rumor: true, text: `They say the character has a hat.` };
+            }
+        }
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+
+        function generateEmptyHint() {
+            const emptyHints = [
+                "Unable to retrieve information.",
+                "No intel available this time.",
+                "Your informant vanished.",
+                "This clue was corrupted."
+            ];
+            return emptyHints[Math.floor(Math.random() * emptyHints.length)];
+        }
+
+        function randomFromArray(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function displayHint(hint) {
+            const hintText = document.getElementById("hintText");
+            const revealBtn = document.getElementById("revealHintBtn");
+            const guessBtn = document.getElementById("guessNowBtn");
+            const doneBtn = document.getElementById("hintDoneBtn");
+
+            revealBtn.style.display = "none";
+            guessBtn.style.display = "none";
+            doneBtn.style.display = "inline-block";
+
+            if (typeof hint === "object" && hint.rumor) {
+                hintText.innerHTML = `<div class="rumor-title">RUMOR</div>${hint.text}`;
+            } else {
+                hintText.innerText = hint;
+            }
+        }
+
+        /* -------------------- SHARE MODAL -------------------- */
+
+        function showShareModal() {
+            document.getElementById("shareModal").style.display = "flex";
+        }
+
+        function closeShareModal() {
+            document.getElementById("shareModal").style.display = "none";
+            startNextTurn();
+        }
+
+        /* -------------------- EARLY GUESS -------------------- */
+
+        document.getElementById("guessNowBtn").onclick = () => {
+            startGuessModal(currentPlayer, early = true);
+        };
+
+        let earlyGuessFlag = false;
+
+        function startGuessModal(player, early = false) {
+            earlyGuessFlag = early;
+            document.getElementById("guessForPlayer").innerText =
+                `Player ${player}, enter your guess:`;
+
+            document.getElementById("guessInput").value = "";
+            document.getElementById("hintModal").style.display = "none";
+            document.getElementById("guessModal").style.display = "flex";
+        }
+
+        function submitGuess() {
+            const val = document.getElementById("guessInput").value.trim();
+            if (!val) return;
+
+            guesses[currentPlayer] = val;
+            document.getElementById("guessModal").style.display = "none";
+
+            if (earlyGuessFlag) {
+                checkEarlyWin();
+                return;
+            }
+
+            // Non-early guess: switch to next or finish
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+
+            if (guesses[1] && guesses[2]) {
+                revealFinal();
+            } else {
+                startGuessModal(currentPlayer);
+            }
+        }
+
+        function checkEarlyWin() {
+            const targetName = characters[targetIndex].name.toLowerCase();
+            const guess = guesses[currentPlayer].toLowerCase();
+
+            if (guess === targetName) {
+                showFinalInstantWin(currentPlayer);
+            } else {
+                showFinalInstantWin(currentPlayer === 1 ? 2 : 1);
+            }
+        }
+
+        /* -------------------- FINAL GUESS PHASE -------------------- */
+
+        function beginFinalGuessPhase() {
+            isGuessingPhase = true;
+            startGuessModal(1);
+        }
+
+        function revealFinal() {
+            const targetName = characters[targetIndex].name.toLowerCase();
+            const p1Correct = guesses[1].toLowerCase() === targetName;
+            const p2Correct = guesses[2].toLowerCase() === targetName;
+
+            if (p1Correct && p2Correct) {
+                showFinalResult("It's a tie! Both players guessed correctly.");
+            } else if (p1Correct) {
+                showFinalResult("Player 1 Wins!");
+            } else if (p2Correct) {
+                showFinalResult("Player 2 Wins!");
+            } else {
+                showFinalResult("Nobody got it right!");
+            }
+        }
+
+        /* -------------------- FINAL REVEAL -------------------- */
+
+        function showFinalInstantWin(winner) {
+            showFinalResult(`Player ${winner} wins by early guess!`);
+        }
+
+        function showFinalResult(text) {
+            const char = characters[targetIndex];
+
+            document.getElementById("finalResult").innerText = text;
+            document.getElementById("finalImg").src = `images/catchMe/${characters[targetIndex].number}.png`;
+            document.getElementById("finalName").innerText = char.name;
+
+            document.getElementById("finalModal").style.display = "flex";
+        }
+    </script>
+
+</body>
+
+</html>
