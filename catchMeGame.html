@@ -29,15 +29,100 @@
             z-index: 0;
         }
 
+        /* ===== EPIC NOIR-NEON TITLE ===== */
+
         h1 {
+            position: relative;
             text-align: center;
-            padding: 20px 0;
-            font-weight: 700;
-            letter-spacing: 2px;
+
+            margin: 20px 0 25px 0;
+            padding: 10px 0;
+
+            font-weight: 900;
+            font-size: clamp(1.8rem, 4vw, 3.2rem);
+            letter-spacing: 3px;
             text-transform: uppercase;
+
             color: #e5e5e5;
-            text-shadow: 0 0 5px #222;
+
+            /* Soft outer glow */
+            text-shadow:
+                0 0 8px #222,
+                0 0 18px rgba(255, 255, 255, 0.12);
+
+            /* Slow breathing glow animation */
+            animation: titleGlow 4.6s ease-in-out infinite;
         }
+
+        /* Cinematic top + bottom light bars */
+        h1::before,
+        h1::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+
+            width: 70%;
+            height: 3px;
+
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.4),
+                    transparent);
+
+            border-radius: 2px;
+            animation: barPulse 4s infinite ease-in-out;
+        }
+
+        h1::before {
+            top: -6px;
+        }
+
+        h1::after {
+            bottom: -6px;
+            animation-delay: 1.8s;
+            /* stagger for cinematic effect */
+        }
+
+        /* ----- KEYFRAMES ----- */
+
+        @keyframes titleGlow {
+            0% {
+                text-shadow:
+                    0 0 5px #111,
+                    0 0 10px rgba(255, 255, 255, 0.15);
+            }
+
+            50% {
+                text-shadow:
+                    0 0 10px #333,
+                    0 0 22px rgba(255, 255, 255, 0.25);
+            }
+
+            100% {
+                text-shadow:
+                    0 0 5px #111,
+                    0 0 10px rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        @keyframes barPulse {
+            0% {
+                opacity: 0.25;
+                transform: translateX(-50%) scaleX(0.9);
+            }
+
+            50% {
+                opacity: 0.55;
+                transform: translateX(-50%) scaleX(1.05);
+            }
+
+            100% {
+                opacity: 0.25;
+                transform: translateX(-50%) scaleX(0.9);
+            }
+        }
+
 
         /* CHARACTER GRID */
         #board {
@@ -459,6 +544,295 @@
         #hintText {
             font-weight: bold;
         }
+
+        /* ----- DONE BUTTON — CYBER NOIR STYLE ----- */
+
+        #hintDoneBtn {
+            position: relative;
+            padding: 14px 34px;
+            margin-top: 15px;
+
+            font-size: 1.1em;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+
+            color: #ffe9bf;
+            background: #1b150c;
+            border: 2px solid #ffb848;
+            border-radius: 12px;
+
+            cursor: pointer;
+            overflow: hidden;
+
+            /* Glow */
+            box-shadow:
+                0 0 8px #ffb848,
+                0 0 14px #ffb84880,
+                0 0 22px #ffb84850;
+
+            /* Pulse */
+            animation: donePulse 2.4s infinite ease-in-out;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        #hintDoneBtn:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 0 10px #ffc764,
+                0 0 20px #ffc764c0,
+                0 0 30px #ffc76480,
+                0 0 45px #ffc76440;
+        }
+
+        #hintDoneBtn:active {
+            transform: translateY(1px);
+            opacity: 0.9;
+        }
+
+        /* Sweep shine */
+        #hintDoneBtn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 80%;
+            height: 100%;
+
+            background: linear-gradient(120deg,
+                    transparent 0%,
+                    rgba(255, 200, 100, 0.25) 50%,
+                    transparent 100%);
+
+            transform: skewX(-20deg);
+            animation: doneSweep 2.9s infinite ease-in-out;
+        }
+
+        /* Subtle amber shimmer */
+        #hintDoneBtn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+
+            background: radial-gradient(circle at 20% 20%, rgba(255, 200, 100, 0.15), transparent 70%);
+            opacity: 0.28;
+            animation: doneShimmer 4.2s infinite alternate ease-in-out;
+
+            pointer-events: none;
+        }
+
+        /* ---- KEYFRAMES ---- */
+
+        @keyframes donePulse {
+            0% {
+                box-shadow:
+                    0 0 6px #ffb848,
+                    0 0 12px #ffb84880;
+            }
+
+            50% {
+                box-shadow:
+                    0 0 12px #ffd18a,
+                    0 0 26px #ffd18ac0;
+            }
+
+            100% {
+                box-shadow:
+                    0 0 6px #ffb848,
+                    0 0 12px #ffb84880;
+            }
+        }
+
+        @keyframes doneSweep {
+            0% {
+                left: -120%;
+            }
+
+            40% {
+                left: 140%;
+            }
+
+            100% {
+                left: 140%;
+            }
+        }
+
+        @keyframes doneShimmer {
+            0% {
+                opacity: 0.18;
+            }
+
+            100% {
+                opacity: 0.33;
+            }
+        }
+
+        /* ----- GUESS NOW BUTTON — DANGER NEON RED ----- */
+
+        #guessNowBtn {
+            position: relative;
+            padding: 14px 36px;
+            margin-top: 15px;
+
+            font-size: 1.12em;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+
+            color: #ffd3d3;
+            background: #1a0d0e;
+            border: 2px solid #ff3e3e;
+            border-radius: 12px;
+
+            cursor: pointer;
+            overflow: hidden;
+
+            /* Neon red glow */
+            box-shadow:
+                0 0 10px #ff3e3e,
+                0 0 20px #ff3e3e88,
+                0 0 30px #ff3e3e55;
+
+            /* Pulsing tension effect */
+            animation: guessPulse 2s infinite ease-in-out;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+
+        #guessNowBtn:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 0 12px #ff5454,
+                0 0 28px #ff5454cc,
+                0 0 40px #ff545488,
+                0 0 70px #ff545444;
+        }
+
+        #guessNowBtn:active {
+            transform: translateY(1px);
+            opacity: 0.9;
+        }
+
+        /* Red sweep highlight */
+        #guessNowBtn::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -130%;
+            width: 90%;
+            height: 100%;
+
+            background: linear-gradient(120deg,
+                    transparent 0%,
+                    rgba(255, 80, 80, 0.35) 50%,
+                    transparent 100%);
+
+            transform: skewX(-20deg);
+            animation: guessSweep 2.4s infinite ease-in-out;
+        }
+
+        /* Sinister red shimmer */
+        #guessNowBtn::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+
+            background: radial-gradient(circle at 20% 20%, rgba(255, 60, 60, 0.2), transparent 72%);
+            opacity: 0.32;
+            animation: guessShimmer 3.6s infinite alternate ease-in-out;
+
+            pointer-events: none;
+        }
+
+        /* ----- KEYFRAMES ----- */
+
+        @keyframes guessPulse {
+            0% {
+                box-shadow:
+                    0 0 10px #ff3e3e,
+                    0 0 20px #ff3e3e80;
+            }
+
+            50% {
+                box-shadow:
+                    0 0 18px #ff6060,
+                    0 0 34px #ff6060c8;
+            }
+
+            100% {
+                box-shadow:
+                    0 0 10px #ff3e3e,
+                    0 0 20px #ff3e3e80;
+            }
+        }
+
+        @keyframes guessSweep {
+            0% {
+                left: -130%;
+            }
+
+            40% {
+                left: 150%;
+            }
+
+            100% {
+                left: 150%;
+            }
+        }
+
+        @keyframes guessShimmer {
+            0% {
+                opacity: 0.18;
+            }
+
+            100% {
+                opacity: 0.33;
+            }
+        }
+
+        /* ===== IMAGE ZOOM MODAL ===== */
+
+        #imageZoomModal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #imageZoomModal img {
+            max-width: 90vw;
+            max-height: 80vh;
+            border-radius: 15px;
+            box-shadow: 0 0 20px #000;
+            object-fit: contain;
+        }
+
+        /* close button */
+        #closeZoom {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            font-size: 3rem;
+            color: white;
+            cursor: pointer;
+            text-shadow: 0 0 10px black;
+            user-select: none;
+        }
+
+        /* Make character images clearly clickable */
+        .character-card img {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .character-card img:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
 
@@ -515,7 +889,7 @@
         <div class="modal">
             <h2 id="finalResult"></h2>
             <img id="finalImg" src=""
-                style="width:40%; max-height:350px; object-fit:cover; border-radius:8px; margin-top:10px;" />
+                style="width:45%; max-height:400px; object-fit:cover; border-radius:8px; margin-top:10px;" />
             <p id="finalName" style="margin-top:10px; font-size:1.3em;"></p>
             <button onclick="location.reload()">Play Again</button>
         </div>
@@ -524,6 +898,14 @@
     <audio id="clickSound" src="sounds/click.wav"></audio>
     <audio id="clockSound" src="sounds/clockTimer.wav" loop></audio>
     <audio id="eventSound" src="sounds/event.wav"></audio>
+    <audio id="bangSound" src="sounds/bang.mp3"></audio>
+
+
+    <!-- Image Zoom Modal -->
+    <div id="imageZoomModal">
+        <span id="closeZoom">&times;</span>
+        <img id="zoomedImage" src="">
+    </div>
 
     <script>
         /* -------------------- GLOBAL STATE --------------------  max-height:280px;*/
@@ -663,7 +1045,10 @@
                 "hairColorNot",
                 "hasAccessories",
                 "glasses",
-                "hat"
+                "hat",
+                "nameLetter",
+                "nameLetterNot",
+                "nameLength"
             ].filter(h => !usedHints[player].includes(h));
 
             const hintKey = possibleHints[Math.floor(Math.random() * possibleHints.length)];
@@ -711,6 +1096,16 @@
                     return char.hat === "yes" ?
                         `The character is wearing a hat.` :
                         `The character is NOT wearing a hat.`;
+
+                case "nameLetter":
+                    return generateNameLetterHint(char.name);
+
+                case "nameLetterNot":
+                    return generateNameLetterNotHint(char.name);
+
+                case "nameLength":
+                    return generateNameLengthHint(char.name);
+
             }
         }
 
@@ -750,8 +1145,43 @@
 
                 case "hat":
                     return { rumor: true, text: `They say the character has a hat.` };
+
+                case "nameLetter":
+                    return { rumor: true, text: `Rumor says their name includes the letter "${randomFromArray("abcdefghijklmnopqrstuvwxyz".split(""))}".` };
+
             }
         }
+
+        // --- NEW HINT: a random letter that is NOT in the character's name ---
+        function generateNameLetterNotHint(characterName) {
+
+            const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+            const lowerName = characterName.toLowerCase();
+
+            // Collect letters not in the name
+            const notInName = alphabet.filter(letter => !lowerName.includes(letter));
+
+            // Safety check (should never happen unless name uses all 26 letters)
+            if (notInName.length === 0) {
+                return "The character's name contains almost every letter!";
+            }
+
+            // Pick a random letter that is NOT in the name
+            const randomLetter = notInName[Math.floor(Math.random() * notInName.length)];
+
+            return `The character does NOT have the letter "${randomLetter}" in their name.`;
+        }
+
+        // --- NEW HINT: name length ---
+        function generateNameLengthHint(characterName) {
+            // Remove spaces so only letters are counted
+            const cleanName = characterName.replace(/\s+/g, "");
+            const length = cleanName.length;
+
+            return `The character's name has exactly ${length} letters.`;
+        }
+
+
 
         function showTimerThenNextTurn() {
             let timeLeft = 5;
@@ -842,8 +1272,13 @@
         /* -------------------- EARLY GUESS -------------------- */
 
         document.getElementById("guessNowBtn").onclick = () => {
+            const bang = document.getElementById("bangSound");
+            bang.currentTime = 0;
+            bang.play();
+
             startGuessModal(currentPlayer, early = true);
         };
+
 
         let earlyGuessFlag = false;
 
@@ -913,6 +1348,30 @@
             }
         }
 
+        // --- NEW HINT: random letter from the character's name ---
+        // --- FIXED: NEW HINT: random letter from the character's name (robust) ---
+        function generateNameLetterHint(characterName) {
+            // ensure we have a string
+            const nameStr = (characterName || "").toString();
+
+            // keep only letters A-Z (remove spaces, punctuation, accents if needed)
+            // If you want to allow accented letters, change regex accordingly.
+            const cleanName = nameStr.replace(/[^A-Za-z]/g, "");
+
+            // Safety: if there are no letters, return a fallback hint
+            if (!cleanName || cleanName.length === 0) {
+                return "No reliable letter info is available for this name.";
+            }
+
+            // pick a random index & letter safely
+            const randomIndex = Math.floor(Math.random() * cleanName.length);
+            const randomLetter = cleanName.charAt(randomIndex).toLowerCase();
+
+            return `The character has the letter "${randomLetter}" in their name.`;
+        }
+
+
+
         /* -------------------- FINAL REVEAL -------------------- */
 
         function showFinalInstantWin(winner) {
@@ -928,6 +1387,31 @@
 
             document.getElementById("finalModal").style.display = "flex";
         }
+
+        // Zoom modal elements
+        const zoomModal = document.getElementById("imageZoomModal");
+        const zoomImg = document.getElementById("zoomedImage");
+        const closeZoom = document.getElementById("closeZoom");
+
+        // Make character images clickable
+        // WORKING CLICK-TO-ZOOM (event delegation)
+        document.getElementById("board").addEventListener("click", (e) => {
+            if (e.target.tagName === "IMG") {
+                zoomImg.src = e.target.src;
+                zoomModal.style.display = "flex";
+            }
+        });
+
+        // Close zoom on X click
+        closeZoom.addEventListener("click", () => {
+            zoomModal.style.display = "none";
+        });
+
+        // Close zoom when clicking outside image
+        zoomModal.addEventListener("click", (e) => {
+            if (e.target === zoomModal) zoomModal.style.display = "none";
+        });
+
     </script>
 
 </body>
