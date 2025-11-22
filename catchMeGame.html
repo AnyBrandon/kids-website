@@ -235,6 +235,105 @@
             font-size: 1em;
         }
 
+        .info-btn-animated {
+            position: relative;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 16px 48px;
+            font-size: 1.1em;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #f65151;
+            background: #141416;
+            border: 2px solid transparent;
+            border-radius: 14px;
+            cursor: pointer;
+            overflow: hidden;
+
+            /* Soft initial glow */
+            box-shadow: 0 0 18px rgba(255, 94, 94, 0.15);
+
+            /* Smooth transform animation */
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        /* ---- Animated Iridescent Border ---- */
+        .info-btn-animated::before {
+            content: "";
+            position: absolute;
+            inset: -3px;
+            border-radius: inherit;
+            padding: 3px;
+            background: linear-gradient(120deg,
+                    #ff6b6b,
+                    #ff9a76,
+                    #ff6b6b,
+                    #f65151);
+            background-size: 300% 300%;
+            animation: borderFlow 5s linear infinite;
+            -webkit-mask:
+                linear-gradient(#000 0 0) content-box,
+                linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* ---- Internal shimmering sweep ---- */
+        .info-btn-animated::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(120deg,
+                    transparent 0%,
+                    rgba(255, 120, 120, 0.15) 50%,
+                    transparent 100%);
+            transform: skewX(-20deg);
+            animation: shineSweep 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        /* ---- Hover Effects ---- */
+        .info-btn-animated:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 0 25px rgba(255, 100, 100, 0.35);
+        }
+
+        /* ---- Border Flow Animation ---- */
+        @keyframes borderFlow {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* ---- Shine Sweep ---- */
+        @keyframes shineSweep {
+            0% {
+                left: -150%;
+            }
+
+            60% {
+                left: 150%;
+            }
+
+            100% {
+                left: 150%;
+            }
+        }
+
+
         .start-btn-animated {
             position: relative;
             display: block;
@@ -336,6 +435,20 @@
         }
 
         @keyframes pulseBorder {
+            0% {
+                border-color: #444;
+            }
+
+            50% {
+                border-color: #777;
+            }
+
+            100% {
+                border-color: #444;
+            }
+        }
+
+        @keyframes pulseBorderInfo {
             0% {
                 border-color: #444;
             }
@@ -1038,7 +1151,7 @@
     </div>
 
 
-
+    <button id="infoBtn" class="info-btn-animated">Info</button>
     <button id="startBtn" class="start-btn-animated">Start Game</button>
 
     <div id="board"></div>
@@ -1089,6 +1202,44 @@
         <div class="modal">
             <p id="examineText">Player X, you have 20 seconds to examine the board.</p>
             <button id="examineOkayBtn">Okay</button>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="infoModal" class="modal-overlay">
+        <div class="modal">
+            <h2>How to Play</h2>
+            <p>Welcome to <strong>Catch Me If You Can!</strong> a smart, exciting and fun game where two players try to
+                guess the secret
+                character by using clues!</p>
+            <h3>Goal:</h3>
+            <p>Guess the <strong>target character</strong> before your opponent does!</p>
+            <h3>How to Play:</h3>
+            <ol>
+                <li><strong>Start the Game:</strong> Click "Start Game" to pick a random character as the target.</li>
+                <li><strong>Take Turns:</strong> Players take turns revealing in secret one hint at a time about the
+                    target
+                    character. Each player gets <strong>4 hints</strong> to help them figure out who the target is.</li>
+                <li><strong>Hints and Rarity:</strong> Hints tell you things like hair color, eye color,
+                    gender, accessories and many others. Some might be true, while others could be false rumors! Hints
+                    also have different
+                    rarities:
+                    <ul>
+                        <li><strong>Common:</strong> Easy clues</li>
+                        <li><strong>Uncommon:</strong> More helpful clues</li>
+                        <li><strong>Rare:</strong> Big clues</li>
+                    </ul>
+                </li>
+                <li><strong>Guessing:</strong> After each hint, you can guess who the target character is. Type their
+                    name and click "Done." Guess wrong and you’re out.</li>
+                <li><strong>Examine the Board:</strong> After getting the clues, you get <strong>20 seconds</strong> to
+                    look at the characters
+                    and remember details before making your guess.</li>
+                <li><strong>Final Guess:</strong> After both players have guessed, the game shows who was right!</li>
+            </ol>
+            <h3>Winning:</h3>
+            <p>The first player to guess the correct character wins! If both players guess right, it’s a tie.</p>
+            <button onclick="closeInfoModal()">Close</button>
         </div>
     </div>
 
@@ -1151,9 +1302,27 @@
             startNextTurn();
 
             document.getElementById("startBtn").style.display = "none";
+            document.getElementById("infoBtn").style.display = "none";
         };
 
 
+        // Show the Info modal when the Info button is clicked
+        document.getElementById("infoBtn").onclick = () => {
+            document.getElementById("infoModal").style.display = "flex";  // Show modal
+        };
+
+        // Close the Info modal if the user clicks outside the modal content
+        document.getElementById("infoModal").addEventListener("click", (e) => {
+            // If the click is on the overlay (outside the modal content), close the modal
+            if (e.target === document.getElementById("infoModal")) {
+                closeInfoModal();
+            }
+        });
+
+        // Close the Info modal
+        function closeInfoModal() {
+            document.getElementById("infoModal").style.display = "none";  // Hide modal
+        }
 
         function setupBoard() {
             const board = document.getElementById("board");
@@ -1256,7 +1425,8 @@
                 "hat",
                 "nameLetter",
                 "nameLetterNot",
-                "nameLength"
+                "nameLength",
+                "isNot"
             ];
 
             // Keys not used by either player
@@ -1350,6 +1520,7 @@
             hasAccessories: "uncommon",
             glasses: "uncommon",
             hat: "uncommon",
+            isNot: "uncommon",
 
             // Rare
             gender: "rare",
@@ -1375,12 +1546,15 @@
                 "hat",
                 "nameLetter",
                 "nameLetterNot",
-                "nameLength"
+                "nameLength",
+                "isNot"
             ].filter(h => !usedHints[player].includes(h));
 
             const hintKey = possibleHints[Math.floor(Math.random() * possibleHints.length)];
             usedHints[player].push(hintKey);
             hintsGiven[player]++;
+           
+              console.log(" *** hint key: " + hintKey);
 
             // Decide hint type
             const r = Math.random();
@@ -1423,6 +1597,9 @@
                     return char.hat === "yes" ?
                         `The character is wearing a hat.` :
                         `The character is NOT wearing a hat.`;
+
+                case "isNot":
+                    return generateIsNotHint();
 
                 case "nameLetter":
                     return generateNameLetterHint(char.name);
@@ -1579,7 +1756,7 @@
 
 
         function showTimerThenNextTurn() {
-            let timeLeft = 15;
+            let timeLeft = 2; // 15
             const timerDiv = document.getElementById("roundTimer");
             const number = document.getElementById("timerNumber");
             const clockSound = document.getElementById("clockSound");
@@ -1678,6 +1855,14 @@
 
             hintText.innerText = hint;
         }
+
+        // New function to generate "isNot" hint // to fix when it is chosen twice there is an error
+        function generateIsNotHint() {
+            const otherCharacters = characters.filter((char, index) => index !== targetIndex);  // Filter out the chosen character
+            const randomCharacter = otherCharacters[Math.floor(Math.random() * otherCharacters.length)]; // Pick a random character
+            return `The character is not ${randomCharacter.name}.`;  // Return the hint
+        }
+
 
         let examineTimer;
         let examineTimeLeft = 20;  // 20 seconds per player
@@ -1814,7 +1999,7 @@
             }
         }
 
-        const goodGuess = false;
+        let goodGuess = false;
         function checkEarlyWin() {
             const targetName = characters[targetIndex].name.toLowerCase();
             const guess = guesses[currentPlayer].toLowerCase();
