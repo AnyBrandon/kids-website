@@ -421,8 +421,9 @@
 
         #revealHintBtn {
             position: relative;
+            transform: scale(0.9);
             padding: 14px 30px;
-            font-size: 1.05em;
+            font-size: 1em;
             font-weight: 700;
             letter-spacing: 1.2px;
 
@@ -549,10 +550,12 @@
 
         #hintDoneBtn {
             position: relative;
-            padding: 14px 34px;
+            transform: scale(0.85);
+            /* slightly smaller */
+            padding: 10px 26px;
             margin-top: 15px;
 
-            font-size: 1.1em;
+            font-size: 0.9em;
             font-weight: 700;
             letter-spacing: 1.5px;
             text-transform: uppercase;
@@ -671,10 +674,11 @@
 
         #guessNowBtn {
             position: relative;
+            transform: scale(0.9);
             padding: 14px 36px;
             margin-top: 15px;
 
-            font-size: 1.12em;
+            font-size: 1em;
             font-weight: 700;
             letter-spacing: 1.4px;
             text-transform: uppercase;
@@ -833,6 +837,40 @@
         .character-card img:hover {
             transform: scale(1.05);
         }
+
+        /* Rarity Glow Frames */
+        .hint-common {
+            box-shadow: 0 0 15px #6aff6a, 0 0 30px #4cff4c;
+            border: 2px solid #6aff6a !important;
+        }
+
+        .hint-uncommon {
+            box-shadow: 0 0 15px #66c2ff, 0 0 30px #3399ff;
+            border: 2px solid #66c2ff !important;
+        }
+
+        .hint-rare {
+            box-shadow: 0 0 18px gold, 0 0 40px gold;
+            border: 2px solid gold !important;
+        }
+
+        .hint-rumor {
+            box-shadow: 0 0 18px #ff3b3b, 0 0 45px #ff1a1a;
+            border: 2px solid #ff3b3b !important;
+        }
+
+        .hint-empty {
+            box-shadow: 0 0 15px #cfcfcf, 0 0 35px #bfbfbf;
+            border: 2px solid #d6d6d6 !important;
+        }
+
+        #mutualHintModal .modal button {
+            margin: 10px 8px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -867,6 +905,15 @@
             <button onclick="closeShareModal()">Okay</button>
         </div>
     </div>
+
+    <div id="mutualHintModal" class="modal-overlay">
+        <div class="modal">
+            <p>If both players agree, I can share one more hint about the character!</p>
+            <button id="agreeExtraHintBtn">Agree</button>
+            <button id="disagreeExtraHintBtn">Disagree</button>
+        </div>
+    </div>
+
 
     <div id="guessModal" class="modal-overlay">
         <div class="modal">
@@ -968,7 +1015,7 @@
 
         function startNextTurn() {
             if (hintsGiven[1] >= 4 && hintsGiven[2] >= 4) {
-                beginFinalGuessPhase();
+                showMutualHintModal();
                 return;
             }
 
@@ -986,12 +1033,16 @@
 
         function openHintModal() {
             const guessBtn = document.getElementById("guessNowBtn");
+            const modalBox = document.querySelector("#hintModal .modal");
+
+            // REMOVE ANY PREVIOUS GLOW
+            modalBox.classList.remove("hint-common", "hint-uncommon", "hint-rare", "hint-rumor");
 
             document.getElementById("hintModal").style.display = "flex";
             document.getElementById("hintText").innerText = `Player ${currentPlayer}, tap to reveal your hint`;
             document.getElementById("revealHintBtn").style.display = "inline-block";
 
-            // ✔️ Only show guess button if player has already received at least 1 hint
+            // Show guess button only if player already has received a hint
             if (hintsGiven[currentPlayer] > 0) {
                 guessBtn.style.display = "inline-block";
             } else {
@@ -1000,6 +1051,87 @@
 
             document.getElementById("hintDoneBtn").style.display = "none";
         }
+
+
+        function showMutualHintModal() {
+            document.getElementById("mutualHintModal").style.display = "flex";
+        }
+
+        // Player chooses NOT to get an extra hint
+        document.getElementById("disagreeExtraHintBtn").onclick = () => {
+            document.getElementById("mutualHintModal").style.display = "none";
+            beginFinalGuessPhase();
+        };
+
+        // Player chooses to receive one more shared hint
+        document.getElementById("agreeExtraHintBtn").onclick = () => {
+            document.getElementById("mutualHintModal").style.display = "none";
+            startExtraSharedHint();
+        };
+
+        function startExtraSharedHint() {
+            const allHintKeys = [
+                "gender",
+                "eyeColor",
+                "eyeColorNot",
+                "clothingColors",
+                "hairColor",
+                "hairColorNot",
+                "hasAccessories",
+                "glasses",
+                "hat",
+                "nameLetter",
+                "nameLetterNot",
+                "nameLength"
+            ];
+
+            // Keys not used by either player
+            const unusedKeys = allHintKeys.filter(key =>
+                !usedHints[1].includes(key) &&
+                !usedHints[2].includes(key)
+            );
+
+            // Safety check
+            if (unusedKeys.length === 0) {
+                alert("No more hints available!");
+                beginFinalGuessPhase();
+                return;
+            }
+
+            // Pick a new hint key
+            const newKey = unusedKeys[Math.floor(Math.random() * unusedKeys.length)];
+
+            // Add to BOTH players so it can't be re-used later
+            usedHints[1].push(newKey);
+            usedHints[2].push(newKey);
+
+            // Generate the shared hint
+            const char = characters[targetIndex];
+            const r = Math.random();
+            let hint;
+
+            // same probability logic you already use
+            if (r < 0.10) {
+                hint = generateEmptyHint();
+            } else if (r < 0.35) {
+                hint = generateRumorHint(char, newKey);
+            } else {
+                hint = generateNormalHint(char, newKey);
+            }
+
+            // Show the hint modal
+            displayHint(hint);
+
+            // Force modal open
+            document.getElementById("hintModal").style.display = "flex";
+
+            // After Done → go to final phase
+            document.getElementById("hintDoneBtn").onclick = () => {
+                document.getElementById("hintModal").style.display = "none";
+                beginFinalGuessPhase();
+            };
+        }
+
 
 
         document.getElementById("revealHintBtn").onclick = () => {
@@ -1031,6 +1163,27 @@
 
 
         /* -------------------- HINT GENERATION -------------------- */
+
+        const hintRarity = {
+            // Common
+            eyeColor: "common",
+            eyeColorNot: "common",
+            clothingColors: "common",
+            hairColorNot: "common",
+
+            // Uncommon
+            hairColor: "uncommon",
+            hasAccessories: "uncommon",
+            glasses: "uncommon",
+            hat: "uncommon",
+
+            // Rare
+            gender: "rare",
+            nameLetter: "rare",
+            nameLetterNot: "rare",
+            nameLength: "rare"
+        };
+
 
         function generateHint(player) {
             const char = characters[targetIndex];
@@ -1110,47 +1263,115 @@
         }
 
         function generateRumorHint(char, key) {
-            let realHint = generateNormalHint(char, key);
 
-            const isTrue = Math.random() < 0.30;
+            // 50/50 true or false
+            const isTrue = Math.random() < 0.5;
+
+            // For a TRUE rumor, just produce the normal hint text
             if (isTrue) {
-                return { rumor: true, text: realHint };
+                return { rumor: true, text: generateNormalHint(char, key) };
             }
 
-            // False rumor: invert logic
+            // FALSE rumor logic (varies by hint type)
             switch (key) {
-                case "gender":
-                    return { rumor: true, text: `They say the character is a ${char.gender === "boy" ? "girl" : "boy"}.` };
 
-                case "eyeColor":
-                    return { rumor: true, text: `Someone claims the character has green eyes.` };
+                /* ------- EYECOLOR ------- */
+                case "eyeColor": {
+                    const allColors = ["black", "blue", "green", "brown"];
+                    // remove the real one
+                    const falseOptions = allColors.filter(c => c !== char.eyeColor);
+                    const fakeColor = falseOptions[Math.floor(Math.random() * falseOptions.length)];
+                    return { rumor: true, text: `Someone claims the character has ${fakeColor} eyes.` };
+                }
 
-                case "eyeColorNot":
-                    return { rumor: true, text: `Someone claims the character does NOT have black eyes.` };
+                case "eyeColorNot": {
+                    // false "not" = choose a color they DO have (incorrectly forbidden)
+                    const fakeColor = char.eyeColor;
+                    return { rumor: true, text: `Someone claims the character does NOT have ${fakeColor} eyes.` };
+                }
 
-                case "clothingColors":
-                    return { rumor: true, text: `Rumor says the clothes contain purple.` };
+                /* ------- HAIR COLOR ------- */
+                case "hairColor": {
+                    const allColors = ["black", "brown", "blonde"];
+                    const falseOptions = allColors.filter(c => c !== char.hairColor);
+                    const fakeColor = falseOptions[Math.floor(Math.random() * falseOptions.length)];
+                    return { rumor: true, text: `Someone says the character has ${fakeColor} hair.` };
+                }
 
-                case "hairColor":
-                    return { rumor: true, text: `Someone says the character has blonde hair.` };
+                case "hairColorNot": {
+                    const fakeColor = char.hairColor;
+                    return { rumor: true, text: `They say the character does NOT have ${fakeColor} hair.` };
+                }
 
-                case "hairColorNot":
-                    return { rumor: true, text: `They say the character does NOT have brown hair.` };
+                /* ------- CLOTHING COLORS ------- */
+                case "clothingColors": {
+                    const allColors = ["red", "blue", "green", "brown", "orange", "yellow", "pink", "purple", "white", "black", "beige", "grey"];
 
-                case "hasAccessories":
-                    return { rumor: true, text: `Rumor: the character is wearing accessories.` };
+                    // pick a false color not in their clothes
+                    const falseOptions = allColors.filter(c => !char.clothingColors.includes(c));
+                    const fakeColor = falseOptions[Math.floor(Math.random() * falseOptions.length)];
 
-                case "glasses":
-                    return { rumor: true, text: `Someone claims the character is wearing glasses.` };
+                    return { rumor: true, text: `Rumor says the clothes contain ${fakeColor}.` };
+                }
 
-                case "hat":
-                    return { rumor: true, text: `They say the character has a hat.` };
+                /* ------- ACCESSORIES ------- */
+                case "hasAccessories": {
+                    const fake = char.hasAccessories === "yes" ? "not wearing accessories" : "wearing accessories";
+                    return { rumor: true, text: `Rumor: the character is ${fake}.` };
+                }
 
-                case "nameLetter":
-                    return { rumor: true, text: `Rumor says their name includes the letter "${randomFromArray("abcdefghijklmnopqrstuvwxyz".split(""))}".` };
+                case "glasses": {
+                    const fake = char.glasses === "yes" ? "not wearing glasses" : "wearing glasses";
+                    return { rumor: true, text: `Someone claims the character is ${fake}.` };
+                }
 
+                case "hat": {
+                    const fake = char.hat === "yes" ? "not wearing a hat" : "wearing a hat";
+                    return { rumor: true, text: `They say the character is ${fake}.` };
+                }
+
+                /* ------- GENDER ------- */
+                case "gender": {
+                    const fake = char.gender === "boy" ? "girl" : "boy";
+                    return { rumor: true, text: `They say the character is a ${fake}.` };
+                }
+
+                /* ------- NAME LETTER ------- */
+                case "nameLetter": {
+                    const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+                    const realLetters = char.name.toLowerCase().split("");
+
+                    // false rumor = letter NOT in the name
+                    const falseLetters = alphabet.filter(l => !realLetters.includes(l));
+                    const fakeLetter = falseLetters[Math.floor(Math.random() * falseLetters.length)];
+
+                    return { rumor: true, text: `Rumor says their name includes the letter "${fakeLetter}".` };
+                }
+
+                /* ------- NAME LETTER NOT ------- */
+                case "nameLetterNot": {
+                    // false rumor = choose a letter that IS in the name (wrong)
+                    const realLetters = char.name.toLowerCase().replace(/[^a-z]/g, "").split("");
+                    const fakeLetter = realLetters[Math.floor(Math.random() * realLetters.length)];
+
+                    return { rumor: true, text: `Someone claims the character does NOT have the letter "${fakeLetter}" in their name.` };
+                }
+
+                /* ------- NAME LENGTH ------- */
+                case "nameLength": {
+                    const realLength = char.name.replace(/\s+/g, "").length;
+
+                    // false lengths (from 2 to 10 but not the real one)
+                    const possible = [];
+                    for (let i = 2; i <= 10; i++) if (i !== realLength) possible.push(i);
+
+                    const fakeLength = possible[Math.floor(Math.random() * possible.length)];
+
+                    return { rumor: true, text: `Rumor says the character's name has ${fakeLength} letters.` };
+                }
             }
         }
+
 
         // --- NEW HINT: a random letter that is NOT in the character's name ---
         function generateNameLetterNotHint(characterName) {
@@ -1242,17 +1463,48 @@
             const revealBtn = document.getElementById("revealHintBtn");
             const guessBtn = document.getElementById("guessNowBtn");
             const doneBtn = document.getElementById("hintDoneBtn");
+            const modalBox = document.querySelector("#hintModal .modal");
 
+            // Reset buttons
             revealBtn.style.display = "none";
             guessBtn.style.display = "none";
             doneBtn.style.display = "inline-block";
 
+            // Remove old rarity classes
+            modalBox.classList.remove("hint-common", "hint-uncommon", "hint-rare", "hint-rumor", "hint-empty");
+
+            // Is it a rumor?
             if (typeof hint === "object" && hint.rumor) {
                 hintText.innerHTML = `<div class="rumor-title">RUMOR</div>${hint.text}`;
-            } else {
-                hintText.innerText = hint;
+                modalBox.classList.add("hint-rumor");
+                return;
             }
+
+            // --- EMPTY HINT (useless) ---
+            const emptyHintsList = [
+                "Unable to retrieve information.",
+                "No intel available this time.",
+                "Your informant vanished.",
+                "This clue was corrupted."
+            ];
+
+            if (emptyHintsList.includes(hint)) {
+                hintText.innerText = hint;
+                modalBox.classList.add("hint-empty");
+                return;
+            }
+
+            // Normal hint: determine rarity
+            const lastKey = usedHints[currentPlayer][usedHints[currentPlayer].length - 1];
+            const rarity = hintRarity[lastKey];
+
+            if (rarity === "common") modalBox.classList.add("hint-common");
+            else if (rarity === "uncommon") modalBox.classList.add("hint-uncommon");
+            else if (rarity === "rare") modalBox.classList.add("hint-rare");
+
+            hintText.innerText = hint;
         }
+
 
         /* -------------------- SHARE MODAL -------------------- */
 
