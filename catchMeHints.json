@@ -1,7 +1,7 @@
 [
     {
         "number": 1,
-        "name": "samir",
+        "name": "Samir",
         "gender": "boy",
         "eyeColor": "brown",
         "eyeColorNot": [
@@ -25,7 +25,7 @@
     },
         {
         "number": 2,
-        "name": "jack",
+        "name": "Jack",
         "gender": "boy",
         "eyeColor": "blue",
         "eyeColorNot": [
@@ -49,7 +49,7 @@
     },
         {
         "number": 3,
-        "name": "franco",
+        "name": "Franco",
         "gender": "boy",
         "eyeColor": "brown",
         "eyeColorNot": [
@@ -73,7 +73,7 @@
     },
         {
         "number": 4,
-        "name": "henry",
+        "name": "Henry",
         "gender": "boy",
         "eyeColor": "brown",
         "eyeColorNot": [
@@ -97,7 +97,7 @@
     },
         {
         "number": 5,
-        "name": "willy",
+        "name": "Willy",
         "gender": "boy",
         "eyeColor": "brown",
         "eyeColorNot": [
@@ -121,7 +121,7 @@
     },
         {
         "number": 6,
-        "name": "kai",
+        "name": "Kai",
         "gender": "boy",
         "eyeColor": "green",
         "eyeColorNot": [
@@ -145,7 +145,7 @@
     },
         {
         "number": 7,
-        "name": "leo",
+        "name": "Leo",
         "gender": "boy",
         "eyeColor": "blue",
         "eyeColorNot": [
@@ -169,7 +169,7 @@
     },
         {
         "number": 8,
-        "name": "axel",
+        "name": "Axel",
         "gender": "boy",
         "eyeColor": "green",
         "eyeColorNot": [
@@ -193,7 +193,7 @@
     },
         {
         "number": 9,
-        "name": "luka",
+        "name": "Luka",
         "gender": "boy",
         "eyeColor": "black",
         "eyeColorNot": [
@@ -217,7 +217,7 @@
     },
         {
         "number": 10,
-        "name": "max",
+        "name": "Max",
         "gender": "boy",
         "eyeColor": "black",
         "eyeColorNot": [
@@ -241,7 +241,7 @@
     },
         {
         "number": 11,
-        "name": "ava",
+        "name": "Ava",
         "gender": "girl",
         "eyeColor": "green",
         "eyeColorNot": [
@@ -265,7 +265,7 @@
     },
         {
         "number": 12,
-        "name": "aria",
+        "name": "Aria",
         "gender": "girl",
         "eyeColor": "brown",
         "eyeColorNot": [
@@ -289,7 +289,7 @@
     },
         {
         "number": 13,
-        "name": "joy",
+        "name": "Joy",
         "gender": "girl",
         "eyeColor": "black",
         "eyeColorNot": [
@@ -313,7 +313,7 @@
     },
         {
         "number": 14,
-        "name": "lili",
+        "name": "Lili",
         "gender": "girl",
         "eyeColor": "green",
         "eyeColorNot": [
@@ -337,7 +337,7 @@
     },
         {
         "number": 15,
-        "name": "harper",
+        "name": "Harper",
         "gender": "girl",
         "eyeColor": "brown",
         "eyeColorNot": [
@@ -361,7 +361,7 @@
     },
         {
         "number": 16,
-        "name": "julia",
+        "name": "Julia",
         "gender": "girl",
         "eyeColor": "brown",
         "eyeColorNot": [
@@ -384,7 +384,7 @@
     },
         {
         "number": 17,
-        "name": "valery",
+        "name": "Valery",
         "gender": "girl",
         "eyeColor": "black",
         "eyeColorNot": [
@@ -408,7 +408,7 @@
     },
         {
         "number": 18,
-        "name": "rita",
+        "name": "Rita",
         "gender": "girl",
         "eyeColor": "green",
         "eyeColorNot": [
@@ -431,7 +431,7 @@
     },
         {
         "number": 19,
-        "name": "seren",
+        "name": "Karen",
         "gender": "girl",
         "eyeColor": "black",
         "eyeColorNot": [
@@ -454,7 +454,7 @@
     },
         {
         "number": 20,
-        "name": "kira",
+        "name": "Kira",
         "gender": "girl",
         "eyeColor": "brown",
         "eyeColorNot": [

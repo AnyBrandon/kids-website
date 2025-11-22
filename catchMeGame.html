@@ -864,12 +864,159 @@
             border: 2px solid #d6d6d6 !important;
         }
 
-        #mutualHintModal .modal button {
-            margin: 10px 8px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 1em;
+        /* Common button styles */
+        #mutualHintModal .modal {
+            position: relative;
+            padding: 14px 28px;
+            font-size: 0.9em;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #fff;
+            background: transparent;
+            border: 2px solid;
+            border-radius: 12px;
             cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            animation: neonGlow 2s infinite alternate;
+        }
+
+        /* Default neon glow animation */
+        @keyframes neonGlow {
+            0% {
+                box-shadow: 0 0 6px #00eaff, 0 0 14px #00eaff;
+            }
+
+            50% {
+                box-shadow: 0 0 12px #00faff, 0 0 30px #00faff;
+            }
+
+            100% {
+                box-shadow: 0 0 6px #00eaff, 0 0 14px #00eaff;
+            }
+        }
+
+        /* Agree button (cyan) */
+        #agreeExtraHintBtn {
+            border-color: #2ddfff;
+            box-shadow: 0 0 8px #2ddfff, 0 0 20px #2ddfff;
+        }
+
+        #agreeExtraHintBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 12px #00faff, 0 0 30px #00faff;
+        }
+
+        #agreeExtraHintBtn:active {
+            transform: translateY(1px);
+            opacity: 0.8;
+        }
+
+        /* Disagree button (red) */
+        #disagreeExtraHintBtn {
+            border-color: #ff4d4d;
+            box-shadow: 0 0 8px #ff4d4d, 0 0 20px #ff4d4d;
+        }
+
+        #disagreeExtraHintBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 12px #ff6060, 0 0 30px #ff6060;
+        }
+
+        #disagreeExtraHintBtn:active {
+            transform: translateY(1px);
+            opacity: 0.8;
+        }
+
+        /* Neon sweep animation */
+        @keyframes neonSweep {
+            0% {
+                left: -120%;
+            }
+
+            40% {
+                left: 140%;
+            }
+
+            100% {
+                left: 140%;
+            }
+        }
+
+        /* Shimmering effect for glow */
+        @keyframes shimmer {
+            0% {
+                opacity: 0.15;
+            }
+
+            100% {
+                opacity: 0.35;
+            }
+        }
+
+        /* Neon sweep animation for both buttons */
+        #mutualHintModal .modal button::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 80%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent 0%, rgba(0, 255, 255, 0.35) 50%, transparent 100%);
+            transform: skewX(-20deg);
+            animation: neonSweep 3s infinite ease-in-out;
+        }
+
+        /* Shimmer effect on button */
+        #mutualHintModal .modal button::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.2), transparent 70%);
+            opacity: 0.25;
+            animation: shimmer 4s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+
+        #examineModal .modal {
+            background: #161618;
+            border: 2px solid #333;
+            padding: 25px;
+            border-radius: 12px;
+            color: #fff;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+        }
+
+        #examineModal .modal button {
+            padding: 12px 25px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            background-color: #2ddfff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Progress Bar Styles */
+        .progress-bar-container {
+            width: 100%;
+            height: 20px;
+            background-color: #555;
+            /* Dark background */
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            /* Start at 100% and will decrease with time */
+            height: 100%;
+            background-color: #2ddfff;
+            /* Bright color for the progress */
+            border-radius: 10px;
+            transition: width 1s linear;
         }
     </style>
 </head>
@@ -883,6 +1030,13 @@
             <span id="timerNumber">30</span>
         </div>
     </div>
+
+    <div id="roundTimer2" style="display:none; text-align:center; margin-bottom:20px;">
+        <div class="progress-bar-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+    </div>
+
 
 
     <button id="startBtn" class="start-btn-animated">Start Game</button>
@@ -908,9 +1062,9 @@
 
     <div id="mutualHintModal" class="modal-overlay">
         <div class="modal">
-            <p>If both players agree, I can share one more hint about the character!</p>
-            <button id="agreeExtraHintBtn">Agree</button>
-            <button id="disagreeExtraHintBtn">Disagree</button>
+            <p>If both players agree, I’ll drop one more hint!</p>
+            <button id="agreeExtraHintBtn" class="agreeExtraHintBtn">Agree</button>
+            <button id="disagreeExtraHintBtn" class="disagreeExtraHintBtn">Disagree</button>
         </div>
     </div>
 
@@ -931,6 +1085,13 @@
         </div>
     </div>
 
+    <div id="examineModal" class="modal-overlay">
+        <div class="modal">
+            <p id="examineText">Player X, you have 20 seconds to examine the board.</p>
+            <button id="examineOkayBtn">Okay</button>
+        </div>
+    </div>
+
 
     <div id="finalModal" class="modal-overlay">
         <div class="modal">
@@ -946,7 +1107,9 @@
     <audio id="clockSound" src="sounds/clockTimer.wav" loop></audio>
     <audio id="eventSound" src="sounds/event.wav"></audio>
     <audio id="bangSound" src="sounds/bang.mp3"></audio>
-
+    <audio id="correctSound" src="sounds/correct.wav"></audio>
+    <audio id="winSound" src="sounds/winSound.wav"></audio>
+    <audio id="wrongSound" src="sounds/wrong.wav"></audio>
 
     <!-- Image Zoom Modal -->
     <div id="imageZoomModal">
@@ -1055,19 +1218,30 @@
 
         function showMutualHintModal() {
             document.getElementById("mutualHintModal").style.display = "flex";
+
+            // Handle "Agree" button click
+            document.getElementById("agreeExtraHintBtn").onclick = () => {
+                // Show mutual hint modal with new hint first
+                document.getElementById("mutualHintModal").style.display = "none";
+
+                // Show the new hint for both players
+                startExtraSharedHint(); // Generate a new random hint
+
+                // Once the "Done" button in the hint modal is clicked, show the examine modal
+                document.getElementById("hintDoneBtn").onclick = () => {
+                    document.getElementById("hintModal").style.display = "none";
+                    showExamineModal(1);  // Start with Player 1 examining the board
+                };
+            };
+
+            // Handle "Disagree" button click
+            document.getElementById("disagreeExtraHintBtn").onclick = () => {
+                // If Disagree, immediately start examining
+                document.getElementById("mutualHintModal").style.display = "none";
+                showExamineModal(1);  // Start with Player 1 examining the board
+            };
         }
 
-        // Player chooses NOT to get an extra hint
-        document.getElementById("disagreeExtraHintBtn").onclick = () => {
-            document.getElementById("mutualHintModal").style.display = "none";
-            beginFinalGuessPhase();
-        };
-
-        // Player chooses to receive one more shared hint
-        document.getElementById("agreeExtraHintBtn").onclick = () => {
-            document.getElementById("mutualHintModal").style.display = "none";
-            startExtraSharedHint();
-        };
 
         function startExtraSharedHint() {
             const allHintKeys = [
@@ -1128,7 +1302,7 @@
             // After Done → go to final phase
             document.getElementById("hintDoneBtn").onclick = () => {
                 document.getElementById("hintModal").style.display = "none";
-                beginFinalGuessPhase();
+                //  beginFinalGuessPhase();
             };
         }
 
@@ -1264,8 +1438,8 @@
 
         function generateRumorHint(char, key) {
 
-            // 50/50 true or false
-            const isTrue = Math.random() < 0.5;
+            // 25% true, 75% false
+            const isTrue = Math.random() < 0.25; // 25% chance for a true rumor
 
             // For a TRUE rumor, just produce the normal hint text
             if (isTrue) {
@@ -1405,7 +1579,7 @@
 
 
         function showTimerThenNextTurn() {
-            let timeLeft = 5;
+            let timeLeft = 15;
             const timerDiv = document.getElementById("roundTimer");
             const number = document.getElementById("timerNumber");
             const clockSound = document.getElementById("clockSound");
@@ -1505,6 +1679,80 @@
             hintText.innerText = hint;
         }
 
+        let examineTimer;
+        let examineTimeLeft = 20;  // 20 seconds per player
+        let currentExaminingPlayer = 1; // Start with Player 1
+
+        // Function to show the examine modal
+        function showExamineModal(player) {
+            const examineModal = document.getElementById("examineModal");
+            const examineText = document.getElementById("examineText");
+
+            // Randomly choose who examines first
+            currentExaminingPlayer = player;
+
+            examineText.innerText = `Player ${player}, you have 20 seconds to examine the board.`;
+            examineModal.style.display = "flex";
+
+            // When "Okay" is clicked, start the timer
+            document.getElementById("examineOkayBtn").onclick = () => {
+                examineModal.style.display = "none";  // Close the modal
+                startExamineTimer(player);  // Start timer for this player
+            };
+        }
+
+        // Function to start the 20-second examine timer
+        function startExamineTimer(player) {
+            examineTimeLeft = 20;  // Reset time for each player
+            //  const timerDisplay = document.getElementById("timerNumber");
+            const progressBar = document.getElementById("progressBar"); // The new progress bar element
+            const roundTimer = document.getElementById("roundTimer2"); // Timer element (already in your HTML)
+            const clockSound = document.getElementById("clockSound");
+
+            // Show the timer and the progress bar
+            roundTimer.style.display = "block";  // Ensure it's visible
+            // timerDisplay.innerText = examineTimeLeft;  // Set initial timer text
+            progressBar.style.width = "100%";  // Start the progress bar full (100%)
+
+            // 🔊 START looping sound
+            clockSound.currentTime = 0;
+            clockSound.play();
+
+            // Countdown the timer
+            examineTimer = setInterval(() => {
+                examineTimeLeft--;
+                //  timerDisplay.innerText = examineTimeLeft;  // Update timer text
+                const progress = (examineTimeLeft / 20) * 100; // Calculate progress (percentage)
+
+                // Update the progress bar width
+                progressBar.style.width = progress + "%";
+
+                if (examineTimeLeft <= 0) {
+                    clearInterval(examineTimer);  // Stop the timer
+                    roundTimer.style.display = "none";  // Hide the timer
+
+                    // 🔇 STOP sound
+                    clockSound.pause();
+                    clockSound.currentTime = 0;
+
+                    // After the first player finishes, show the other player's examine modal
+                    if (player === 1) {
+                        showExamineModal(2);  // Show modal for Player 2
+                    } else {
+                        beginFinalGuessPhase();  // Both players have examined the board, start the guessing phase
+                    }
+                }
+            }, 1000); // Run the countdown every second
+        }
+
+
+
+        // Function to begin the final guess phase
+        function beginFinalGuessPhase() {
+            // Final guess phase logic here (as previously implemented)
+            // Show the final guess modal and proceed with guesses
+            showFinalModal();
+        }
 
         /* -------------------- SHARE MODAL -------------------- */
 
@@ -1566,11 +1814,12 @@
             }
         }
 
+        const goodGuess = false;
         function checkEarlyWin() {
             const targetName = characters[targetIndex].name.toLowerCase();
             const guess = guesses[currentPlayer].toLowerCase();
-
             if (guess === targetName) {
+                goodGuess = true;
                 showFinalInstantWin(currentPlayer);
             } else {
                 showFinalInstantWin(currentPlayer === 1 ? 2 : 1);
@@ -1589,12 +1838,18 @@
             const p1Correct = guesses[1].toLowerCase() === targetName;
             const p2Correct = guesses[2].toLowerCase() === targetName;
 
+            const winSound = document.getElementById("winSound");
+            winSound.currentTime = 0;  // Ensure it plays from the start
+
             if (p1Correct && p2Correct) {
                 showFinalResult("It's a tie! Both players guessed correctly.");
+                winSound.play();
             } else if (p1Correct) {
                 showFinalResult("Player 1 Wins!");
+                winSound.play();
             } else if (p2Correct) {
                 showFinalResult("Player 2 Wins!");
+                winSound.play();
             } else {
                 showFinalResult("Nobody got it right!");
             }
@@ -1627,6 +1882,16 @@
         /* -------------------- FINAL REVEAL -------------------- */
 
         function showFinalInstantWin(winner) {
+            if (goodGuess) {
+                const winSound = document.getElementById("winSound");
+                winSound.currentTime = 0;  // Ensure it plays from the start
+                winSound.play();
+            } else {
+                const wrongSound = document.getElementById("wrongSound");
+                wrongSound.currentTime = 0;  // Ensure it plays from the start
+                wrongSound.play();
+
+            }
             showFinalResult(`Player ${winner} wins by early guess!`);
         }
 
