@@ -1152,7 +1152,9 @@
 
 
     <button id="infoBtn" class="info-btn-animated">Info</button>
+    <br />
     <button id="startBtn" class="start-btn-animated">Start Game</button>
+
 
     <div id="board"></div>
 
@@ -1273,6 +1275,7 @@
 
         let characters = [];
         let targetIndex = null;
+        let char = null;
 
         let currentPlayer = 1;
         let hintsGiven = { 1: 0, 2: 0 };
@@ -1339,8 +1342,12 @@
             });
         }
 
+         
         function chooseRandomCharacter() {
             targetIndex = Math.floor(Math.random() * characters.length);
+            char = characters[targetIndex];
+           // console.log("*** Target Index:", targetIndex); // For testing purposes
+           // console.log("*** Target Character:", char.name); // For testing purposes
         }
 
         /* -------------------- TURN SYSTEM -------------------- */
@@ -1450,7 +1457,7 @@
             usedHints[2].push(newKey);
 
             // Generate the shared hint
-            const char = characters[targetIndex];
+           // const char = characters[targetIndex];
             const r = Math.random();
             let hint;
 
@@ -1531,7 +1538,7 @@
 
 
         function generateHint(player) {
-            const char = characters[targetIndex];
+            //const char = characters[targetIndex];
 
             // Prevent repeats for this player
             const possibleHints = [
@@ -1553,8 +1560,8 @@
             const hintKey = possibleHints[Math.floor(Math.random() * possibleHints.length)];
             usedHints[player].push(hintKey);
             hintsGiven[player]++;
-           
-              console.log(" *** hint key: " + hintKey);
+
+           // console.log(" *** hint key: " + hintKey);
 
             // Decide hint type
             const r = Math.random();
@@ -1856,10 +1863,10 @@
             hintText.innerText = hint;
         }
 
-        // New function to generate "isNot" hint // to fix when it is chosen twice there is an error
+        // New function to generate "isNot" hint // to fix
         function generateIsNotHint() {
-            const otherCharacters = characters.filter((char, index) => index !== targetIndex);  // Filter out the chosen character
-            const randomCharacter = otherCharacters[Math.floor(Math.random() * otherCharacters.length)]; // Pick a random character
+            let otherCharacters = characters.filter((char, index) => index !== targetIndex);  // Filter out the chosen character
+            let randomCharacter = otherCharacters[Math.floor(Math.random() * otherCharacters.length)]; // Pick a random character
             return `The character is not ${randomCharacter.name}.`;  // Return the hint
         }
 
@@ -2081,7 +2088,7 @@
         }
 
         function showFinalResult(text) {
-            const char = characters[targetIndex];
+            //const char = characters[targetIndex];
 
             document.getElementById("finalResult").innerText = text;
             document.getElementById("finalImg").src = `images/catchMe/${characters[targetIndex].number}.png`;
