@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Always & Forever</title>
+
+    <!-- Google font (works if online) -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0f0b12;
+            --card: #111018;
+            --accent: #ff6b9a;
+            --muted: #bdb8c7;
+            --glass: rgba(255, 255, 255, 0.04);
+            --max-width: 920px;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            background: radial-gradient(1200px 600px at 10% 20%, rgba(255, 107, 154, 0.06), transparent 8%),
+                radial-gradient(800px 400px at 90% 80%, rgba(255, 199, 199, 0.03), transparent 6%),
+                var(--bg);
+            color: #eee;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            box-sizing: border-box;
+        }
+
+        .stage {
+            width: 100%;
+            max-width: var(--max-width);
+            min-height: min(760px, calc(100vh - 64px));
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+            overflow: hidden;
+            position: relative;
+            padding: clamp(18px, 3vw, 40px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .branding {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .logo {
+            width: 80px;
+            /* was 11px */
+            height: 80px;
+            /* was 56px */
+
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Playfair Display", serif;
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 26px;
+            /* slightly larger */
+
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* keeps aspect ratio while filling logo */
+            border-radius: inherit;
+            /* match parent border radius */
+            display: block;
+            /* removes any inline spacing issues */
+        }
+
+        .title h1 {
+            margin: 0;
+            font-family: "Playfair Display", serif;
+            font-weight: 700;
+            font-size: clamp(18px, 2.6vw, 28px);
+            letter-spacing: -0.02em;
+            color: #fff;
+        }
+
+        .title p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .hero {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            min-height: 320px;
+            position: relative;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            flex: 1 1 360px;
+            max-width: 720px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.02));
+            border-radius: 20px;
+            padding: clamp(18px, 3.5vw, 36px);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .heart-wrap {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .heart {
+            width: 140px;
+            height: 140px;
+            position: relative;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .heart:before,
+        .heart:after {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 160px;
+            background: linear-gradient(180deg, rgba(255, 107, 154, 0.98), rgba(255, 107, 154, 0.78));
+            border-radius: 100px 100px 0 0;
+            top: 0;
+            left: 20px;
+            filter: drop-shadow(0 6px 18px rgba(255, 107, 154, 0.12));
+            transform: rotate(-45deg);
+        }
+
+        .heart:after {
+            transform: rotate(45deg);
+            left: auto;
+            right: 20px;
+        }
+
+        .heart .shine {
+            position: absolute;
+            width: 60%;
+            height: 40%;
+            top: 10%;
+            left: 20%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05));
+            transform: rotate(-12deg);
+            filter: blur(8px);
+            opacity: 0.9;
+            border-radius: 50%;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-10px) scale(1.02);
+            }
+        }
+
+        .message {
+            font-family: "Playfair Display", serif;
+            font-size: clamp(14px, 2.2vw, 24px);
+            color: #fff;
+            margin: 0;
+            line-height: 1.1;
+        }
+
+        .meta {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .aside {
+            width: 260px;
+            min-width: 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .special .card {
+            border: 2px solid rgba(255, 107, 154, 0.65);
+            box-shadow:
+                0 0 22px rgba(255, 107, 154, 0.55),
+                0 0 42px rgba(255, 160, 185, 0.45),
+                0 0 70px rgba(255, 120, 160, 0.35),
+                inset 0 0 18px rgba(255, 107, 154, 0.26);
+            transition: box-shadow .4s ease, border .4s ease;
+        }
+
+        .petal {
+            position: absolute;
+            width: 18px;
+            height: 30px;
+            background: linear-gradient(180deg, rgba(255, 196, 206, 0.9), rgba(255, 107, 154, 0.9));
+            border-radius: 50% 50% 40% 40%;
+            transform: rotate(-30deg);
+            opacity: 0.9;
+            animation: drift linear infinite;
+        }
+
+        @keyframes drift {
+            from {
+                transform: translateY(-60vh) rotate(0deg);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(60vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 980px) {
+            .stage {
+                padding: 20px;
+            }
+
+            .hero {
+                flex-direction: column;
+            }
+
+            .aside {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 16px;
+            }
+
+            .logo {
+                width: 56px;
+                height: 56px;
+                font-size: 22px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .heart {
+                width: 110px;
+                height: 110px;
+            }
+
+            .message {
+                font-size: 20px;
+            }
+        }
+
+        /* Disable heart pseudo-elements when special bouquet is active */
+        .heart.special-bouquet::before,
+        .heart.special-bouquet::after {
+            content: none;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="stage" id="stage" role="main" aria-labelledby="heading">
+        <div class="topbar">
+            <div class="branding">
+                <div class="logo"></div>
+                <div class="title">
+                    <h1 id="heading">Always & Forever</h1>
+                </div>
+            </div>
+            <div id="todayLabel" style="color:var(--muted);font-size:14px"></div>
+        </div>
+
+        <section class="hero" aria-live="polite">
+            <article class="card" id="messageCard">
+                <div class="heart-wrap">
+                    <div class="heart">
+                        <div class="shine"></div>
+                    </div>
+                    <p class="message" id="messageText">Loading today's message…</p>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+            function todayISO() {
+                const d = new Date();
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+
+            const fallbackMessages = [
+                { "date": "2025-11-23", "message": "On this day and every day, my heart finds its way back to you.", "specialDay": "yes" },
+                { "date": "2025-12-25", "message": "Merry moments and quiet whispers — with you, every day is a present.", "specialDay": "yes" },
+                { "date": "2025-02-14", "message": "Love letters stitched into February's cold — warm me with your smile.", "specialDay": "yes" },
+                { "date": "2025-11-24", "message": "Another ordinary morning made extraordinary just because you're near.", "specialDay": "no" }
+            ];
+
+            const messageText = document.getElementById('messageText');
+            const metaLine = document.getElementById('metaLine');
+            const todayLabel = document.getElementById('todayLabel');
+            const stage = document.getElementById('stage');
+            const today = todayISO();
+
+            todayLabel.textContent = `Today • ${today}`;
+
+            // Set logo image based on day of month (1–30)
+            (function setLogoImage() {
+                const day = new Date().getDate();  // 1–31
+                const img = document.createElement('img');
+                img.src = `images/always/${day}.png`;
+                img.alt = "Daily symbol";
+                img.style.width = "100%";
+                img.style.height = "100%";
+                img.style.objectFit = "cover";
+                img.style.borderRadius = "inherit"; // so it matches the updated .logo radius
+
+                const logo = document.querySelector('.logo');
+                logo.innerHTML = "";
+                logo.appendChild(img);
+            })();
+
+
+            async function loadMessages() {
+                try {
+                    const resp = await fetch('./liliMessages.json', { cache: "no-cache" });
+                    if (!resp.ok) throw new Error(resp.status);
+                    const data = await resp.json();
+                    return Array.isArray(data) ? data : fallbackMessages;
+                } catch {
+                    return fallbackMessages;
+                }
+            }
+
+            function findMessageForDate(arr, date) {
+                return arr.find(item => item.date === date);
+            }
+
+            function renderMessage(obj) {
+                const heartDiv = document.querySelector('.heart');
+
+                //Array of random sentences 
+                const randomSentences = ["I love you so so much 💖", "Te quiero mi amore mio 💖", "Te amo liliti 💖", "Bhebbik 💖", "Bhebbik Lili 💖", "Te amo con todo mi corazon 💖", "Love you always and forever 💖", "Te quiero habibi 💖", "Te amo mi viditta 💖", "Te amo asta la muerte mi penguino💖", "Bhebbik babygirl 💖", "Te quiero bebita 💖", "I love you the most 💖", "I love loving you 💖"];
+
+
+                function getRandomSentence() { const index = Math.floor(Math.random() * randomSentences.length); return randomSentences[index]; }
+
+                if (!obj) {
+                    messageText.textContent = "No special note for today, but here's my little whisper: I hope you feel loved.";
+                    stage.classList.remove('special');
+                    heartDiv.style.display = 'flex'; // show default heart
+                    heartDiv.innerHTML = '<div class="shine"></div>';
+                    return;
+                }
+
+                messageText.textContent = obj.message + " " + getRandomSentence();
+
+                if (obj.specialDay.toLowerCase() !== "no") {
+                    stage.classList.add('special');
+
+                    // Hide floating heart completely
+                    heartDiv.style.display = 'block';
+                    heartDiv.style.width = '140px';
+                    heartDiv.style.height = '140px';
+                    heartDiv.style.position = 'relative';
+                    heartDiv.style.animation = 'none'; // stop float animation
+
+                    // Remove heart pseudo-elements by overriding content
+                    heartDiv.classList.add('special-bouquet');
+
+                    // Clear existing content and add bouquet
+                    heartDiv.innerHTML = '';
+                    const bouquetIndex = Math.floor(Math.random() * 15) + 1;
+                    const img = document.createElement('img');
+                    img.src = `images/bouquets/${bouquetIndex}.png`;
+                    img.alt = "Special bouquet";
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "contain";
+                    img.style.borderRadius = "12px";
+                    heartDiv.appendChild(img);
+
+                } else {
+                    stage.classList.remove('special');
+
+                    // Restore floating heart
+                    heartDiv.classList.remove('special-bouquet');
+                    heartDiv.style.display = 'block';
+                    heartDiv.style.width = '140px';
+                    heartDiv.style.height = '140px';
+                    heartDiv.style.position = 'relative';
+                    heartDiv.style.animation = "float 6s ease-in-out infinite";
+                    heartDiv.innerHTML = '<div class="shine"></div>';
+                }
+            }
+
+
+            function spawnPetals(count = 12) {
+                document.querySelectorAll('.petal').forEach(n => n.remove());
+                for (let i = 0; i < count; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'petal';
+                    p.style.left = Math.random() * 100 + 'vw';
+                    p.style.top = (-20 - Math.random() * 30) + 'vh';
+                    p.style.animationDuration = (12 + Math.random() * 16) + 's';
+                    p.style.animationDelay = (Math.random() * -20) + 's';
+                    document.getElementById('stage').appendChild(p);
+                }
+            }
+
+            (async function init() {
+                spawnPetals();
+                const data = await loadMessages();
+                renderMessage(findMessageForDate(data, today));
+            })();
+        })();
+    </script>
+
+</body>
+
+</html>
