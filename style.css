@@ -426,3 +426,97 @@ p {
   letter-spacing: 1px;
   animation: pulse 1.2s infinite;
 }
+/* ----- Wheel of Chaos Button ----- */
+
+.wheel-chaos-btn {
+    --chaos-color-1: #ff0055;
+    --chaos-color-2: #5500ff;
+    --chaos-glow: 0 0 12px rgba(255, 0, 85, 0.8),
+                  0 0 24px rgba(85, 0, 255, 0.6);
+
+    padding: 18px 40px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--chaos-color-1), var(--chaos-color-2));
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--chaos-glow);
+    transition: transform .15s ease, box-shadow .3s ease;
+}
+
+/* Press effect */
+.wheel-chaos-btn:active {
+    transform: scale(0.95);
+    filter: brightness(0.85);
+}
+
+/* ----- Glitch animation ----- */
+
+.wheel-chaos-btn::before,
+.wheel-chaos-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    mix-blend-mode: screen;
+    opacity: 0.2;
+    pointer-events: none;
+    animation: chaos-glitch 2s infinite;
+}
+
+.wheel-chaos-btn::after {
+    animation-duration: 3.2s;
+    animation-direction: reverse;
+}
+
+/* Keyframes */
+@keyframes chaos-glitch {
+    0% { transform: translate(0); clip-path: inset(0% 0 0% 0); }
+    10% { transform: translate(-3px, 1px); clip-path: inset(10% 0 30% 0); }
+    20% { transform: translate(4px, -2px); clip-path: inset(40% 0 10% 0); }
+    30% { transform: translate(-1px, 2px); clip-path: inset(25% 0 45% 0); }
+    40% { transform: translate(2px, -1px); clip-path: inset(0% 0 60% 0); }
+    100% { transform: translate(0); clip-path: inset(0% 0 0% 0); }
+}
+
+/* catch me if you can button styling */
+.catch-btn {
+  background: linear-gradient(135deg, #0a0a0a, #836888, #6a3a39);
+  background-size: 300% 300%;
+  color: white;
+  font-weight: bold;
+  border: none;
+  padding: 12px 20px;
+  margin-left: 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  box-shadow: 0 0 15px rgba(74, 65, 86, 0.7), 0 0 25px rgba(18, 17, 89, 0.6);
+  transition: all 0.4s ease-in-out;
+  animation: gradientShift 5s ease infinite;
+}
+
+.catch-btn:hover {
+  transform: scale(1.08) rotate(-1deg);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 1), 0 0 45px rgb(52, 62, 78);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}

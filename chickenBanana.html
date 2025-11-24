@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chicken Banana</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f1f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* --- COOL ANIMATED TITLE --- */
+        /* --- DARKER, RICHER ANIMATED TITLE --- */
+        .game-title {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: 3px;
+
+            /* Darker gradient */
+            background: linear-gradient(90deg, #adcc00, #0367f3, #c40072, #7fa800);
+            -webkit-background-clip: text;
+            color: transparent;
+
+            text-shadow: 0 0 20px rgba(180, 120, 0, 0.35);
+            animation: titleGlow 4s infinite linear, titleWave 2.5s infinite ease-in-out;
+
+            font-family: "Comic Sans MS", "Fredoka One", cursive;
+        }
+
+        /* darker glow animation */
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 0 0 15px rgba(160, 90, 0, 0.3);
+            }
+
+            25% {
+                text-shadow: 0 0 25px rgba(190, 120, 0, 0.55);
+            }
+
+            50% {
+                text-shadow: 0 0 32px rgba(120, 150, 0, 0.65);
+            }
+
+            75% {
+                text-shadow: 0 0 25px rgba(190, 120, 0, 0.55);
+            }
+
+            100% {
+                text-shadow: 0 0 15px rgba(160, 90, 0, 0.3);
+            }
+        }
+
+        /* wave up/down motion */
+        @keyframes titleWave {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+
+
+        .game-container {
+            width: 95%;
+            max-width: 1100px;
+            background: #d58df4;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .race-track {
+            width: 100%;
+            height: 220px;
+            background: #ddd;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step {
+            height: 100%;
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            flex: 1;
+            position: relative;
+        }
+
+        .character {
+            position: absolute;
+            bottom: 10px;
+            width: 50px;
+            transition: left 0.3s ease;
+        }
+
+        #chicken {
+            bottom: 100px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* --- NEW BUTTON STYLES --- */
+
+        .player-controls button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 14px;
+            font-size: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        /* 🔥 CHICKEN BUTTONS – orange/red fire theme */
+        #chicken-controls button {
+            background: linear-gradient(135deg, #ff9800, #ff5722);
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4);
+        }
+
+        #chicken-controls button:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 15px rgba(255, 87, 34, 0.55);
+        }
+
+        #chicken-controls button:active {
+            transform: scale(0.95);
+        }
+
+        /* 🍌 BANANA BUTTONS – neon yellow/green tropical theme */
+        #banana-controls button {
+            background: linear-gradient(135deg, #f4ff3d, #b3ff66);
+            color: #3b3b00;
+            border: 2px solid rgba(150, 170, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(180, 255, 80, 0.35);
+        }
+
+        #banana-controls button:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 15px rgba(150, 255, 40, 0.55);
+        }
+
+        #banana-controls button:active {
+            transform: scale(0.95);
+        }
+
+        /* Add spacing improvements */
+        .player-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .title-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #start-btn {
+            padding: 14px 30px;
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+
+            background: linear-gradient(135deg, #3cff7a, #00c853);
+            color: #083c16;
+            text-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+
+            box-shadow: 0 0 20px rgba(0, 255, 120, 0.6),
+                0 0 40px rgba(0, 255, 120, 0.35);
+
+            animation: startPulse 2s infinite ease-in-out,
+                startGlow 3s infinite linear;
+
+            transition: transform 0.15s ease;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.12) translateY(-4px);
+            box-shadow: 0 0 25px rgba(0, 255, 120, 0.8),
+                0 0 50px rgba(0, 255, 120, 0.55);
+        }
+
+        #start-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Button pulsing animation */
+        @keyframes startPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Glowing color cycling */
+        @keyframes startGlow {
+            0% {
+                box-shadow: 0 0 20px rgba(0, 255, 120, 0.5);
+            }
+
+            50% {
+                box-shadow: 0 0 35px rgba(0, 255, 160, 0.8);
+            }
+
+            100% {
+                box-shadow: 0 0 20px rgba(0, 255, 120, 0.5);
+            }
+        }
+
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Info button */
+        #info-btn {
+            padding: 8px 16px;
+            font-size: 22px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            background: #2196f3;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        #info-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Modal background */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        /* Modal box */
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.25s ease;
+        }
+
+        /* hidden utility */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Opening animation */
+        @keyframes popIn {
+            0% {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Timer styling */
+        /* Timer container */
+        #timer {
+            width: 250px;
+            margin: 10px auto 25px auto;
+            text-align: center;
+            font-weight: bold;
+            font-size: 30px;
+            color: #ffffff;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Number with glow + pulse */
+        #timer-number {
+            font-size: 40px;
+            font-weight: 900;
+            color: #51f107;
+            text-shadow: 0 0 12px rgba(0, 255, 150, 0.7);
+            animation: timerPulse 1s infinite ease-in-out;
+        }
+
+        /* Bar wrapper */
+        #timer-bar {
+            width: 100%;
+            height: 12px;
+            background: #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Animated shrinking fill */
+        #timer-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff9d, #00c86b);
+            box-shadow: 0 0 10px rgba(0, 255, 150, 0.6);
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        @keyframes timerPulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.15);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+
+        /* Playing Cards Module - NOW FLOATING AND NOT PUSHING ANYTHING */
+        .playing-cards-modal {
+            position: absolute;
+            top: 70%;
+            /* vertically centered between the two groups */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .playing-cards-content {
+            background: #ffffff;
+            padding: 20px 30px;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            max-width: 350px;
+        }
+
+
+        #done-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            background: linear-gradient(135deg, #448aff, #2962ff);
+            color: white;
+            transition: 0.2s;
+        }
+
+        #done-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hide utility */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <div class="title-row">
+            <button id="info-btn" onclick="openInfo()">ℹ️</button>
+            <h2 class="game-title" id="game-title">🐔 Chicken Banana 🍌</h2>
+            <button id="start-btn" onclick="startGame()">Start</button>
+        </div>
+        <div id="timer" class="hidden">
+            <div id="timer-number">10</div>
+            <div id="timer-bar">
+                <div id="timer-bar-fill"></div>
+            </div>
+        </div>
+
+
+        <div class="race-track" id="track">
+            <!-- 30 Steps -->
+            <script>
+                for (let i = 0; i <= 20; i++) {
+                    document.write(`<div class='step' id='step-${i}'></div>`);
+                }
+            </script>
+
+            <!-- Characters -->
+            <img src="images/chickenBanana/chicken1.png" id="chicken" class="character" style="left:-3px;" />
+            <img src="images/chickenBanana/banana1.png" id="banana" class="character" style="left:-3px;" />
+        </div>
+
+        <div id="playingCards" class="playing-cards-modal hidden">
+            <div class="playing-cards-content">
+                <h3>This is the first playing card hint.</h3>
+                <button id="done-btn" onclick="donePlayingCard()">Done</button>
+            </div>
+        </div>
+
+
+        <div class="controls hidden" id="player-controls" style="position: relative;">
+            <div id="chicken-controls" class="player-controls">
+                <button onclick="move('chicken',1)">🐔 +1</button>
+                <button onclick="move('chicken',2)">🐔 +2</button>
+                <button onclick="move('chicken',3)">🐔 +3</button>
+            </div>
+
+            <div id="banana-controls" class="player-controls">
+                <button onclick="move('banana',1)">🍌 +1</button>
+                <button onclick="move('banana',2)">🍌 +2</button>
+                <button onclick="move('banana',3)">🍌 +3</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3>🔥 THE EPIC CHICKEN BANANA RACE IS HERE!</h3>
+            <p><span class="highlight">Rule #1:</span> Suit up in your <strong>Chicken Banana outfit</strong>!</p>
+
+            <p><strong>Chicken Bicken</strong> has sent his wildest chicken, and <strong>Monkey Bonanza</strong>
+                unleashed its fastest banana.
+                These two will battle in the coolest, craziest, and most dangerous race ever!</p>
+
+            <p>Each player starts at the beginning and must reach the <strong>finish line 20 steps away</strong>, all
+                while dodging tricks from their opponent.</p>
+
+            <p>You each receive <strong>5 cards</strong> from the Giant Deck, and every <strong>10 seconds</strong> a
+                new clue appears, pushing you forward or backward depending on your cards.</p>
+
+            <p>Stay alert, enjoy the chaos, and get ready to discover once and for all:</p>
+
+            <h2 style="text-align:center;">🥇 Who rules the race, the Chicken or the Banana? 🥇</h2>
+        </div>
+    </div>
+
+
+    <script>
+        const steps = 20;
+        let positions = { chicken: 0, banana: 0 };
+
+        function startGame() {
+            document.getElementById("player-controls").classList.remove("hidden");
+            document.getElementById("start-btn").classList.add("hidden");
+
+            document.getElementById("timer").classList.remove("hidden");
+
+            document.getElementById("game-title").classList.add("hidden"); // HIDE TITLE
+
+            startTimer();
+        }
+
+
+        function openInfo() {
+            document.getElementById("info-modal").classList.remove("hidden");
+        }
+
+        function closeInfo() {
+            document.getElementById("info-modal").classList.add("hidden");
+        }
+
+        /* Close modal when clicking outside the box */
+        document.addEventListener("click", function (e) {
+            const modal = document.getElementById("info-modal");
+            const content = document.querySelector(".modal-content");
+
+            if (!modal.classList.contains("hidden")) {
+                if (!content.contains(e.target) && e.target.id !== "info-btn") {
+                    closeInfo();
+                }
+            }
+        });
+
+
+
+        function move(player, amount) {
+            positions[player] = Math.min(steps, positions[player] + amount);
+
+            const trackWidth = document.getElementById('track').offsetWidth;
+            const stepWidth = trackWidth / 21;
+
+            const newLeft = positions[player] * stepWidth;
+            document.getElementById(player).style.left = newLeft + 'px';
+
+            if (positions[player] === steps) {
+                setTimeout(() => alert(player.toUpperCase() + ' WON! 🏆'), 100);
+            }
+        }
+
+        window.onresize = () => {
+            ['chicken', 'banana'].forEach(player => move(player, 0));
+        };
+
+        let timerInterval;
+        let timeLeft = 10;
+
+        /* TIMER CONTROL */
+        function startTimer() {
+            timeLeft = 10;
+
+            document.getElementById("timer-number").textContent = timeLeft;
+            document.getElementById("timer-bar-fill").style.width = "100%";
+
+            clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+
+                document.getElementById("timer-number").textContent = timeLeft;
+
+                let percent = (timeLeft / 10) * 100;
+                document.getElementById("timer-bar-fill").style.width = percent + "%";
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+
+                    document.getElementById("timer").classList.add("hidden");  // HIDE TIMER
+                    document.getElementById("timer-bar-fill").style.width = "0%";
+
+                    showPlayingCard();
+                }
+
+            }, 1000);
+        }
+
+
+        /* SHOW PLAYING CARD MODULE */
+        function showPlayingCard() {
+            document.getElementById("playingCards").classList.remove("hidden");
+        }
+
+        /* DONE BUTTON CLICKED */
+        function donePlayingCard() {
+            document.getElementById("playingCards").classList.add("hidden");
+
+            document.getElementById("timer").classList.remove("hidden");  // SHOW TIMER AGAIN
+
+            startTimer(); // restart the timer
+        }
+
+
+    </script>
+</body>
+
+</html>

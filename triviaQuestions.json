@@ -73,18 +73,6 @@
     },
     {
         "category": "Geography",
-        "question": "In which country would you find the city of Dubrovnik?",
-        "options": [
-            "Montenegro",
-            "Croatia",
-            "Serbia",
-            "Slovenia"
-        ],
-        "answer": "Croatia",
-        "difficulty": "medium"
-    },
-    {
-        "category": "Geography",
         "question": "Which ocean is the deepest in the world?",
         "options": [
             "Atlantic",
