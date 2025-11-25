@@ -1,0 +1,188 @@
+[
+    {
+        "category": "plus1",
+        "name": "Prime Boost",
+        "message": "If you hold any of the numbers (2,3,5,7), move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "High Roller Step",
+        "message": "If your highest card is 10 or above, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus2",
+        "name": "Scarlet Surge",
+        "message": "If you have more red cards than black cards, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus1",
+        "name": "Low-End Lift",
+        "message": "If your lowest card is 4 or less, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Color Pair Push",
+        "message": "If you have at least two cards with the same color, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus2",
+        "name": "Nine or Queen Leap",
+        "message": "If you have a number 9 or a Queen, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Unique Set Sprint",
+        "message": "If all your cards are different numbers, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Twin Strike",
+        "message": "If you have a pair (same number), move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Perfect Sum Surge",
+        "message": "If you have three cards that sum to exactly 15 or 21, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Step in Sequence",
+        "message": "If you have consecutive numbers (e.g., 5-6 or 10-J), move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus5",
+        "name": "Triple Run Ascension",
+        "message": "If you have a perfect run of three (e.g., 7-8-9), move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus2",
+        "name": "Wide Gap Dash",
+        "message": "If your highest card minus your lowest is 8 or more, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Odd Pair Sprint",
+        "message": "If you hold exactly two (2's) cards, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Even Suit Boost",
+        "message": "If you have two cards of the same suit and higher than 6, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Shadow Royal Charge",
+        "message": "If you have a black Jack or black Ace, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Heartbound Surge",
+        "message": "If Hearts♥ is your dominant suit, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Fourfold Harmony",
+        "message": "If you have at least one card in every suit, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus5",
+        "name": "Crimson Purity",
+        "message": "If you have only red cards (Hearts♥ and Diamonds♦), move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "minus1",
+        "name": "Club Curse",
+        "message": "If you have 3+ Clubs♣, your opponent moves -2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "plus2",
+        "name": "Spade Sprint",
+        "message": "If you have 2+ Spades♠, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Heart of Power",
+        "message": "If you have the Ace of Hearts♥, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Diamond Peak",
+        "message": "If your highest card is a Diamond♦, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Shadow Advantage",
+        "message": "If you have more black cards than your opponent move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus1",
+        "name": "Odd-Even Twist",
+        "message": "If your total hand value is over 25, move +1. else, move -1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus3",
+        "name": "Overflow Boost",
+        "message": "If your hand total is above 35, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "minus1",
+        "name": "High Floor Penalty",
+        "message": "If your smallest card is 7 or higher, move -1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "plus1",
+        "name": "Odd Suit Steal",
+        "message": "If you have two cards with the same suit and both are odd, steal +1 from your opponent.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus5",
+        "name": "Black Ace Ascension",
+        "message": "If you have either Ace of Spades♠ or Ace of Clubs♣, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus2",
+        "name": "Face Count Shift",
+        "message": "If you have only one face card (J,Q,K), move +2; if 2+ face cards, move -2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Scarlet Solo Surge",
+        "message": "If you have exactly one red card, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "minus3",
+        "name": "Dark steps",
+        "message": "If you have exactly one black card, move -3.",
+        "rarety": "negative"
+    }
+]
