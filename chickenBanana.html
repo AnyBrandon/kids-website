@@ -10,77 +10,80 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background: #f1f1f1;
+
+            background-image: url('images/chickenBanana/background.jpeg');
+            background-size: cover;
+            /* Make image cover the whole screen */
+            background-position: center;
+            /* Center the image */
+            background-repeat: no-repeat;
+            /* Prevent tiling */
+
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
 
+
         /* --- COOL ANIMATED TITLE --- */
         /* --- DARKER, RICHER ANIMATED TITLE --- */
         .game-title {
+            font-family: "Fredoka One", "Comic Sans MS", cursive;
+            font-size: 60px;
+            font-weight: 900;
             text-align: center;
             margin-bottom: 25px;
-            font-size: 48px;
-            font-weight: 900;
             letter-spacing: 3px;
 
-            /* Darker gradient */
-            background: linear-gradient(90deg, #adcc00, #0367f3, #c40072, #7fa800);
+            /* Banana-yellow gradient text */
+            background: linear-gradient(90deg, #ffe600, #ffcc00, #fff27a);
             -webkit-background-clip: text;
             color: transparent;
 
-            text-shadow: 0 0 20px rgba(180, 120, 0, 0.35);
-            animation: titleGlow 4s infinite linear, titleWave 2.5s infinite ease-in-out;
+            /* Chicken-red outline glow */
+            text-shadow:
+                0 0 6px rgba(255, 80, 0, 0.6),
+                0 0 12px rgba(255, 50, 0, 0.4),
+                2px 3px 0px rgba(120, 0, 0, 0.5);
 
-            font-family: "Comic Sans MS", "Fredoka One", cursive;
+            animation: bananaBounce 2s infinite ease-in-out,
+                chickenShimmer 3.5s infinite linear;
         }
 
-        /* darker glow animation */
-        @keyframes titleGlow {
+        /* Soft cartoon bounce */
+        @keyframes bananaBounce {
             0% {
-                text-shadow: 0 0 15px rgba(160, 90, 0, 0.3);
-            }
-
-            25% {
-                text-shadow: 0 0 25px rgba(190, 120, 0, 0.55);
+                transform: translateY(0);
             }
 
             50% {
-                text-shadow: 0 0 32px rgba(120, 150, 0, 0.65);
-            }
-
-            75% {
-                text-shadow: 0 0 25px rgba(190, 120, 0, 0.55);
+                transform: translateY(-6px) rotate(-1deg);
             }
 
             100% {
-                text-shadow: 0 0 15px rgba(160, 90, 0, 0.3);
+                transform: translateY(0);
             }
         }
 
-        /* wave up/down motion */
-        @keyframes titleWave {
+        /* Gentle light shimmer */
+        @keyframes chickenShimmer {
             0% {
-                transform: translateY(0px);
-            }
-
-            50% {
-                transform: translateY(-8px);
+                background-position: -150%;
             }
 
             100% {
-                transform: translateY(0px);
+                background-position: 150%;
             }
         }
+
 
 
 
         .game-container {
             width: 95%;
             max-width: 1100px;
-            background: #d58df4;
+            background: #524a4a;
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -142,6 +145,7 @@
             box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4);
         }
 
+
         #chicken-controls button:hover {
             transform: translateY(-4px) scale(1.05);
             box-shadow: 0 8px 15px rgba(255, 87, 34, 0.55);
@@ -191,7 +195,7 @@
             border-radius: 14px;
             cursor: pointer;
 
-            background: linear-gradient(135deg, #3cff7a, #00c853);
+            background: linear-gradient(135deg, #e9f823, #eb7906);
             color: #083c16;
             text-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
 
@@ -330,8 +334,8 @@
         #timer-number {
             font-size: 40px;
             font-weight: 900;
-            color: #51f107;
-            text-shadow: 0 0 12px rgba(0, 255, 150, 0.7);
+            color: #ffffff;
+            text-shadow: 0 0 12px rgba(255, 5, 217, 0.7);
             animation: timerPulse 1s infinite ease-in-out;
         }
 
@@ -347,7 +351,7 @@
         /* Animated shrinking fill */
         #timer-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00ff9d, #00c86b);
+            background: linear-gradient(90deg, #d900ff, #00c86b);
             box-shadow: 0 0 10px rgba(0, 255, 150, 0.6);
             width: 100%;
             transition: width 1s linear;
@@ -371,7 +375,7 @@
         /* Playing Cards Module - NOW FLOATING AND NOT PUSHING ANYTHING */
         .playing-cards-modal {
             position: absolute;
-            top: 70%;
+            top: 65%;
             /* vertically centered between the two groups */
             left: 50%;
             transform: translate(-50%, -50%);
@@ -415,6 +419,87 @@
         .hidden {
             display: none !important;
         }
+
+        /* --- RARITY STYLING GLOWS --- */
+        .rarity-common {
+            box-shadow: 0 0 15px rgba(255, 165, 0, 0.6);
+        }
+
+        .rarity-uncommon {
+            box-shadow: 0 0 15px rgba(0, 255, 120, 0.6);
+        }
+
+        .rarity-rare {
+            box-shadow: 0 0 18px rgba(255, 215, 0, 0.75);
+        }
+
+        .rarity-legendary {
+            box-shadow: 0 0 20px rgba(180, 0, 255, 0.8);
+        }
+
+        .rarity-mythic {
+            box-shadow: 0 0 25px rgba(230, 230, 230, 0.9);
+        }
+
+        /* MULTICOLOR GLOW FOR ranEvent */
+        .rarity-ranEvent {
+            box-shadow:
+                0 0 10px #ff0000,
+                0 0 20px #ff7f00,
+                0 0 30px #ffff00,
+                0 0 40px #00ff00,
+                0 0 50px #0000ff,
+                0 0 60px #4b0082,
+                0 0 70px #8f00ff;
+            animation: ranEventGlow 2s linear infinite;
+        }
+
+        @keyframes ranEventGlow {
+            0% {
+                filter: hue-rotate(0deg);
+            }
+
+            100% {
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        .rarity-negative {
+            box-shadow: 0 0 50px rgba(250, 2, 2, 0.9);
+        }
+
+        /* 🔴 NEGATIVE BUTTON STYLE */
+        #chicken-controls button.negative-btn {
+            background: linear-gradient(135deg, #ff4d4d, #b30000) !important;
+            color: white !important;
+            border: 2px solid rgba(120, 0, 0, 0.5) !important;
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.35) !important;
+        }
+
+        #chicken-controls button.negative-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 18px rgba(255, 0, 0, 0.6);
+        }
+
+        #chicken-controls button.negative-btn:active {
+            transform: scale(0.95);
+        }
+
+        #banana-controls button.negative-btn {
+            background: linear-gradient(135deg, #ff4d4d, #b30000) !important;
+            color: white !important;
+            border: 2px solid rgba(120, 0, 0, 0.5) !important;
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.35) !important;
+        }
+
+        #banana-controls button.negative-btn:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 18px rgba(255, 0, 0, 0.6);
+        }
+
+        #banana-controls button.negative-btn:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 
@@ -426,7 +511,7 @@
             <button id="start-btn" onclick="startGame()">Start</button>
         </div>
         <div id="timer" class="hidden">
-            <div id="timer-number">10</div>
+            <div id="timer-number">5</div>
             <div id="timer-bar">
                 <div id="timer-bar-fill"></div>
             </div>
@@ -448,7 +533,8 @@
 
         <div id="playingCards" class="playing-cards-modal hidden">
             <div class="playing-cards-content">
-                <h3>This is the first playing card hint.</h3>
+                <h3></h3>
+                <p></p>
                 <button id="done-btn" onclick="donePlayingCard()">Done</button>
             </div>
         </div>
@@ -459,12 +545,16 @@
                 <button onclick="move('chicken',1)">🐔 +1</button>
                 <button onclick="move('chicken',2)">🐔 +2</button>
                 <button onclick="move('chicken',3)">🐔 +3</button>
+                <button onclick="move('chicken',5)">🐔 +5</button>
+                <button class="negative-btn" onclick="move('chicken',-1)">🐔 -1</button>
             </div>
 
             <div id="banana-controls" class="player-controls">
                 <button onclick="move('banana',1)">🍌 +1</button>
                 <button onclick="move('banana',2)">🍌 +2</button>
                 <button onclick="move('banana',3)">🍌 +3</button>
+                <button onclick="move('banana',5)">🍌 +5</button>
+                <button class="negative-btn" onclick="move('banana',-1)">🍌 -1</button>
             </div>
         </div>
     </div>
@@ -482,7 +572,7 @@
             <p>Each player starts at the beginning and must reach the <strong>finish line 20 steps away</strong>, all
                 while dodging tricks from their opponent.</p>
 
-            <p>You each receive <strong>5 cards</strong> from the Giant Deck, and every <strong>10 seconds</strong> a
+            <p>You each receive <strong>5 cards</strong> from the Giant Deck, and every <strong>5 seconds</strong> a
                 new clue appears, pushing you forward or backward depending on your cards.</p>
 
             <p>Stay alert, enjoy the chaos, and get ready to discover once and for all:</p>
@@ -496,16 +586,42 @@
         const steps = 20;
         let positions = { chicken: 0, banana: 0 };
 
+        // ---- LOAD PLAYING CARDS JSON ----
+        let cardPool = [];
+        let usedCards = [];
+        let normalCardsPicked = 0; // counts only normal cards (not dealCards)
+        let normalCardsSinceLastDeal = 0; // counts normal cards since last Draw or Drop
+
+        fetch("playingCardsRules.json")
+            .then(res => res.json())
+            .then(data => {
+                cardPool = data;
+            })
+            .catch(err => console.error("Error loading card rules:", err));
+
+
         function startGame() {
+
             document.getElementById("player-controls").classList.remove("hidden");
+
             document.getElementById("start-btn").classList.add("hidden");
 
             document.getElementById("timer").classList.remove("hidden");
+
+            document.getElementById("info-btn").classList.add("hidden");
+
 
             document.getElementById("game-title").classList.add("hidden"); // HIDE TITLE
 
             startTimer();
         }
+
+        const dealCards = [
+            { message: "Each player draws 1 card", weight: 30 },
+            { message: "Each player draws 2 card", weight: 25 },
+            { message: "Swap 1 card with your opponent", weight: 25 },
+            { message: "Drop 1 card", weight: 20 }
+        ];
 
 
         function openInfo() {
@@ -539,21 +655,41 @@
             const newLeft = positions[player] * stepWidth;
             document.getElementById(player).style.left = newLeft + 'px';
 
+            // --- Chicken image change according to position ---
+            if (player === 'chicken') {
+                let img = 'images/chickenBanana/chicken1.png';
+                if (positions[player] >= 6 && positions[player] <= 10) img = 'images/chickenBanana/chicken2.png';
+                else if (positions[player] >= 11 && positions[player] <= 15) img = 'images/chickenBanana/chicken3.png';
+                else if (positions[player] >= 16 && positions[player] <= 20) img = 'images/chickenBanana/chicken4.png';
+                document.getElementById('chicken').src = img;
+            }
+
+            // --- Banana image change according to position ---
+            if (player === 'banana') {
+                let img = 'images/chickenBanana/banana1.png';
+                if (positions[player] >= 6 && positions[player] <= 10) img = 'images/chickenBanana/banana2.png';
+                else if (positions[player] >= 11 && positions[player] <= 15) img = 'images/chickenBanana/banana3.png';
+                else if (positions[player] >= 16 && positions[player] <= 20) img = 'images/chickenBanana/banana4.png';
+                document.getElementById('banana').src = img;
+            }
+
             if (positions[player] === steps) {
                 setTimeout(() => alert(player.toUpperCase() + ' WON! 🏆'), 100);
             }
         }
+
+
 
         window.onresize = () => {
             ['chicken', 'banana'].forEach(player => move(player, 0));
         };
 
         let timerInterval;
-        let timeLeft = 10;
+        let timeLeft = 1; //5
 
         /* TIMER CONTROL */
         function startTimer() {
-            timeLeft = 10;
+            timeLeft = 1;
 
             document.getElementById("timer-number").textContent = timeLeft;
             document.getElementById("timer-bar-fill").style.width = "100%";
@@ -565,7 +701,7 @@
 
                 document.getElementById("timer-number").textContent = timeLeft;
 
-                let percent = (timeLeft / 10) * 100;
+                let percent = (timeLeft / 1) * 100;
                 document.getElementById("timer-bar-fill").style.width = percent + "%";
 
                 if (timeLeft <= 0) {
@@ -583,8 +719,84 @@
 
         /* SHOW PLAYING CARD MODULE */
         function showPlayingCard() {
+            // Check if it's time for a "Draw or Drop" card
+            if (normalCardsSinceLastDeal === 3) {
+                // Weighted random pick from dealCards
+                let weightedList = [];
+                dealCards.forEach(d => {
+                    for (let i = 0; i < d.weight; i++) weightedList.push(d);
+                });
+
+                const chosen = weightedList[Math.floor(Math.random() * weightedList.length)];
+
+                // Show modal with title "Draw or Drop"
+                const cardBox = document.querySelector(".playing-cards-content");
+                document.querySelector(".playing-cards-content h3").textContent = "Draw or Drop";
+                document.querySelector(".playing-cards-content p").textContent = chosen.message;
+
+                cardBox.classList.remove("rarity-common", "rarity-uncommon", "rarity-rare", "rarity-legendary", "rarity-mythic", "rarity-ranEvent", "rarity-negative");
+
+                document.getElementById("playingCards").classList.remove("hidden");
+
+                // Reset the counter after showing Draw or Drop
+                normalCardsSinceLastDeal = 0;
+                return; // exit function, no normal card is picked
+            }
+
+            // Normal card picking logic
+            let remaining = cardPool.filter(c => !usedCards.includes(c.name));
+
+            if (remaining.length === 0) {
+                document.querySelector(".playing-cards-content h3").textContent = "No more cards left!";
+                document.getElementById("playingCards").classList.remove("hidden");
+                return;
+            }
+
+            // Apply minimum pick rules
+            let allowed = remaining.filter(c => {
+                if (c.rarety === "negative" && usedCards.length < 7) return false;
+                if (c.rarety === "ranEvent" && usedCards.length < 10) return false;
+                return true;
+            });
+
+            if (allowed.length === 0) allowed = remaining;
+
+            const weights = {
+                common: 20,
+                uncommon: 20,
+                rare: 15,
+                legendary: 10,
+                mythic: 5,
+                negative: 15,
+                ranEvent: 15
+            };
+
+            let weightedList = [];
+            allowed.forEach(c => {
+                const w = weights[c.rarety] || 0;
+                for (let i = 0; i < w; i++) weightedList.push(c);
+            });
+
+            const chosen = weightedList[Math.floor(Math.random() * weightedList.length)];
+
+            usedCards.push(chosen.name);
+
+            // Increment normal card counter
+            normalCardsSinceLastDeal++;
+
+            // Update modal text
+            document.querySelector(".playing-cards-content h3").textContent = chosen.name;
+            document.querySelector(".playing-cards-content p").textContent = chosen.message;
+
+            const cardBox = document.querySelector(".playing-cards-content");
+            cardBox.classList.remove("rarity-common", "rarity-uncommon", "rarity-rare", "rarity-legendary", "rarity-mythic", "rarity-ranEvent", "rarity-negative");
+            cardBox.classList.add("rarity-" + chosen.rarety);
+
             document.getElementById("playingCards").classList.remove("hidden");
         }
+
+
+
 
         /* DONE BUTTON CLICKED */
         function donePlayingCard() {

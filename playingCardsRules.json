@@ -116,7 +116,7 @@
     {
         "category": "plus2",
         "name": "Spade Sprint",
-        "message": "If you have 2+ Spades♠, move +2.",
+        "message": "If you have more than 2 Spades♠, move +2.",
         "rarety": "uncommon"
     },
     {
@@ -184,5 +184,761 @@
         "name": "Dark steps",
         "message": "If you have exactly one black card, move -3.",
         "rarety": "negative"
-    }
+    },
+    {
+        "category": "plus2",
+        "name": "Digit of Destiny",
+        "message": "Add all your card values. If the sum includes the digit ‘2’, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Middle Cut Advantage",
+        "message": "Sort your hand. If the middle card is 7 or lower, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Low Pair Surge",
+        "message": "If your lowest two cards sum to 8 or less, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Perfect Five Gap",
+        "message": "If any two cards differ by exactly 5 (e.g., 3 & 8, A & 6), move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Eleven Alchemy",
+        "message": "If you can form a sum of exactly 11 with any two cards, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "minus2",
+        "name": "59 Surge",
+        "message": "If you have a 5 and a 9 , move -2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "plus3",
+        "name": "Lone Ace Momentum",
+        "message": "If you have exactly one Ace, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus5",
+        "name": "Twin Ace Ascension",
+        "message": "If you have two Aces, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus2",
+        "name": "Under-Seven Majority Boost",
+        "message": "If the majority of your cards are below 7, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "minus1",
+        "name": "Overpower Penalty",
+        "message": "If the majority of your cards are below 7, move +2. Otherwise, move -1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "plus5",
+        "name": "Suit Spectrum Mastery",
+        "message": "If your hand contains all different suits, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus2",
+        "name": "Dual Color Royals",
+        "message": "If you have two face cards of different colors, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus10",
+        "name": "Quad Four Frenzy",
+        "message": "If you hold 4 fours, immediately move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "minus2",
+        "name": "Royal Overload",
+        "message": "If you hold 3 face cards, move -2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "plus5",
+        "name": "Unique Royal Harmony",
+        "message": "If all your card numbers are unique AND you have at least 1 face card, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "minus1",
+        "name": "The Unlucky Digits",
+        "message": "If you hold any 3, 7, or Q → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Even Collapse",
+        "message": "If you have any 8 or 10 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "lose1",
+        "name": "Odd Burden",
+        "message": "If you have three hearts♥ cards → drop a card.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Twin Trouble",
+        "message": "If you have duplicate numbers → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Prime Problem",
+        "message": "If you have any 2 or 7 → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "High Roller Regret",
+        "message": "If you hold any card above 10 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Low Number Trap",
+        "message": "If you have three cards less than 5 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "lose1",
+        "name": "The 6 Curse",
+        "message": "If you have a 6, you give a card to your opponent.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "The Overshoot",
+        "message": "If the sum of your hand ends in 0 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "The Hollow Pair",
+        "message": "If you have two consecutive numbers → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Spade Snare",
+        "message": "If you have two or more Spades♠ → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Heartbreak",
+        "message": "If you have any hearts♥ higher than 8 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Clover Collapse",
+        "message": "If you have any Clubs♣ higher than 7 → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Diamond Debt",
+        "message": "If you have three Diamonds♦ → move -1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus5",
+        "name": "Blackout",
+        "message": "If you have all black cards → move –5.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus3",
+        "name": "Red Rush Backfire",
+        "message": "If you have 4 or more red cards → move –3.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Suit Storm",
+        "message": "If you have 9 and 10 → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus10",
+        "name": "Mono-Misfortune",
+        "message": "If your hand contains only one suit → move –10.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Imbalanced Load",
+        "message": "If you have 4 cards of one color, move -2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Royal Problem",
+        "message": "If you have any face card (J/Q/K) → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Broken Straight",
+        "message": "If you have two 2's → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Mirror Malfunction",
+        "message": "If you have any two cards higher than 9 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus5",
+        "name": "Ascending Doom",
+        "message": "If you have a 7,8,9 → move –5.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus3",
+        "name": "The Triangle Trap",
+        "message": "If you have three face cards and a 5 → move –3.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Broken Harmony",
+        "message": "If your highest and lowest card match in color → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "lose1",
+        "name": "The Mismatch",
+        "message": "If you have a face card paired with a 2 or 3 → drop a card.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus3",
+        "name": "The Double Whammy",
+        "message": "If you have two Queens or two Kings → move –3.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Royal Lack",
+        "message": "If you don't have any face card → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "The Anchor",
+        "message": "If your hand contains two cards below 4 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus3",
+        "name": "Chaos Index",
+        "message": "If the difference between your two lowest cards is 3 → move –3.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Symmetry Setback",
+        "message": "If your hand has a 3 and a King → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus3",
+        "name": "The Overload",
+        "message": "If your total number cards sum is over 40 → move –3.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Split Trouble",
+        "message": "If the sum of your two smallest cards is 5 or 6 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "The Repeater",
+        "message": "If you have 2 clubs♣ higher than 8 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "The Shadow Value",
+        "message": "If you have any hearts♥ card higher than 10 → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "lose1",
+        "name": "Twin Parity Curse",
+        "message": "If you have 2 pairs → give a card to opponent.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus3",
+        "name": "Zeroing Out",
+        "message": "If you have 2 diamonds♦ and 2 clubs♣ → move –3.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus3",
+        "name": "The Burden of Balance",
+        "message": "If your hand has the queen of hearts♥ → move –3.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Fractured Numbers",
+        "message": "If you have the 10 of spades♠ → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Goblin Toll",
+        "message": "If your smallest card is 3 → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Lost Compass",
+        "message": "If you have no hearts♥ → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Misread Map",
+        "message": "If your highest card is a Jack or Queen → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Magic Backfire",
+        "message": "If you have only one face card → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "Shadow Stalker",
+        "message": "If you hold any black less than 6 → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus5",
+        "name": "Greedy Grip",
+        "message": "If you have 2 hearts♥, 2 diamonds♦ and 1 spades♠ → move –5.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Overconfidence",
+        "message": "If your highest card is 10 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Panic Shuffle",
+        "message": "If you have no pairs → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus2",
+        "name": "Twisted Path",
+        "message": "If your middle card (sorted) is 9 → move –2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "The Betrayal",
+        "message": "If you have exactly one 7 → move –1.",
+        "rarety": "negative"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Lucky Number 7",
+        "message": "If you have 7 of hearts and 2 face cards, draw 2 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Mysterious Swap",
+        "message": "Trade one card blindly with your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Double Draw Delight",
+        "message": "If your hand contains two diamonds and a face card, draw 2 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Sneaky Reveal",
+        "message": "Reveal one random card from your hand to your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Opponent’s Choice",
+        "message": "Drop a card of your choice, but your opponent draws it.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Ace Advantage",
+        "message": "If you hold an Ace, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Heart Swap",
+        "message": "Trade a Heart card blindly with your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Face Card Frenzy",
+        "message": "If you have 2 face cards, draw 1 card and drop 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Lucky Pair",
+        "message": "If you have a pair, reveal one of them to your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Wildcard Drop",
+        "message": "if you have a jack drop a random card from your hand.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Red Alert",
+        "message": "If all your cards are red, draw 2 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Shadow Trade",
+        "message": "Blindly swap one card with your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Queen’s Secret",
+        "message": "Reveal a random face card from your hand to your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Jackpot Draw",
+        "message": "If you have a red queen and a black king, draw 2 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "King’s Command",
+        "message": "Draw a card from your opponent hand to drop.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "5 Drive",
+        "message": "if you both have a 5, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "King Shuffle",
+        "message": "if you both have a king, swap a card blindly.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Number Strike",
+        "message": "If you have a black number 10 or higher, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Hidden Treasure",
+        "message": "Reveal one card of your choice to your opponent, then draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Mystic Draw",
+        "message": "Draw 2 cards if you have no pairs.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Sneaky Exchange",
+        "message": "Swap a card blindly with your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Lucky Trio",
+        "message": "If you have three cards of the same suit, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Revealing Glance",
+        "message": "Reveal a card from your opponent’s hand of your choice.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Blind Fortune",
+        "message": "Trade one card blindly with your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Double Trouble",
+        "message": "If you hold two Aces, draw 2 cards, and your opponent drops 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Mimic Move",
+        "message": "if you have a 4, draw 2 cards then drop 1 card of them.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Wildcard Reveal",
+        "message": "Reveal a random card from your hand to your opponent, then draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Unexpected Drop",
+        "message": "Drop a card of your choice from your hand.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Color Clash",
+        "message": "If your hand has 3 black cards, draw 1 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Ace of Luck",
+        "message": "If you have an Ace of spades, draw 2 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Blind Gambit",
+        "message": "Trade a card blindly with your opponent, then reveal your lowest card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Jackie’s Trick",
+        "message": "If you have a Jack and an 8, draw 1 card and your opponent drops 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+    "category": "randomEvent",
+    "name": "Perfect Pair",
+    "message": "If you have a pair of 10s, draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Ace Collector",
+    "message": "If you have an Ace of any suit, draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Flush Fever",
+    "message": "If all your cards are of the same suit, draw 3 cards.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Royal Exchange",
+    "message": "If you both have 2 face cards, draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Triple Threat",
+    "message": "If you have three cards less than 6, draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "High Stakes",
+    "message": "If you have any card higher than 10, drop a card of your choice.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Mysterious Match",
+    "message": "If you have two cards of the same suit, drop a card and draw a card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Double Down",
+    "message": "If you have a red pair, draw 2 cards.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Color Swap",
+    "message": "If you have a diamond and a black queen, draw a card and your opponent drop 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "King’s Command",
+    "message": "If you hold a King, tell your opponent to drop a card of their choice.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Lucky 8",
+    "message": "If you have an 8 of any suit, draw 1 card and reveal it to your opponent.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Matching Colors",
+    "message": "If you have 4 cards of the same color, drop one card of your choice.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "The Lucky Draw",
+    "message": "If you have a 7 of hearts, draw 2 cards.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Odd Pair",
+    "message": "If you both have two clubs cards, trade one card blindly with your opponent.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Face to Face",
+    "message": "If you have a face card (Jack, Queen, or King), reveal 1 to your opponent.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Suit Swap",
+    "message": "If you have two cards of the same suit higher than 9, draw a card from your opponent.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Prime Time",
+    "message": "If you have any card (2, 3, 5), draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Drawback",
+    "message": "If you have two cards of the same number, drop one card of your choice.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "333",
+    "message": "If you have three 3's, draw 5 cards.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Double Face",
+    "message": "If you have two kings, draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Swap & Reveal",
+    "message": "If both of you have two cards of the same suit, swap a card with your opponent.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "All Red",
+    "message": "If all your cards are red, drop a card from your opponent's hand.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Ace of Spades",
+    "message": "If you have the Ace of Spades, reveal it to your opponent and draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Lucky Leap",
+    "message": "If you have 3 consecutive number cards, draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Double Double",
+    "message": "If you have two face cards and a 2, draw 2 cards.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Full Spectrum",
+    "message": "If your hand contains one card of each suit, draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "King’s Luck",
+    "message": "If you have a King, drop a card of your choice and draw 1 card.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Fool’s Hand",
+    "message": "If you have no face cards, drop 1 card from your hand.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Royal Blessing",
+    "message": "If you have a Jack and a Queen, reveal one card from your opponent’s hand.",
+    "rarety": "ranEvent"
+  },
+  {
+    "category": "randomEvent",
+    "name": "Color Swap",
+    "message": "If you have four black cards, drop one.",
+    "rarety": "ranEvent"
+  }
 ]
