@@ -1363,6 +1363,126 @@
     },
     {
         "category": "randomEvent",
+        "name": "Time Warp",
+        "message": "Move +2 if you have a card below 5; otherwise –1.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Lightning Dash",
+        "message": "The highest card among both players moves its owner +3.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Mirror Shift",
+        "message": "Swap your position with opponent if you both have an Ace and a Queen.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Card Alchemy",
+        "message": "Go back to start position if you have 2 jacks and a 10.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Sudden Boost",
+        "message": "If you have 1 red face card, move +5.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Reverse Polarity",
+        "message": "Move +1 for each spade♠ you have.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Shared Fate",
+        "message": "Both players move -2.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Sabotage Spark",
+        "message": "If you hold 3 black cards, push opponent –2.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Lucky Flip",
+        "message": "Reveal your top deck card, • If red → +3 • If black → –1.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Tidal Shift",
+        "message": "If your lowest card is a 5 move +2.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Phantom Step",
+        "message": "Move +1 for every Diamond you have.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Chaos Draw",
+        "message": "Both players draw 1 card → highest new card moves +3.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Shadow Exchange",
+        "message": "Swap one random card with opponent. Highest card moves +2.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Momentum Burst",
+        "message": "If your lowest card is black → move +1.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Sudden Storm",
+        "message": "if you have a red 7, push opponent –3.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Royal Parade",
+        "message": "move +1 for every (J/Q/K) face card you have.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Serpent Strike",
+        "message": "Push you opponent -2 for every 2 you have.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Second Wind",
+        "message": "If your position is behind the opponent → +2.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Eclipse",
+        "message": "Both players reveal their smallest card; lowest card moves +1.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Final Surge",
+        "message": "If you have more than 6 cards, move +2.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
         "name": "Heart Swap",
         "message": "Trade a Heart card blindly with your opponent.",
         "rarety": "ranEvent"
@@ -1401,6 +1521,36 @@
         "category": "randomEvent",
         "name": "Queen’s Secret",
         "message": "Reveal a random face card from your hand to your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Royal Collapse",
+        "message": "Go back to start position if you hold a King and your two lowest cards are red.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Suits of Ruin",
+        "message": "Go back to start position if you have more than 9 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Shadow Misdraw",
+        "message": "Go back to start position if your highest card is black and your lowest card is red is a 7.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Worst enemy",
+        "message": "Go back to start position if you're opponent have the 2 of spades.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Crimson Collapse",
+        "message": "Go back to start position if you hold three red cards below 5.",
         "rarety": "ranEvent"
     },
     {
