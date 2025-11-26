@@ -30,6 +30,372 @@
         "rarety": "common"
     },
     {
+        "category": "plus1",
+        "name": "Twin Suits Trigger",
+        "message": "If you hold at least two cards of the same suit, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Face Card Favor",
+        "message": "If you have at least one face card (J, Q, K), move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Even Edge",
+        "message": "If the majority of your cards are even numbers, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Suit Spread Spark",
+        "message": "If you have cards from at least three different suits, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Blackened Bonus",
+        "message": "If you hold more black cards than red cards, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Lucky Jack Jump",
+        "message": "If you have a Jack in your hand, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Low Pair Lift",
+        "message": "If you hold a pair of cards ranked 6 or lower, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "High Suit Harmony",
+        "message": "If your highest card shares its suit with at least one other card, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Triple Color Turn",
+        "message": "If your hand includes at least three cards of the same color, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Middle Range Momentum",
+        "message": "If half or more of your cards are between 5 and 9 inclusive, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Queen's Quiet Push",
+        "message": "If you hold a Queen, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Suit Twin Tactic",
+        "message": "If exactly two of your cards share the same suit, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Ascending Arc",
+        "message": "If any three of your cards form an increasing sequence, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Royal Glimmer",
+        "message": "If you have any two royal cards (J, Q, K), move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Sharp Suit Step",
+        "message": "If your lowest card is part of your most common suit, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Card Cluster Kick",
+        "message": "If three or more of your cards are within a range of 2 ranks, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Odd Outburst",
+        "message": "If you hold more odd-ranked cards than even-ranked ones, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Diamond Drift",
+        "message": "If you have at least two Diamonds, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Heartbound Hop",
+        "message": "If you have at least two Hearts, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Clover Crest",
+        "message": "If you have at least two Clubs, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Spade Shift",
+        "message": "If you have at least two Spades, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Red Rank Rally",
+        "message": "If your highest red card is higher than your highest black card, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Twin Rank Rise",
+        "message": "If you hold two cards with the same rank, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Edge Card Echo",
+        "message": "If your hand contains both a 2 and an Ace, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Royal Mix Motion",
+        "message": "If you hold one royal card of each color, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Four-Suit Flicker",
+        "message": "If you have at least one card from each suit, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Rank Spread Spark",
+        "message": "If your lowest and highest cards differ by 8 or more, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Pivot Pair Pulse",
+        "message": "If your lowest card matches the color of your highest card, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Silent Ace Step",
+        "message": "If you hold an Ace, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Two-Suit Tandem",
+        "message": "If your hand contains cards from exactly two suits, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Chroma Cluster",
+        "message": "If three or more cards share the same color, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "High-Low Harmony",
+        "message": "If your highest and lowest cards share the same suit, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Twin Faces Twist",
+        "message": "If you have two face cards, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Balanced Blend Boost",
+        "message": "If you hold an equal number of red and black cards, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus1",
+        "name": "Rank Runner",
+        "message": "If you have a 3 and a 9, move +1.",
+        "rarety": "common"
+    },
+    {
+        "category": "plus2",
+        "name": "Royal Clash Surge",
+        "message": "If you hold both a King and a Jack of different suits, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Crimson Sequence Shift",
+        "message": "If you have a red 5 followed immediately by a red 6 in rank order, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Shadow Pair Pivot",
+        "message": "If you hold two black cards and an 8, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Three-Suit Tangle",
+        "message": "If your highest three cards come from three different suits, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Diamond Arc Advance",
+        "message": "If you have at least three Diamonds and one of them is a face card, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Dual Peak Pressure",
+        "message": "If your two highest cards are the same suit but more than three ranks apart, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Crescent Court Combo",
+        "message": "If you hold a Queen of Hearts paired with any Spade numbered 7 or higher, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Mirror Rank Merge",
+        "message": "If your highest red card and highest black card share the same rank, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Balanced Bridge Burst",
+        "message": "If your lowest card and highest card are the same color and you have a 9, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Split Suit Spark",
+        "message": "If your two lowest cards are different suits and your two highest cards are the same suit, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Twin Royals Trigger",
+        "message": "If you have two royal cards (J, Q, K) of opposite colors, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "High Heart Outburst",
+        "message": "If you hold two Hearts higher than 9, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Silent Spade Strike",
+        "message": "If your hand contains exactly one Spade, and it is a face card, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Crowned Connection",
+        "message": "If you have any King with a card of the same suit ranked 5 or lower, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus3",
+        "name": "Crossroad Cascade",
+        "message": "If your highest red card is lower than your lowest black card, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Four-Step Flow",
+        "message": "If you have any two cards that differ by exactly 4 in rank, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Paired Polarity Push",
+        "message": "If you hold any red pair, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Queen’s Dual Domain",
+        "message": "If you have a Queen and another card of the same suit that is 7 or below, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Jackknife Junction",
+        "message": "If you hold a Jack and your lowest card is of the same color but a different suit, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Parallel Pulse",
+        "message": "If you have two cards of the same rank but opposite suits and opposite colors, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Triad Suit Twist",
+        "message": "If you have exactly one card from three different suits, each ranked 8 or higher, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Royal Rift Rally",
+        "message": "If you hold a Jack of any suit and a King of the opposite color, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Anchor Ace Advance",
+        "message": "If you have an Ace and 2 black cards, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Colorfold Crest",
+        "message": "If your three highest cards are higher than 9, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Divided Domain Drift",
+        "message": "If half of your cards are red and half are black, move +2.",
+        "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "Precision Pair Propel",
+        "message": "If you have a pair of the same color, move +2.",
+        "rarety": "uncommon"
+    },
+    {
         "category": "plus2",
         "name": "Nine or Queen Leap",
         "message": "If you have a number 9 or a Queen, move +2.",
@@ -73,14 +439,176 @@
     },
     {
         "category": "plus3",
+        "name": "Royal Spiral Surge",
+        "message": "If you hold all three royal ranks (J, Q, K) in any suits, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Crimson Crown Circuit",
+        "message": "If you have a red King, red Queen, and any black card ranked 8 or higher, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Mirrored Monarch Merge",
+        "message": "If your highest red card and highest black card are both Kings, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Fourfold Suit Fusion",
+        "message": "If you hold one card from each suit and at least one is a face card, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Ebony Echo Ensemble",
+        "message": "If you hold three black cards that form a sequence, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Diamond Trinity Drive",
+        "message": "If you have three Diamonds ranked 7 or higher, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Synchronized Royal Step",
+        "message": "If you have a Queen and Jack of the same suit and your highest card is a King, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Split Sequence Surge",
+        "message": "If you have two 9's, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Tri-Color Tension",
+        "message": "If you hold three red cards and an Ace, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Shadow Ladder Loop",
+        "message": "If you have 4 black cards and 2 red cards, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Majesty Mosaic",
+        "message": "If you have exactly two Queens and one King, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Heartbound Harmony",
+        "message": "If all your Hearts are ranked 8 or lower, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Royal Arc Tandem",
+        "message": "If you have a Jack and King of matching suits and 2 diamonds, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Trio Cluster",
+        "message": "If you have three pairs of cards, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Apex Suit Alignment",
+        "message": "If your three highest cards are all the same suit, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Twin Ladder Tension",
+        "message": "If your highest two cards differ by exactly 1 in rank and your lowest two also differ by exactly 1, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Kings Triumph",
+        "message": "If you have 2 Kings and 2 other face cards, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Spade Spectrum Shift",
+        "message": "If all Spades you hold are less than 7, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Dual-Suit Dominion",
+        "message": "If all your face cards belong to only two suits, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Evenfold Empire",
+        "message": "If you have a red 5 and a black 10, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Thronebound Triplet",
+        "message": "If you hold a Jack, Queen, and King all in red suits, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Blackwater Bridge",
+        "message": "If your two highest black cards differ by exactly 2 in rank, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Suit Spiral Shift",
+        "message": "If you don't have 2 face cards, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Royal Fusion Fracture",
+        "message": "If you hold exactly one 10 and exactly one Ace, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Colors Sequence",
+        "message": "If your lowest, middle, and highest cards are the same color, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Spiral Suit Synchrony",
+        "message": "If your three lowest cards are black, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
+        "name": "Arcane Rank Alignment",
+        "message": "If the sum of your lowest two cards is less than 6, move +3.",
+        "rarety": "rare"
+    },
+    {
+        "category": "plus3",
         "name": "Odd Pair Sprint",
-        "message": "If you hold exactly two (2's) cards, move +3.",
+        "message": "If you hold exactly two (6's) cards, move +3.",
         "rarety": "rare"
     },
     {
         "category": "plus3",
         "name": "Even Suit Boost",
-        "message": "If you have two cards of the same suit and higher than 6, move +3.",
+        "message": "If you have three cards of the same suit and higher than 6, move +3.",
         "rarety": "rare"
     },
     {
@@ -276,6 +804,144 @@
         "rarety": "legendary"
     },
     {
+        "category": "plus5",
+        "name": "Pentacrown Ascension",
+        "message": "If you hold all three royal ranks (J, Q, K) plus an Ace, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Chromatic Royal Spiral",
+        "message": "If you have a Jack, Queen, and King each of different suits, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Sovereign Suit Symphony",
+        "message": "If you hold one face card from each suit, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Even Pattern Paradox",
+        "message": "If you have a 2,4,6 and 8, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Fivefold Ladder Link",
+        "message": "If five of your cards form a perfect ascending sequence, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Royal Tetragon",
+        "message": "If you hold four royal cards (any suits) plus one Ace, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Obsidian Flow Circuit",
+        "message": "If your entire hand contains only black cards and includes a Jack or a King, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Heartforge Halo",
+        "message": "If all Hearts number cards you hold add up to 20 or more, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Celestial Arc Alignment",
+        "message": "If your lowest, middle, and highest cards are the same suit, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Diamond Dominion",
+        "message": "If you have four Diamonds and all are ranked 7 or higher, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Quad-Suit Resonance",
+        "message": "If you have 5 cards lower than 8, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Twin Ace Parity",
+        "message": "If you hold two Aces and both are opposite colors, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Royal Ascender Array",
+        "message": "If your Jack, Queen, and King are all of the same color, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Mono Color",
+        "message": "If all your cards are the same color, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus10",
+        "name": "Monolith Crest",
+        "message": "If all your cards are from the same suit, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus5",
+        "name": "Equinox Crown Cycle",
+        "message": "If you have exactly two black cards and more than 3 red cards, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Chaos Rank Contour",
+        "message": "If the difference between your highest and lowest card equals the number of cards in your hand, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Spadeforge Spiral",
+        "message": "If all your Spades are higher than 10, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus10",
+        "name": "Trifold Throne",
+        "message": "If you hold exactly three Kings and at least one Queen, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus5",
+        "name": "Apex Royal Ascension",
+        "message": "If you have an Ace and 2 queens, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Chromatic Pentaflow",
+        "message": "If you have at least 2 cards of each suit, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Crown Prism Protocol",
+        "message": "If you hold 3 cards lower than 6 and an Ace, move +5.",
+        "rarety": "legendary"
+    },
+    {
+        "category": "plus5",
+        "name": "Absolute low",
+        "message": "If all your cards are less than 10, move +5.",
+        "rarety": "legendary"
+    },
+    {
         "category": "minus1",
         "name": "The Unlucky Digits",
         "message": "If you hold any 3, 7, or Q → move –1.",
@@ -358,6 +1024,96 @@
         "name": "Diamond Debt",
         "message": "If you have three Diamonds♦ → move -1.",
         "rarety": "negative"
+    },
+    {
+        "category": "plus10",
+        "name": "Eternal Crown Convergence",
+        "message": "If you hold (10, J, Q, K) and an Ace all in red, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Prime Suit Singularity",
+        "message": "If you have 6 cards of the same suit, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Celestial Parity Pulse",
+        "message": "If all your cards are higher than 9, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Omni-Royal Dominion",
+        "message": "If every suit in your hand contains at least one royal card (J, Q, or K), move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "7 Face Frenzy",
+        "message": "If you have at least 7 face cards, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Forbidden Rank Harmony",
+        "message": "If the sum of your three lowest cards equals to 8, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Tons of Tens",
+        "message": "If you hold 4 10's, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Monarch Infinity Loop",
+        "message": "If you have a (2,3,5,7,9) move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Void-Suit Paradox",
+        "message": "If all your cards from exactly two suits, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Crystalline Concordance",
+        "message": "If all your cards are Diamonds except for one, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Arcane Shard Sequence",
+        "message": "If your lowest and highest cards share the same suit and the rest are black, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Throne of the Fourfold King",
+        "message": "If you hold Kings of all four suits, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Mythos Color Constellation",
+        "message": "If your cards alternate red-black perfectly when sorted, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Ascendant Crown Pattern",
+        "message": "If your hand contains exactly one Ace, one Jack, one Queen, one King, and one 10, move +10.",
+        "rarety": "mythic"
+    },
+    {
+        "category": "plus10",
+        "name": "Absolute Rank Resonance",
+        "message": "If you have exactly 8 cards, move +10.",
+        "rarety": "mythic"
     },
     {
         "category": "minus5",
@@ -762,183 +1518,183 @@
         "rarety": "ranEvent"
     },
     {
-    "category": "randomEvent",
-    "name": "Perfect Pair",
-    "message": "If you have a pair of 10s, draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Ace Collector",
-    "message": "If you have an Ace of any suit, draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Flush Fever",
-    "message": "If all your cards are of the same suit, draw 3 cards.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Royal Exchange",
-    "message": "If you both have 2 face cards, draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Triple Threat",
-    "message": "If you have three cards less than 6, draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "High Stakes",
-    "message": "If you have any card higher than 10, drop a card of your choice.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Mysterious Match",
-    "message": "If you have two cards of the same suit, drop a card and draw a card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Double Down",
-    "message": "If you have a red pair, draw 2 cards.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Color Swap",
-    "message": "If you have a diamond and a black queen, draw a card and your opponent drop 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "King’s Command",
-    "message": "If you hold a King, tell your opponent to drop a card of their choice.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Lucky 8",
-    "message": "If you have an 8 of any suit, draw 1 card and reveal it to your opponent.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Matching Colors",
-    "message": "If you have 4 cards of the same color, drop one card of your choice.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "The Lucky Draw",
-    "message": "If you have a 7 of hearts, draw 2 cards.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Odd Pair",
-    "message": "If you both have two clubs cards, trade one card blindly with your opponent.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Face to Face",
-    "message": "If you have a face card (Jack, Queen, or King), reveal 1 to your opponent.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Suit Swap",
-    "message": "If you have two cards of the same suit higher than 9, draw a card from your opponent.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Prime Time",
-    "message": "If you have any card (2, 3, 5), draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Drawback",
-    "message": "If you have two cards of the same number, drop one card of your choice.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "333",
-    "message": "If you have three 3's, draw 5 cards.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Double Face",
-    "message": "If you have two kings, draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Swap & Reveal",
-    "message": "If both of you have two cards of the same suit, swap a card with your opponent.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "All Red",
-    "message": "If all your cards are red, drop a card from your opponent's hand.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Ace of Spades",
-    "message": "If you have the Ace of Spades, reveal it to your opponent and draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Lucky Leap",
-    "message": "If you have 3 consecutive number cards, draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Double Double",
-    "message": "If you have two face cards and a 2, draw 2 cards.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Full Spectrum",
-    "message": "If your hand contains one card of each suit, draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "King’s Luck",
-    "message": "If you have a King, drop a card of your choice and draw 1 card.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Fool’s Hand",
-    "message": "If you have no face cards, drop 1 card from your hand.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Royal Blessing",
-    "message": "If you have a Jack and a Queen, reveal one card from your opponent’s hand.",
-    "rarety": "ranEvent"
-  },
-  {
-    "category": "randomEvent",
-    "name": "Color Swap",
-    "message": "If you have four black cards, drop one.",
-    "rarety": "ranEvent"
-  }
+        "category": "randomEvent",
+        "name": "Perfect Pair",
+        "message": "If you have a pair of 10s, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Ace Collector",
+        "message": "If you have an Ace of any suit, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Flush Fever",
+        "message": "If all your cards are of the same suit, draw 3 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Royal Exchange",
+        "message": "If you both have 2 face cards, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Triple Threat",
+        "message": "If you have three cards less than 6, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "High Stakes",
+        "message": "If you have any card higher than 10, drop a card of your choice.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Mysterious Match",
+        "message": "If you have two cards of the same suit, drop a card and draw a card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Double Down",
+        "message": "If you have a red pair, draw 2 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Color Swap",
+        "message": "If you have a diamond and a black queen, draw a card and your opponent drop 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "King’s Command",
+        "message": "If you hold a King, tell your opponent to drop a card of their choice.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Lucky 8",
+        "message": "If you have an 8 of any suit, draw 1 card and reveal it to your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Matching Colors",
+        "message": "If you have 4 cards of the same color, drop one card of your choice.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "The Lucky Draw",
+        "message": "If you have a 7 of hearts, draw 2 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Odd Pair",
+        "message": "If you both have two clubs cards, trade one card blindly with your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Face to Face",
+        "message": "If you have a face card (Jack, Queen, or King), reveal 1 to your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Suit Swap",
+        "message": "If you have two cards of the same suit higher than 9, draw a card from your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Prime Time",
+        "message": "If you have any card (2, 3, 5), draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Drawback",
+        "message": "If you have two cards of the same number, drop one card of your choice.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "333",
+        "message": "If you have three 3's, draw 5 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Double Face",
+        "message": "If you have two kings, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Swap & Reveal",
+        "message": "If both of you have two cards of the same suit, swap a card with your opponent.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "All Red",
+        "message": "If all your cards are red, drop a card from your opponent's hand.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Ace of Spades",
+        "message": "If you have the Ace of Spades, reveal it to your opponent and draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Lucky Leap",
+        "message": "If you have 3 consecutive number cards, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Double Double",
+        "message": "If you have two face cards and a 2, draw 2 cards.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Full Spectrum",
+        "message": "If your hand contains one card of each suit, draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "King’s Luck",
+        "message": "If you have a King, drop a card of your choice and draw 1 card.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Fool’s Hand",
+        "message": "If you have no face cards, drop 1 card from your hand.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Royal Blessing",
+        "message": "If you have a Jack and a Queen, reveal one card from your opponent’s hand.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Color Swap",
+        "message": "If you have four black cards, drop one.",
+        "rarety": "ranEvent"
+    }
 ]
