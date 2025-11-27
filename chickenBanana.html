@@ -28,28 +28,149 @@
 
         /* --- COOL ANIMATED TITLE --- */
         /* --- DARKER, RICHER ANIMATED TITLE --- */
+        /* --- EPIC NEON GAME TITLE --- */
+
         .game-title {
-            font-family: "Fredoka One", "Comic Sans MS", cursive;
-            font-size: 60px;
+            font-family: "Fredoka One", sans-serif;
+            font-size: 70px;
             font-weight: 900;
             text-align: center;
-            margin-bottom: 25px;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
+            margin: 0;
+            padding: 0;
+            position: relative;
 
-            /* Banana-yellow gradient text */
-            background: linear-gradient(90deg, #ffe600, #ffcc00, #fff27a);
+            display: flex;
+            align-items: center;
+            gap: 22px;
+
+            /* subtle pulse */
+            animation: titlePulse 3s ease-in-out infinite;
+        }
+
+        @keyframes titlePulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* CHICKEN SIDE – fire hot orange */
+        .title-word.chicken {
+            background: linear-gradient(180deg, #ff9a00, #ff2e00);
             -webkit-background-clip: text;
             color: transparent;
-
-            /* Chicken-red outline glow */
             text-shadow:
-                0 0 6px rgba(255, 80, 0, 0.6),
-                0 0 12px rgba(255, 50, 0, 0.4),
-                2px 3px 0px rgba(120, 0, 0, 0.5);
-
-            animation: bananaBounce 2s infinite ease-in-out,
-                chickenShimmer 3.5s infinite linear;
+                0 0 10px rgba(255, 120, 0, 0.8),
+                0 0 20px rgba(255, 60, 0, 0.7),
+                0 0 35px rgba(255, 40, 0, 0.6);
+            animation: fireGlow 2.5s infinite ease-in-out;
         }
+
+        @keyframes fireGlow {
+            0% {
+                text-shadow: 0 0 15px rgba(255, 80, 0, 0.7);
+            }
+
+            50% {
+                text-shadow: 0 0 25px rgba(255, 20, 0, 1);
+            }
+
+            100% {
+                text-shadow: 0 0 15px rgba(255, 80, 0, 0.7);
+            }
+        }
+
+        /* BANANA SIDE – neon tropical green/yellow */
+        .title-word.banana {
+            background: linear-gradient(180deg, #fffd57, #b6ff00);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow:
+                0 0 10px rgba(210, 255, 0, 0.8),
+                0 0 22px rgba(150, 255, 0, 0.6),
+                0 0 35px rgba(120, 255, 0, 0.5);
+            animation: bananaGlow 2.5s infinite ease-in-out;
+        }
+
+        @keyframes bananaGlow {
+            0% {
+                text-shadow: 0 0 15px rgba(180, 255, 0, 0.7);
+            }
+
+            50% {
+                text-shadow: 0 0 25px rgba(255, 255, 0, 1);
+            }
+
+            100% {
+                text-shadow: 0 0 15px rgba(180, 255, 0, 0.7);
+            }
+        }
+
+        /* VS in the middle */
+        .title-vs {
+            font-size: 45px;
+            font-weight: 900;
+            color: white;
+            text-shadow:
+                0 0 8px #ffffff,
+                0 0 16px #00ffe0,
+                0 0 30px #00fff2;
+            animation: vsPulse 1.8s infinite ease-in-out;
+        }
+
+        @keyframes vsPulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.25);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+        }
+
+        /* EXTRA SPARKLES (subtle) */
+        .game-title::after {
+            content: "✨";
+            position: absolute;
+            top: -25px;
+            right: -15px;
+            font-size: 26px;
+            opacity: 0;
+            animation: sparkleBlink 2s infinite ease-in-out;
+        }
+
+        @keyframes sparkleBlink {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(0deg);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2) rotate(20deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.5) rotate(0deg);
+            }
+        }
+
 
         /* Soft cartoon bounce */
         @keyframes bananaBounce {
@@ -103,9 +224,22 @@
 
         .step {
             height: 100%;
-            border-right: 1px solid rgba(0, 0, 0, 0.1);
             flex: 1;
             position: relative;
+            border-right: 2px dashed rgba(255, 255, 255, 0.25);
+
+            background: linear-gradient(180deg,
+                    rgba(70, 70, 70, 0.6),
+                    rgba(40, 40, 40, 0.6));
+
+            transition: transform 0.2s ease, background 0.3s ease;
+        }
+
+        .step:hover {
+            background: linear-gradient(180deg,
+                    rgba(120, 120, 120, 0.7),
+                    rgba(60, 60, 60, 0.7));
+            transform: scale(1.02);
         }
 
         .character {
@@ -500,6 +634,37 @@
         #banana-controls button.negative-btn:active {
             transform: scale(0.95);
         }
+
+        /* Winner modal gold glow */
+        #winner-modal .modal-content {
+            border: 4px solid gold;
+            box-shadow:
+                0 0 12px rgba(255, 215, 0, 0.8),
+                0 0 25px rgba(255, 215, 0, 0.6),
+                0 0 40px rgba(255, 215, 0, 0.5);
+            animation: goldGlowPulse 2s infinite ease-in-out;
+        }
+
+        @keyframes goldGlowPulse {
+            0% {
+                box-shadow:
+                    0 0 10px rgba(255, 215, 0, 0.6),
+                    0 0 20px rgba(255, 215, 0, 0.5);
+            }
+
+            50% {
+                box-shadow:
+                    0 0 20px rgba(255, 215, 0, 1),
+                    0 0 45px rgba(255, 215, 0, 0.9),
+                    0 0 70px rgba(255, 215, 0, 0.7);
+            }
+
+            100% {
+                box-shadow:
+                    0 0 10px rgba(255, 215, 0, 0.6),
+                    0 0 20px rgba(255, 215, 0, 0.5);
+            }
+        }
     </style>
 </head>
 
@@ -507,7 +672,11 @@
     <div class="game-container">
         <div class="title-row">
             <button id="info-btn" onclick="openInfo()">ℹ️</button>
-            <h2 class="game-title" id="game-title">🐔 Chicken Banana 🍌</h2>
+            <h2 class="game-title" id="game-title">
+                <span class="title-word chicken">🐔 CHICKEN</span>
+                <span class="title-vs">vs</span>
+                <span class="title-word banana">BANANA 🍌</span>
+            </h2>
             <button id="start-btn" onclick="startGame()">Start</button>
         </div>
         <div id="timer" class="hidden">
@@ -580,17 +749,68 @@
             <h2 style="text-align:center;">🥇 Who rules the race, the Chicken or the Banana? 🥇</h2>
         </div>
     </div>
+    <!-- WINNER MODAL -->
+    <div id="winner-modal" class="modal hidden">
+        <div class="modal-content" style="text-align:center;">
+            <img id="winner-image" src="" style="width:200px; margin-bottom:15px;">
+            <h2 id="winner-label"></h2>
+            <button onclick="closeWinner()" style="
+                margin-top:20px; 
+                padding:10px 20px;
+                font-size:20px;
+                border:none;
+                border-radius:10px;
+                background:linear-gradient(135deg,#00e676,#00c853);
+                color:white;
+                cursor:pointer;
+                font-weight:bold;
+            ">
+                OK
+            </button>
+        </div>
+    </div>
 
 
     <script>
         const steps = 20;
         let positions = { chicken: 0, banana: 0 };
 
+        //audio
+        const startSound = new Audio("sounds/pop.mp3");
+        const timerSound = new Audio("sounds/clockTimer.wav");
+        timerSound.loop = true; // keeps the ticking continuous
+        // move button sounds
+        const bangSound = new Audio("sounds/bang.mp3");      // +1, +2, +3, +5
+        const beepPopSound = new Audio("sounds/beepPop.mp3"); // -1
+        // winner sounds
+        const monkeyWinSound = new Audio("sounds/monkey.mp3");
+        const chickenWinSound = new Audio("sounds/chicken.wav");
+        const ranCardSound = new Audio("sounds/ranCard.wav");
+
         // ---- LOAD PLAYING CARDS JSON ----
         let cardPool = [];
         let usedCards = [];
         let normalCardsPicked = 0; // counts only normal cards (not dealCards)
         let normalCardsSinceLastDeal = 0; // counts normal cards since last Draw or Drop
+
+        function playRaritySound(rarity) {
+            const sounds = {
+                common: "sounds/click.wav",
+                uncommon: "sounds/crack.wav",
+                rare: "sounds/rare.wav",
+                legendary: "sounds/legendary.wav",
+                mythic: "sounds/mythic.wav",
+                negative: "sounds/negative.wav",
+                ranEvent: "sounds/event.wav"
+            };
+
+            const soundFile = sounds[rarity];
+            if (soundFile) {
+                const audio = new Audio(soundFile);
+                audio.play().catch(e => console.log("Audio playback error:", e));
+            }
+        }
+
 
         fetch("playingCardsRules.json")
             .then(res => res.json())
@@ -601,6 +821,8 @@
 
 
         function startGame() {
+
+            startSound.play(); // Play pop sound
 
             document.getElementById("player-controls").classList.remove("hidden");
 
@@ -645,8 +867,17 @@
         });
 
 
-
         function move(player, amount) {
+
+            // --- PLAY SOUND BASED ON AMOUNT ---
+            if (amount > 0) {
+                bangSound.currentTime = 0;
+                bangSound.play();
+            } else if (amount < 0) {
+                beepPopSound.currentTime = 0;
+                beepPopSound.play();
+            }
+
             positions[player] = Math.min(steps, positions[player] + amount);
 
             const trackWidth = document.getElementById('track').offsetWidth;
@@ -674,8 +905,9 @@
             }
 
             if (positions[player] === steps) {
-                setTimeout(() => alert(player.toUpperCase() + ' WON! 🏆'), 100);
+                setTimeout(() => showWinner(player), 200);
             }
+
         }
 
 
@@ -685,11 +917,13 @@
         };
 
         let timerInterval;
-        let timeLeft = 1; //5
+        let timeLeft = 5; //5
 
         /* TIMER CONTROL */
         function startTimer() {
-            timeLeft = 1;
+            timeLeft = 5; //5
+            timerSound.currentTime = 0;
+            timerSound.play();
 
             document.getElementById("timer-number").textContent = timeLeft;
             document.getElementById("timer-bar-fill").style.width = "100%";
@@ -701,7 +935,7 @@
 
                 document.getElementById("timer-number").textContent = timeLeft;
 
-                let percent = (timeLeft / 1) * 100;
+                let percent = (timeLeft / 5) * 100; //5
                 document.getElementById("timer-bar-fill").style.width = percent + "%";
 
                 if (timeLeft <= 0) {
@@ -709,6 +943,8 @@
 
                     document.getElementById("timer").classList.add("hidden");  // HIDE TIMER
                     document.getElementById("timer-bar-fill").style.width = "0%";
+                    timerSound.pause();
+                    timerSound.currentTime = 0;
 
                     showPlayingCard();
                 }
@@ -717,11 +953,37 @@
         }
 
 
+        function showWinner(player) {
+            const modal = document.getElementById("winner-modal");
+            const img = document.getElementById("winner-image");
+            const label = document.getElementById("winner-label");
+
+            if (player === "chicken") {
+                img.src = "images/chickenBanana/chickenWin.png";
+                label.textContent = "🐔 Chicken is the Champion!";
+                chickenWinSound.currentTime = 0;
+                chickenWinSound.play();
+            } else {
+                img.src = "images/chickenBanana/bananaWin.png";
+                label.textContent = "🍌 Banana is the Champion!";
+                monkeyWinSound.currentTime = 0;
+                monkeyWinSound.play();
+            }
+
+            modal.classList.remove("hidden");
+        }
+
+        function closeWinner() {
+            document.getElementById("winner-modal").classList.add("hidden");
+        }
+
+
         /* SHOW PLAYING CARD MODULE */
         function showPlayingCard() {
             // Check if it's time for a "Draw or Drop" card
             if (normalCardsSinceLastDeal === 3) {
                 // Weighted random pick from dealCards
+                ranCardSound.play();
                 let weightedList = [];
                 dealCards.forEach(d => {
                     for (let i = 0; i < d.weight; i++) weightedList.push(d);
@@ -791,6 +1053,7 @@
             const cardBox = document.querySelector(".playing-cards-content");
             cardBox.classList.remove("rarity-common", "rarity-uncommon", "rarity-rare", "rarity-legendary", "rarity-mythic", "rarity-ranEvent", "rarity-negative");
             cardBox.classList.add("rarity-" + chosen.rarety);
+            playRaritySound(chosen.rarety);
 
             document.getElementById("playingCards").classList.remove("hidden");
         }

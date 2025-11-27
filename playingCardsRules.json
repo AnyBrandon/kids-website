@@ -68,7 +68,7 @@
     {
         "category": "plus1",
         "name": "Low Pair Lift",
-        "message": "If you hold a pair of cards ranked 6 or lower, move +1.",
+        "message": "If you hold two cards ranked 6 or lower, move +1.",
         "rarety": "common"
     },
     {
@@ -104,7 +104,7 @@
     {
         "category": "plus1",
         "name": "Ascending Arc",
-        "message": "If any three of your cards form an increasing sequence, move +1.",
+        "message": "If any three of your cards higher than 8, move +1.",
         "rarety": "common"
     },
     {
@@ -122,7 +122,7 @@
     {
         "category": "plus1",
         "name": "Card Cluster Kick",
-        "message": "If three or more of your cards are within a range of 2 ranks, move +1.",
+        "message": "If three or more of your cards are red, move +1.",
         "rarety": "common"
     },
     {
@@ -260,7 +260,7 @@
     {
         "category": "plus2",
         "name": "Three-Suit Tangle",
-        "message": "If your highest three cards come from three different suits, move +2.",
+        "message": "If your highest three cards come from 2 or 3 different suits, move +2.",
         "rarety": "uncommon"
     },
     {
@@ -536,7 +536,7 @@
     {
         "category": "plus3",
         "name": "Kings Triumph",
-        "message": "If you have 2 Kings and 2 other face cards, move +3.",
+        "message": "If you have 2 Kings and 2 red cards, move +3.",
         "rarety": "rare"
     },
     {
@@ -582,6 +582,12 @@
         "rarety": "rare"
     },
     {
+        "category": "plus2",
+        "name": "7 Wonders",
+        "message": "If you have 7 cards, move +2.",
+        "rarety": "uncommon"
+    },
+    {
         "category": "plus3",
         "name": "Colors Sequence",
         "message": "If your lowest, middle, and highest cards are the same color, move +3.",
@@ -594,6 +600,12 @@
         "rarety": "rare"
     },
     {
+        "category": "randomEvent",
+        "name": "Chicken Bicken Gift",
+        "message": "Chicken Bicken sent a surprise to its craziest chicken! move +3.",
+        "rarety": "ranEvent"
+    },
+    {
         "category": "plus3",
         "name": "Arcane Rank Alignment",
         "message": "If the sum of your lowest two cards is less than 6, move +3.",
@@ -604,6 +616,12 @@
         "name": "Odd Pair Sprint",
         "message": "If you hold exactly two (6's) cards, move +3.",
         "rarety": "rare"
+    },
+    {
+        "category": "plus1",
+        "name": "Queen dream",
+        "message": "If your highest card is a queen, move +1.",
+        "rarety": "common"
     },
     {
         "category": "plus3",
@@ -636,9 +654,21 @@
         "rarety": "legendary"
     },
     {
+        "category": "plus1",
+        "name": "4 por favor",
+        "message": "If your lowest card is a 4, move +1.",
+        "rarety": "common"
+    },
+    {
         "category": "minus1",
         "name": "Club Curse",
         "message": "If you have 3+ Clubs♣, your opponent moves -2.",
+        "rarety": "negative"
+    },
+    {
+        "category": "minus1",
+        "name": "10 Curse",
+        "message": "If you have 10 cards or more, move -2.",
         "rarety": "negative"
     },
     {
@@ -654,10 +684,22 @@
         "rarety": "rare"
     },
     {
+        "category": "minus1",
+        "name": "15 pain",
+        "message": "If you have 15 cards, move -3.",
+        "rarety": "negative"
+    },
+    {
         "category": "plus2",
         "name": "Diamond Peak",
         "message": "If your highest card is a Diamond♦, move +2.",
         "rarety": "uncommon"
+    },
+    {
+        "category": "plus2",
+        "name": "black Peak",
+        "message": "If your highest card is black, move +1.",
+        "rarety": "common"
     },
     {
         "category": "plus2",
@@ -676,6 +718,12 @@
         "name": "Overflow Boost",
         "message": "If your hand total is above 35, move +3.",
         "rarety": "rare"
+    },
+    {
+        "category": "plus2",
+        "name": "Red road",
+        "message": "If your lowest card is red, move +1.",
+        "rarety": "common"
     },
     {
         "category": "minus1",
@@ -826,6 +874,12 @@
         "name": "Even Pattern Paradox",
         "message": "If you have a 2,4,6 and 8, move +5.",
         "rarety": "legendary"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Monkey Bonanza Gift",
+        "message": "Monkey Bonanza delivered a present to its favorite banana! move +3.",
+        "rarety": "ranEvent"
     },
     {
         "category": "plus5",
@@ -1038,6 +1092,12 @@
         "rarety": "mythic"
     },
     {
+        "category": "randomEvent",
+        "name": "Sneaky Bonanza Strike",
+        "message": "Monkey Bonanza just dropped a sneaky trap on the chicken! Chicken move –2.",
+        "rarety": "ranEvent"
+    },
+    {
         "category": "plus10",
         "name": "Celestial Parity Pulse",
         "message": "If all your cards are higher than 9, move +10.",
@@ -1218,6 +1278,12 @@
         "rarety": "negative"
     },
     {
+        "category": "randomEvent",
+        "name": "Banana Booby Trap",
+        "message": "Chicken Bicken just launched a sneaky trap at the banana! Banana slips back –2.",
+        "rarety": "ranEvent"
+    },
+    {
         "category": "minus3",
         "name": "The Overload",
         "message": "If your total number cards sum is over 40 → move –3.",
@@ -1306,6 +1372,12 @@
         "name": "Overconfidence",
         "message": "If your highest card is 10 → move –2.",
         "rarety": "negative"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Dangerous pushback",
+        "message": "Pushback your opponent to the start position if you have 3 pairs.",
+        "rarety": "ranEvent"
     },
     {
         "category": "minus2",
@@ -1437,6 +1509,12 @@
         "category": "randomEvent",
         "name": "Shadow Exchange",
         "message": "Swap one random card with opponent. Highest card moves +2.",
+        "rarety": "ranEvent"
+    },
+    {
+        "category": "randomEvent",
+        "name": "Tin Tin",
+        "message": "Go back to start position if you are at step 10 and have a 10 in your hand.",
         "rarety": "ranEvent"
     },
     {
