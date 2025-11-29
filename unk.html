@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Fog of Darkzor - King Ado Adi Rescue (Dynamic 15x10+)</title>
+    <style>
+        /* CSS for Layout and Styling */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1a1a2e;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        h1 {
+            color: #e94560;
+            margin: 10px 0;
+            font-size: 1.8em;
+        }
+
+        #status {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            height: 40px;
+            text-align: center;
+        }
+
+        #game-board {
+            display: grid;
+            /* Grid template is set dynamically by JS based on COLUMNS variable */
+            width: 98vmin;
+            height: auto;
+            max-width: 900px;
+            max-height: 600px;
+            border: 4px solid #16213e;
+            box-shadow: 0 0 25px rgba(233, 69, 96, 0.7);
+            /* Aspect ratio is fixed by JS setting grid-template-rows/columns */
+        }
+
+        .tile {
+            background-color: #3b5998;
+            border: 1px solid #16213e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            /* slightly bigger symbols */
+            cursor: pointer;
+            transition: background-color 0.2s;
+
+            /* Make tiles perfectly square */
+            aspect-ratio: 1 / 1;
+            width: 100%;
+            /* width determined by grid cell */
+            box-sizing: border-box;
+            /* include border in size */
+        }
+
+
+        .tile:hover {
+            background-color: #537ec6;
+        }
+
+        /* Tile States & Colors */
+        .safe {
+            background-color: #0d8363;
+        }
+
+        .trap {
+            background-color: #cc3333;
+        }
+
+        .bomb {
+            background-color: #4f0000;
+        }
+
+        .clue {
+            background-color: #ffc400;
+        }
+
+        .king {
+            background-color: #ffd700;
+            box-shadow: 0 0 15px #ffd700;
+        }
+
+        .boot {
+            background-color: #00cccc;
+        }
+
+        .teleport {
+            background-color: #8c00b3;
+        }
+
+        .clone {
+            background-color: #5d5d5d;
+        }
+
+        .expansion {
+            background-color: #2a004a;
+        }
+
+        /* New Expansion Tile Color */
+
+
+        /* Player Markers */
+        .player-1 {
+            border: 4px solid #00ffff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .player-2 {
+            border: 4px solid #ff00ff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+
+        /* Teleport mode highlight */
+        .teleport-target {
+            background-color: rgba(255, 255, 255, 0.3) !important;
+            cursor: crosshair;
+        }
+
+        .teleport-target:hover {
+            background-color: rgba(255, 255, 255, 0.5) !important;
+        }
+
+
+        #reset-button {
+            margin: 15px 0;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            background-color: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .player-icon {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            pointer-events: none;
+            /* Prevent accidental blocking of tile clicks */
+        }
+    </style>
+</head>
+
+<body>
+    <h1>👑 Fog of Darkzor: Dynamic Rescue 🛡️</h1>
+    <div id="status"></div>
+    <div id="game-board"></div>
+    <button id="reset-button" onclick="startGame()">Start New Quest</button>
+
+
+
+    <script>
+        // --- Global Game State ---
+        let COLUMNS = 15;
+        const ROWS = 10;
+        let BOARD_SIZE = COLUMNS * ROWS; // Initial size: 150 Tiles
+        const initialColumns = COLUMNS;
+        let revealedTiles = [];
+
+        const board = [];
+        let gameActive = true;
+        let currentPlayer = 1;
+
+        let extraTurn = false;
+        let isTeleporting = false;
+
+        // --- Expansion State ---
+        let expandedCount = 0; // Tracks 0, 1, or 2 expansions
+        let hasExpandedLeft = false;
+        let hasExpandedRight = false;
+
+        const players = {
+            1: { position: -1, startPos: 0, stunned: false, img: 'images/p1.png' },
+            2: { position: -1, startPos: BOARD_SIZE - 1, stunned: false, img: 'images/p2.png' }
+        };
+
+
+        const elements = {
+            board: document.getElementById('game-board'),
+            status: document.getElementById('status'),
+            reset: document.getElementById('reset-button')
+        };
+
+        // Tile distribution UPDATED with Expansion tile
+        const TILE_CONFIG = {
+            'king': { count: 1, symbol: '👑' },
+            'trap': { count: 20, symbol: '⚡' },
+            'bomb': { count: 4, symbol: '💣' },
+            'clue': { count: 10, symbol: '❓' },
+            'boot': { count: 8, symbol: '👟' },
+            'teleport': { count: 3, symbol: '🌀' },
+            'clone': { count: 4, symbol: '👤' },
+            'expansion': { count: 2, symbol: '↔️' }, // NEW
+        };
+
+        // --- Utility Functions ---
+
+        function getCoords(index) {
+            return { r: Math.floor(index / COLUMNS), c: index % COLUMNS };
+        }
+
+        function getDistance(index1, index2) {
+            const c1 = getCoords(index1);
+            const c2 = getCoords(index2);
+            return Math.abs(c1.r - c2.r) + Math.abs(c1.c - c2.c);
+        }
+
+        // --- Game Setup ---
+        function setupBoard() {
+            // Reset global variables for a new game
+            COLUMNS = 15;
+            BOARD_SIZE = COLUMNS * ROWS;
+            expandedCount = 0;
+            hasExpandedLeft = false;
+            hasExpandedRight = false;
+            revealedTiles = new Array(BOARD_SIZE).fill(false);
+
+            // Reset board array
+            board.length = 0;
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                board.push('safe');
+            }
+
+            // Place non-safe tiles
+            for (const type in TILE_CONFIG) {
+                const config = TILE_CONFIG[type];
+                let count = config.count;
+                while (count > 0) {
+                    // Avoid placing anything on player start/end tiles (0 and BOARD_SIZE - 1)
+                    const index = Math.floor(Math.random() * (BOARD_SIZE - 2)) + 1;
+                    if (board[index] === 'safe') {
+                        board[index] = type;
+                        count--;
+                    }
+                }
+            }
+
+            // Reset players to initial start positions
+            players[1].startPos = 0;
+            players[2].startPos = BOARD_SIZE - 1;
+            players[1].position = players[1].startPos;
+            players[2].position = players[2].startPos;
+            players[1].stunned = false;
+            players[2].stunned = false;
+            extraTurn = false;
+            isTeleporting = false;
+        }
+
+        function startGame() {
+            setupBoard();
+            currentPlayer = 1;
+            gameActive = true;
+            elements.board.innerHTML = '';
+            elements.reset.style.display = 'none';
+
+            createTileElements();
+            updateBoardDisplay();
+            updateStatus();
+        }
+
+        function createTileElements() {
+            elements.board.style.gridTemplateColumns = `repeat(${COLUMNS}, 1fr)`;
+            elements.board.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
+
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.dataset.index = i;
+                tile.addEventListener('click', () => handleMove(i));
+                elements.board.appendChild(tile);
+            }
+        }
+
+        // --- Expansion Logic ---
+
+        function handleExpansion(triggerIndex) {
+            // 1. Mark the expansion tile as consumed
+            board[triggerIndex] = 'safe';
+
+            // 2. Determine expansion group and placement
+            // Group 1: 1 trap, 1 bomb, 1 teleport
+            // Group 2: 1 trap, 1 bomb, 1 clone
+            const expansionGroup = expandedCount === 0
+                ? [{ type: 'trap', count: 1 }, { type: 'bomb', count: 1 }, { type: 'teleport', count: 1 }]
+                : [{ type: 'trap', count: 1 }, { type: 'bomb', count: 1 }, { type: 'clone', count: 1 }];
+
+            let placementSide = '';
+            const shiftAmount = 4;
+            const oldColumns = COLUMNS;
+            const oldBoardSize = BOARD_SIZE;
+
+            // Randomly pick a side if neither has been used, otherwise pick the unused side
+            if (expandedCount === 0) {
+                placementSide = Math.random() < 0.5 ? 'left' : 'right';
+            } else {
+                placementSide = hasExpandedLeft ? 'right' : 'left';
+            }
+
+            // 3. Setup New Dimensions
+            COLUMNS += shiftAmount;
+            BOARD_SIZE = COLUMNS * ROWS;
+            const newBoard = new Array(BOARD_SIZE).fill('safe');
+
+            // 4. Calculate Shift and Copy Old Board / Place New Section
+
+            const p1Old = players[1].position;
+            const p2Old = players[2].position;
+
+            if (placementSide === 'left') {
+                hasExpandedLeft = true;
+                // Shift all existing tiles and players right by 4 columns.
+
+                for (let i = 0; i < oldBoardSize; i++) {
+                    const row = Math.floor(i / oldColumns);
+                    // New index calculation: old_index + row * (C_new - C_old) + C_new - C_old
+                    const newIndex = i + (row * shiftAmount) + shiftAmount;
+                    newBoard[newIndex] = board[i];
+                }
+
+                // Update Player and Start Positions
+                const calculateNewPos = (oldPos) => oldPos + shiftAmount * Math.floor(oldPos / oldColumns) + shiftAmount;
+                players[1].position = calculateNewPos(p1Old);
+                players[2].position = calculateNewPos(p2Old);
+                players[1].startPos = calculateNewPos(players[1].startPos);
+                players[2].startPos = calculateNewPos(players[2].startPos);
+
+            } else { // Right Expansion
+                hasExpandedRight = true;
+                // Original board shifts right by 4 indices per row (no column shift for the player/tile content)
+
+                for (let i = 0; i < oldBoardSize; i++) {
+                    const row = Math.floor(i / oldColumns);
+                    // New index calculation: old_index + row * (C_new - C_old)
+                    const newIndex = i + row * shiftAmount;
+                    newBoard[newIndex] = board[i];
+                }
+
+                // Update Player and Start Positions
+                const calculateNewPos = (oldPos) => oldPos + shiftAmount * Math.floor(oldPos / oldColumns);
+                players[1].position = calculateNewPos(p1Old);
+                players[2].position = calculateNewPos(p2Old);
+                players[1].startPos = calculateNewPos(players[1].startPos);
+                players[2].startPos = calculateNewPos(players[2].startPos);
+            }
+
+            // 5. Place New Non-Safe Tiles (4x4 section)
+            const expansionStartRow = 3;
+            const expansionEndRow = 6;
+            const newSectionStartCol = placementSide === 'left' ? 0 : oldColumns;
+
+            // Setup the 4x4 content
+            const newSection = [];
+            expansionGroup.forEach(item => {
+                for (let i = 0; i < item.count; i++) { newSection.push(item.type); }
+            });
+            while (newSection.length < 16) { newSection.push('safe'); } // Fill with safe
+
+            // Shuffle the 4x4 section
+            for (let i = newSection.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newSection[i], newSection[j]] = [newSection[j], newSection[i]];
+            }
+
+            // Place the shuffled section into the new board
+            let sectionIndex = 0;
+            for (let r = expansionStartRow; r <= expansionEndRow; r++) {
+                for (let c = newSectionStartCol; c < newSectionStartCol + shiftAmount; c++) {
+                    const index = r * COLUMNS + c;
+                    newBoard[index] = newSection[sectionIndex++];
+                }
+            }
+
+            // 6. Finalize
+            board.length = 0;
+            board.push(...newBoard);
+            expandedCount++;
+
+            // Rebuild HTML board and update status
+            elements.board.innerHTML = '';
+            createTileElements();
+
+            showNotification(`↔️ Grid Expansion! A new ${shiftAmount}x${ROWS} section has been added to the ${placementSide}!`);
+
+            // Current player gets to move again on the new board
+            extraTurn = true;
+        }
+
+        // --- Game Flow ---
+
+        function handleMove(newIndex) {
+            if (!gameActive || players[currentPlayer].stunned) return;
+
+            const otherPlayer = currentPlayer === 1 ? 2 : 1;
+
+            // --- TELEPORT LOGIC ---
+            if (isTeleporting) {
+                if (newIndex === players[otherPlayer].position) {
+                    showNotification("Cannot teleport onto the other player's tile!", true);
+                    return;
+                }
+
+                players[currentPlayer].position = newIndex;
+                revealedTiles[newIndex] = true;
+
+                isTeleporting = false;
+
+                resolveTileEffect(newIndex);
+
+                // Switch turn AFTER resolving teleport effect
+                if (!extraTurn) switchTurn();
+                updateBoardDisplay();
+                updateStatus();
+                return;
+            }
+            // --- END TELEPORT LOGIC ---
+
+            const oldIndex = players[currentPlayer].position;
+            const beepSound = new Audio('sounds/beepPop.mp3');
+
+            if (getDistance(oldIndex, newIndex) > 1 && oldIndex !== -1) {
+                beepSound.play();
+                return;
+            }
+
+            // Update Player Position
+            players[currentPlayer].position = newIndex;
+
+            // Resolve Tile Effect
+            resolveTileEffect(newIndex);
+
+            // --- SWITCH TURN LOGIC ---
+            if (!isTeleporting) {
+                if (extraMoves > 0) {
+                    extraMoves--; // keep the same player
+                } else {
+                    switchTurn();
+                }
+            }
+
+
+            // Update board and status after turn switch
+            updateBoardDisplay();
+            updateStatus();
+        }
+
+        let extraMoves = 0; // new global variable
+
+        function resolveTileEffect(index) {
+            const tileType = board[index];
+
+            if (tileType === 'king') {
+                endGame(currentPlayer);
+                return;
+            }
+            if (tileType === 'trap') {
+                const otherPlayerId = currentPlayer === 1 ? 2 : 1;
+
+                // Current player is stunned
+                players[currentPlayer].stunned = true;
+
+                // Give the other player TWO consecutive turns
+                // We'll set extraTurn for the other player after switching turn
+                showNotification(`⚡ Trap Activated! Player ${currentPlayer} is STUNNED. Player ${otherPlayerId} gets TWO consecutive moves!`);
+
+                // Consume the trap
+                board[index] = 'safe';
+                // Immediately switch turn to the other player
+                switchTurn();
+                // Set extraTurn to true for the other player
+                extraMoves = 2; // <-- give 2 moves
+
+                // Update board display immediately to highlight the correct player
+                updateBoardDisplay();
+                updateStatus();
+
+                return; // exit since trap ends the current player's move
+            }
+            else if (tileType === 'bomb') {
+                players[currentPlayer].position = players[currentPlayer].startPos;
+                showNotification(`💣 Bomb! Player ${currentPlayer} returns to start!`);
+                board[index] = 'safe'; // Consume trap
+            } else if (tileType === 'boot') {
+                extraMoves++; // give 1 extra move
+                board[index] = 'safe'; // Consume power-up
+                showNotification(`👟 Boot Power-up! Player ${currentPlayer} gets an extra move!`);
+            }
+            else if (tileType === 'teleport') {
+                isTeleporting = true;
+                board[index] = 'safe'; // Consume power-up
+                showNotification(`🌀 Teleport Activated! Click **ANY** open tile to jump!`);
+            } else if (tileType === 'clone') {
+                const otherPlayer = currentPlayer === 1 ? 2 : 1;
+                [players[currentPlayer].position, players[otherPlayer].position] =
+                    [players[otherPlayer].position, players[currentPlayer].position];
+                showNotification(`👤 Darkzor Clone! Players have swapped positions!`);
+                board[index] = 'safe'; // Consume trap
+            } else if (tileType === 'expansion' && expandedCount < 2) { // New Expansion Logic
+                handleExpansion(index);
+            } else if (tileType === 'clue') {
+                checkClue(index);
+            }
+
+            // If the expansion tile was stepped on, the current turn is over, but extraTurn is set inside handleExpansion
+            if (tileType !== 'expansion') {
+                board[index] = 'safe'; // Consume standard traps/powerups after effect
+            }
+        }
+
+        function switchTurn() {
+            if (players[currentPlayer].stunned) {
+                players[currentPlayer].stunned = false;
+            }
+            currentPlayer = (currentPlayer === 1) ? 2 : 1;
+        }
+
+        function checkClue(clueIndex) {
+            const kingPos = board.findIndex(type => type === 'king');
+            const distance = getDistance(clueIndex, kingPos);
+
+            let clueText = "";
+            if (distance <= 4) {
+                clueText = `The King is **very close**`;
+            } else if (distance <= 8) {
+                clueText = `The King is **nearby**`;
+            } else {
+                clueText = `The King is **far away**`;
+            }
+            showNotification(`Clue Found! ${clueText}`);
+        }
+
+        // --- Display Updates ---
+
+        function updateBoardDisplay() {
+            const tiles = elements.board.children;
+            const otherPlayer = currentPlayer === 1 ? 2 : 1;
+            const currentPlayerPos = players[currentPlayer].position;
+            const otherPlayerPos = players[otherPlayer].position;
+
+            for (let i = 0; i < BOARD_SIZE; i++) {
+                const tile = tiles[i];
+                tile.innerHTML = '';
+                tile.className = 'tile';
+
+                const tileType = board[i];
+                const isCurrentPlayerHere = i === currentPlayerPos;
+                const isOtherPlayerHere = i === otherPlayerPos;
+
+                // --- Reveal Tile Type ---
+                if (revealedTiles[i]) {
+                    tile.classList.add(tileType);
+                    if (TILE_CONFIG[tileType] && TILE_CONFIG[tileType].symbol) {
+                        tile.innerHTML += TILE_CONFIG[tileType].symbol;
+                    }
+                } else {
+                    tile.classList.add('safe'); // keep hidden tiles safe
+                }
+
+                // --- Teleport Mode Highlight ---
+                if (isTeleporting && i !== otherPlayerPos) {
+                    tile.classList.add('teleport-target');
+                }
+
+                // --- Current Player Marker (highlighted) ---
+                if (isCurrentPlayerHere) {
+                    tile.classList.add(`player-${currentPlayer}`);
+                    tile.innerHTML += `<img src="${players[currentPlayer].img}" class="player-icon">`;
+                }
+
+                if (isOtherPlayerHere) {
+                    tile.innerHTML += `<img src="${players[otherPlayer].img}" class="player-icon">`;
+                }
+            }
+        }
+
+
+
+        function updateStatus() {
+            const player = players[currentPlayer];
+
+            if (isTeleporting) {
+                elements.status.innerHTML = `<span style="color:#8c00b3;">**TELEPORT MODE:** Player ${currentPlayer} (${player.emoji}), select your destination tile!</span>`;
+            } else if (player.stunned) {
+                elements.status.innerHTML = `<span style="color:#e94560;">Player ${currentPlayer} (${player.emoji}) is **STUNNED**! Turn skipped.</span>`;
+                setTimeout(() => {
+                    player.stunned = false;
+                    switchTurn();
+                    updateStatus();
+                }, 1500);
+            } else if (extraTurn) {
+                elements.status.innerHTML = `<span style="color:#00ffff;">Player ${currentPlayer} (${player.emoji}) gets an **EXTRA TURN**! Choose wisely.</span>`;
+            } else {
+                elements.status.innerHTML = ``;
+            }
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.innerHTML = message;
+            notification.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: ${isError ? 'rgba(200, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.8)'};
+                padding: 15px 30px;
+                border-radius: 10px;
+                color: white;
+                font-size: 1.5em;
+                z-index: 1000;
+                animation: fadeout 3s forwards;
+            `;
+            document.body.appendChild(notification);
+
+            if (!document.getElementById('fadeout-style')) {
+                const style = document.createElement('style');
+                style.id = 'fadeout-style';
+                style.innerHTML = '@keyframes fadeout { 0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }';
+                document.head.appendChild(style);
+            }
+
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        function endGame(winner) {
+            gameActive = false;
+            elements.status.innerHTML = `🎉 **Player ${winner}** (${players[winner].emoji}) rescued King Ado Adi and won the Quest! 🎉`;
+            elements.reset.style.display = 'block';
+
+            const kingPos = board.findIndex(type => type === 'king');
+            elements.board.children[kingPos].classList.add('king');
+            elements.board.children[kingPos].innerHTML = TILE_CONFIG.king.symbol;
+
+            showNotification(`VICTORY! Player ${winner} Rescues the King!`);
+        }
+
+        window.onload = startGame;
+    </script>
+</body>
+
+</html>

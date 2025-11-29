@@ -364,7 +364,7 @@
 
         let deck = [], playerHand = [], dealerHand = [];
         const STORAGE_KEY = "bjBalanceX";
-        let money = parseInt(localStorage.getItem(STORAGE_KEY)) || 2500;
+        let money = parseInt(localStorage.getItem(STORAGE_KEY)) || 2500; // 2500 starting money
         let currentBet = 0, inRound = false;
 
 
@@ -424,8 +424,16 @@
         function updateMoneyDisplay() {
             moneySpan.textContent = `$${money}`;
             betSpan.textContent = `$${currentBet}`;
-            localStorage.setItem(STORAGE_KEY, money); // 💾 Save balance
+            localStorage.setItem(STORAGE_KEY, money);
+
+            // 🔥 Dynamic max bet rule
+            if (money >= 5000) {
+                betInput.max = 500;
+            } else {
+                betInput.max = 250;
+            }
         }
+
 
 
         function clearHands() {
@@ -443,10 +451,13 @@
 
             const bet = parseInt(betInput.value);
 
-            if (isNaN(bet) || bet < 50 || bet > 250 || bet > money) {
-                statusDiv.textContent = "Bet must be between $50 and $250, and not exceed your money.";
+            const dynamicMax = money >= 5000 ? 500 : 250;
+
+            if (isNaN(bet) || bet < 50 || bet > dynamicMax || bet > money) {
+                statusDiv.textContent = `Bet must be between $50 and $${dynamicMax}, and not exceed your money.`;
                 return;
             }
+
 
             currentBet = bet;
             money -= bet;
@@ -479,7 +490,7 @@
             btnStand.disabled = false;
             document.getElementById('action-buttons').style.display = 'flex';
             setBetGlow(false);
-             btnDouble.style.display = "inline-block"; // make double btn visible again
+            btnDouble.style.display = "inline-block"; // make double btn visible again
         }
 
         function renderCardElement(card, hidden = false, delay = 800, flip = false) {

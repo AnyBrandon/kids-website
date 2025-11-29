@@ -9,7 +9,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: radial-gradient(circle at center, #0f0f0f 0%, #1a1a1a 100%);
+            background: radial-gradient(circle at center, #000000 0%, #000000 100%);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #fff;
             display: flex;
@@ -48,8 +48,9 @@
         }
 
         .vault-image {
-            width: 250px;
+            width: 450px;
             transition: transform 0.6s ease-in-out;
+            border-radius: 20px;
         }
 
         .vault-image.opening {
@@ -146,7 +147,7 @@
     <h1>Magic Kitchen Show</h1>
 
     <div class="vault-container">
-        <img src="images/vault.png" alt="Vault" class="vault-image" id="vaultImage">
+        <img src="images/mksLogo.png" alt="Vault" class="vault-image" id="vaultImage">
 
         <div class="password-box">
             <input type="text" id="passwordInput" placeholder="Enter password..." />
