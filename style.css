@@ -225,13 +225,18 @@ p {
   -webkit-background-clip: text;
 
   animation: strokeReveal 3s ease-in-out infinite,
-             strokePulse 4s ease-in-out infinite alternate;
+    strokePulse 4s ease-in-out infinite alternate;
 }
 
 /* gradient moves left → right */
 @keyframes strokeReveal {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* outline glow pulse */
@@ -240,6 +245,7 @@ p {
     -webkit-text-stroke: 2px #ffffff;
     filter: drop-shadow(0 0 4px #00eaff);
   }
+
   100% {
     -webkit-text-stroke: 2px #ff00f7;
     filter: drop-shadow(0 0 10px #ff00f7);
@@ -553,4 +559,69 @@ p {
   box-shadow: 0 0 15px rgba(74, 65, 86, 0.7), 0 0 25px rgba(18, 17, 89, 0.6);
   transition: all 0.4s ease-in-out;
   animation: gradientShift 5s ease infinite;
+}
+
+.silent-council-button {
+  /* Core Button Aesthetics (Dark & Royal) */
+  background: linear-gradient(145deg, #1a1a2e, #0f0f1b);
+  /* Deep midnight blue/black gradient */
+  color: #c0a060;
+  /* Muted, aged gold/bronze for the text */
+  border: 2px solid #5a4b3d;
+  /* Dark bronze border for structure */
+
+  /* Text & Typography (Suspense) */
+  font-family: 'Georgia', serif;
+  /* A classic, slightly serious font */
+  font-size: 1.2em;
+  letter-spacing: 0.15em;
+  /* Wide spacing adds a sense of importance/mystery */
+  text-transform: uppercase;
+  text-shadow: 0 0 5px rgba(192, 160, 96, 0.4);
+  /* Subtle glow on the text */
+
+  /* Sizing and Shape */
+  padding: 15px 30px;
+  cursor: pointer;
+  border-radius: 5px;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.6),
+    /* Main dark shadow */
+    inset 0 0 10px rgba(192, 160, 96, 0.15);
+  /* Very slight inner gold glow */
+
+  /* Transitions for Hover Effect (Suspense) */
+  transition: all 0.3s ease-in-out;
+}
+
+.silent-council-button:hover {
+  /* Darken and Enhance on Hover (Suspense & Royal) */
+  background: linear-gradient(145deg, #0f0f1b, #1a1a2e);
+  /* Reverse gradient for subtle shift */
+  color: #e0c080;
+  /* Brighter gold on hover */
+  border-color: #e0c080;
+  /* Border highlights */
+
+  /* Enhanced Shadow for a 'Lifted' or 'Activated' effect */
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.8),
+    /* Deeper main shadow */
+    0 0 25px rgba(224, 192, 128, 0.3),
+    /* Gold outer glow for suspense */
+    inset 0 0 15px rgba(224, 192, 128, 0.2);
+  /* Enhanced inner glow */
+
+  /* Transform for a slight lift */
+  transform: translateY(-2px);
+}
+
+.silent-council-button:active {
+  /* Press Effect */
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.6),
+    /* Pressed-down shadow */
+    inset 0 0 10px rgba(192, 160, 96, 0.4);
+  /* Stronger inner glow */
+  transform: translateY(0);
 }
