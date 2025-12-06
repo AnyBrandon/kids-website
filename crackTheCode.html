@@ -21,6 +21,77 @@
             --light-size: 20px;
         }
 
+        /* --- NEW STYLES FOR PLOOFI MODE --- */
+
+        /* Theme definition: New colors for the girly/pink theme */
+        .ploofi-mode {
+            --color-background: #ffe6f2;
+            /* Light Pink Background */
+            --color-surface: #ffc4e1;
+            /* Medium Pink Surface */
+            --color-primary: #d4008a;
+            /* Bright Magenta Primary */
+            --color-text-light: #333333;
+            /* Dark text for light background */
+            --color-text-dark: #f5f5f5;
+            /* Light text for dark elements */
+            --color-green: #00cc66;
+            --color-orange: #ff6600;
+            --color-red: #ff3333;
+            --color-shadow: rgba(212, 0, 138, 0.4);
+        }
+
+        /* Ensure primary colored elements like buttons/display adapt */
+        .ploofi-mode .btn,
+        .ploofi-mode #startGameBtn,
+        .ploofi-mode .keypad-btn {
+            border-color: var(--color-primary);
+            color: var(--color-text-dark);
+            background-color: var(--color-primary);
+            box-shadow: 0 4px var(--color-shadow);
+        }
+
+        .ploofi-mode .input-display {
+            background-color: var(--color-surface);
+            border: 2px solid var(--color-primary);
+            color: var(--color-text-dark);
+        }
+
+        /* Style and positioning for the new toggle button (Upper Right) */
+        .ploofi-toggle-btn {
+            position: absolute;
+            /* Positions relative to the viewport/body */
+            top: 15px;
+            right: 15px;
+            padding: 8px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--color-primary);
+            color: var(--color-text-light);
+            box-shadow: 0 2px 4px var(--color-shadow);
+            z-index: 1000;
+            /* Ensures it's on top of all other elements */
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .ploofi-toggle-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Tablet and Mobile Responsiveness for the button */
+        @media (max-width: 600px) {
+            .ploofi-toggle-btn {
+                top: 10px;
+                right: 10px;
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+
+        /* --- END NEW STYLES --- */
+
         body {
             font-family: var(--font-stack);
             background-color: var(--color-background);
@@ -422,6 +493,106 @@
                 gap: 10px;
             }
         }
+
+        /* --- NEW STYLES FOR HOW TO PLAY TOGGLE BLOCK --- */
+        .how-to-play-container {
+            margin: 20px auto 10px auto;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .how-to-play-toggle {
+            /* Style the button - reusing primary colors for emphasis */
+            background-color: var(--color-primary);
+            color: var(--color-text-dark);
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .how-to-play-toggle:hover {
+            opacity: 0.9;
+        }
+
+        .how-to-play-content {
+            /* Container for the instructions */
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-primary);
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: left;
+            box-shadow: 0 4px 6px var(--color-shadow);
+
+            /* Default state: Hidden with zero height/padding */
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+            padding: 0 15px;
+            /* Use padding-left/right for border consistency */
+        }
+
+        .how-to-play-content.open {
+            /* Open state: Gives enough height for content and applies full padding */
+            max-height: 500px;
+            /* Must be larger than content height */
+            padding-top: 15px;
+            padding-bottom: 15px;
+        }
+
+        .how-to-play-content ol,
+        .how-to-play-content ul {
+            padding-left: 20px;
+            margin: 0;
+            list-style-type: none;
+        }
+
+        .how-to-play-content li {
+            margin-bottom: 8px;
+        }
+
+        .how-to-play-content .light {
+            /* Reuse existing light styles for indicators */
+            display: inline-block;
+            width: var(--light-size, 16px);
+            height: var(--light-size, 16px);
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+
+        /* --- END NEW STYLES --- */
+
+        /* --- CORE GAME LIGHT STYLES (MISSING) --- */
+        /* Base style for the indicator lights */
+        .light {
+            display: inline-block;
+            width: var(--light-size, 20px);
+            height: var(--light-size, 20px);
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: middle;
+            border: 1px solid var(--color-surface);
+            /* Subtle border for visibility */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.2s;
+        }
+
+        /* Color definitions using the CSS Variables */
+        .light.green {
+            background-color: var(--color-green);
+        }
+
+        .light.orange {
+            background-color: var(--color-orange);
+        }
+
+        .light.red {
+            background-color: var(--color-red);
+        }
+
+        /* --- END CORE GAME LIGHT STYLES --- */
     </style>
 </head>
 
@@ -448,7 +619,28 @@
 
             <p class="error-message" id="start-error"></p>
 
+            <div class="how-to-play-container">
+                <button id="howToPlayToggleBtn" class="btn secondary-btn how-to-play-toggle">How to Play</button>
+
+                <div id="howToPlayContent" class="how-to-play-content">
+                    <ol>
+                        <li>Select a level (or choose "Random").</li>
+                        <li>Enter your guess using the keypad.</li>
+                        <li>Press **ENTER**.</li>
+                        <li>**Lights will guide you:**
+                            <ul>
+                                <li><span class="light green"></span>: Correct digit in the correct position.</li>
+                                <li><span class="light orange"></span>: Correct digit, but in the wrong position.</li>
+                                <li><span class="light red"></span>: Incorrect digit (not in the combination).</li>
+                            </ul>
+                        </li>
+                        <li>Use the feedback to crack the code!</li>
+                    </ol>
+                </div>
+            </div>
+
             <button class="btn-primary" id="start-game-btn">START GAME</button>
+            <button id="ploofiModeBtn" class="ploofi-toggle-btn">Ploofi Mode 💗</button>
         </div>
 
         <div id="game-play">
@@ -887,8 +1079,61 @@
   { "name": "349", "level1": "624", "level2": "9305", "level3": "71058" },
   { "name": "350", "level1": "158", "level2": "7640", "level3": "30249" }
 ]
-
         `;
+
+
+        // --- NEW JAVASCRIPT LOGIC FOR PLOOFI MODE ---
+
+        const ploofiModeBtn = document.getElementById('ploofiModeBtn');
+        const body = document.body;
+        const THEME_KEY = 'ploofiThemeEnabled'; // Key for localStorage
+
+        // Function to apply the theme state
+        function applyPloofiTheme(isEnabled) {
+            if (isEnabled) {
+                body.classList.add('ploofi-mode');
+                ploofiModeBtn.textContent = 'Normal Mode';
+            } else {
+                body.classList.remove('ploofi-mode');
+                ploofiModeBtn.textContent = 'Ploofi Mode 💗';
+            }
+        }
+
+        // --- NEW JAVASCRIPT LOGIC FOR HOW TO PLAY TOGGLE ---
+
+        const howToPlayToggleBtn = document.getElementById('howToPlayToggleBtn');
+        const howToPlayContent = document.getElementById('howToPlayContent');
+
+        howToPlayToggleBtn.addEventListener('click', () => {
+            // Toggle the 'open' class to trigger the CSS transition
+            howToPlayContent.classList.toggle('open');
+
+            // Update button text based on the new state
+            if (howToPlayContent.classList.contains('open')) {
+                howToPlayToggleBtn.textContent = 'Hide Instructions';
+            } else {
+                howToPlayToggleBtn.textContent = 'How to Play';
+            }
+        });
+
+        // 1. Check for saved preference on load
+        const savedTheme = localStorage.getItem(THEME_KEY);
+        const isPloofiEnabled = savedTheme === 'true';
+        applyPloofiTheme(isPloofiEnabled);
+
+        // 2. Button click handler
+        ploofiModeBtn.addEventListener('click', () => {
+            // Determine the new state
+            const newModeState = !body.classList.contains('ploofi-mode');
+
+            // Apply the new state
+            applyPloofiTheme(newModeState);
+
+            // Save the preference for persistence
+            localStorage.setItem(THEME_KEY, newModeState);
+        });
+
+        // --- END NEW JAVASCRIPT LOGIC ---
 
         //audio
         const beepPopAudio = new Audio('sounds/beepPop.mp3');
