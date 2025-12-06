@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crack It - The Combination Game</title>
+    <style>
+        /* --- General and Reset --- */
+        :root {
+            --color-background: #1a1a2e;
+            --color-surface: #2c2c47;
+            --color-primary: #e94560;
+            --color-text-light: #f5f5f5;
+            --color-text-dark: #1a1a2e;
+            --color-green: #38b000;
+            --color-orange: #ff9900;
+            --color-red: #cc0000;
+            --color-shadow: rgba(0, 0, 0, 0.4);
+            --font-stack: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --light-size: 20px;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--color-background);
+            color: var(--color-text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        #game-container {
+            background: var(--color-surface);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px var(--color-shadow);
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* --- Start Screen Styles --- */
+        #start-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #start-screen h1 {
+            color: var(--color-primary);
+            font-size: 2.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .setting-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--color-background);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .setting-group label {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        select {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background: var(--color-surface);
+            color: var(--color-text-light);
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-red);
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--color-green);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-primary:hover {
+            background-color: #d8344e;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .error-message {
+            color: var(--color-red);
+            font-weight: bold;
+            height: 20px;
+        }
+
+        /* --- Game Play Screen Styles --- */
+        #game-play {
+            display: none;
+            grid-template-areas:
+                "header header"
+                "history main"
+                "history main";
+            grid-template-columns: 1fr 2fr;
+            /* Default: History | Main */
+            gap: 20px;
+            min-height: 500px;
+        }
+
+        #game-header {
+            grid-area: header;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        #game-info,
+        #timer {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        /* --- History Board (Left Side) --- */
+        #history-board {
+            grid-area: history;
+            background: var(--color-background);
+            padding: 10px;
+            border-radius: 10px;
+            overflow-y: auto;
+            max-height: 400px;
+            /* Limit height for scrollability */
+        }
+
+        #history-board h3 {
+            margin-top: 0;
+            color: var(--color-primary);
+        }
+
+        .guess-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px dashed #3a3a5e;
+        }
+
+        .guess-digit {
+            font-family: monospace;
+            font-size: 1.1em;
+            font-weight: bold;
+            width: 20px;
+            text-align: center;
+        }
+
+        .color-green {
+            color: var(--color-green);
+        }
+
+        .color-orange {
+            color: var(--color-orange);
+        }
+
+        .color-red {
+            color: var(--color-red);
+        }
+
+        /* --- Main Game Area (Center) --- */
+        #main-game-area {
+            grid-area: main;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Feedback Lights */
+        #feedback-lights {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            height: var(--light-size);
+            margin-bottom: 15px;
+        }
+
+        .light {
+            width: var(--light-size);
+            height: var(--light-size);
+            border-radius: 50%;
+            background-color: var(--color-red);
+            /* Default to red/off */
+            box-shadow: 0 0 5px var(--color-shadow);
+            transition: background-color 0.3s;
+        }
+
+        .light.lit-green {
+            background-color: var(--color-green);
+            box-shadow: 0 0 10px var(--color-green);
+        }
+
+        .light.lit-orange {
+            background-color: var(--color-orange);
+            box-shadow: 0 0 10px var(--color-orange);
+        }
+
+        .light.lit-red {
+            background-color: var(--color-red);
+            box-shadow: 0 0 10px var(--color-red);
+        }
+
+        /* Input Boxes */
+        #input-box {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .input-digit {
+            width: 50px;
+            height: 70px;
+            background: var(--color-background);
+            border: 2px solid var(--color-primary);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--color-text-light);
+            transition: all 0.2s;
+        }
+
+        .input-digit.active {
+            border-color: var(--color-green);
+            box-shadow: 0 0 15px var(--color-green);
+        }
+
+        /* Keypad */
+        #keypad {
+            display: grid;
+            /* Changed to 3 columns, 4 rows for 10 digits + clear + enter */
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .keypad-btn {
+            background-color: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.5em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.1s, transform 0.1s;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .keypad-btn:hover {
+            background-color: #d8344e;
+        }
+
+        .keypad-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* REMOVED: #keypad-enter grid-column: span 2; */
+        #keypad-enter {
+            /* Now same size as others, only background color change */
+            background-color: var(--color-green);
+        }
+
+        #keypad-enter:hover {
+            background-color: #2e9700;
+        }
+
+        #keypad-clear {
+            background-color: var(--color-red);
+        }
+
+        #keypad-clear:hover {
+            background-color: #b00000;
+        }
+
+        /* --- Game Over Modal --- */
+        #game-over-modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--color-surface);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 5px 15px var(--color-shadow);
+        }
+
+        .modal-content h2 {
+            color: var(--color-green);
+            margin-top: 0;
+            font-size: 2em;
+        }
+
+        .modal-content p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        /* --- Responsiveness (Mobile First) --- */
+        @media (max-width: 600px) {
+            #game-container {
+                padding: 10px;
+                border-radius: 10px;
+            }
+
+            #game-play {
+                grid-template-areas:
+                    "header"
+                    "main"
+                    "history";
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+
+            #history-board {
+                max-height: 200px;
+            }
+
+            .input-digit {
+                width: 40px;
+                height: 60px;
+                font-size: 1.8em;
+            }
+
+            .keypad-btn {
+                padding: 10px;
+                font-size: 1.3em;
+            }
+
+            .setting-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+
+        <div id="start-screen">
+            <h1>🔓 Crack It 🔐</h1>
+            <p>Guess the secret digital combinations across three levels as fast as you can!</p>
+
+            <div class="setting-group">
+                <label for="level-select">Select Level Set:</label>
+                <select id="level-select"></select>
+            </div>
+
+            <div class="setting-group">
+                <label for="random-switch">Random Level Set Switch:</label>
+                <label class="switch">
+                    <input type="checkbox" id="random-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <p class="error-message" id="start-error"></p>
+
+            <button class="btn-primary" id="start-game-btn">START GAME</button>
+        </div>
+
+        <div id="game-play">
+
+            <div id="game-header">
+                <div id="game-info">Level 1 (3 Digits)</div>
+                <div id="timer">Time: 00:00</div>
+            </div>
+
+            <div id="history-board">
+                <h3>Guess History</h3>
+            </div>
+
+            <div id="main-game-area">
+
+                <div id="feedback-lights">
+                </div>
+
+                <div id="input-box">
+                </div>
+
+                <div id="keypad">
+                    <button class="keypad-btn" data-value="7">7</button>
+                    <button class="keypad-btn" data-value="8">8</button>
+                    <button class="keypad-btn" data-value="9">9</button>
+
+                    <button class="keypad-btn" data-value="4">4</button>
+                    <button class="keypad-btn" data-value="5">5</button>
+                    <button class="keypad-btn" data-value="6">6</button>
+
+                    <button class="keypad-btn" data-value="1">1</button>
+                    <button class="keypad-btn" data-value="2">2</button>
+                    <button class="keypad-btn" data-value="3">3</button>
+
+                    <button class="keypad-btn" id="keypad-clear" data-value="clear">DEL</button>
+                    <button class="keypad-btn" data-value="0">0</button>
+                    <button class="keypad-btn" id="keypad-enter" data-value="enter">ENTER</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="game-over-modal">
+        <div class="modal-content">
+            <h2>CRACKED!</h2>
+            <p>Congratulations! You cracked all three combinations.</p>
+            <p id="final-time"></p>
+            <button class="btn-primary" onclick="window.location.reload()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data (Mock JSON) ---
+        const LEVEL_CODES_JSON = `
+[
+  { "name": "1", "level1": "947", "level2": "8201", "level3": "70543" },
+  { "name": "2", "level1": "153", "level2": "9476", "level3": "28651" },
+  { "name": "3", "level1": "608", "level2": "2517", "level3": "93074" },
+  { "name": "4", "level1": "472", "level2": "3190", "level3": "68517" },
+  { "name": "5", "level1": "239", "level2": "8740", "level3": "19458" },
+  { "name": "6", "level1": "580", "level2": "2409", "level3": "56078" },
+  { "name": "7", "level1": "736", "level2": "4912", "level3": "87016" },
+  { "name": "8", "level1": "014", "level2": "6539", "level3": "84270" },
+  { "name": "9", "level1": "921", "level2": "0753", "level3": "73195" },
+  { "name": "10", "level1": "685", "level2": "7291", "level3": "04658" },
+
+  { "name": "11", "level1": "307", "level2": "4612", "level3": "15982" },
+  { "name": "12", "level1": "146", "level2": "9580", "level3": "72406" },
+  { "name": "13", "level1": "582", "level2": "7301", "level3": "19420" },
+  { "name": "14", "level1": "903", "level2": "8642", "level3": "57804" },
+  { "name": "15", "level1": "641", "level2": "5709", "level3": "31829" },
+  { "name": "16", "level1": "820", "level2": "1347", "level3": "54679" },
+  { "name": "17", "level1": "579", "level2": "8024", "level3": "93205" },
+  { "name": "18", "level1": "468", "level2": "5107", "level3": "70269" },
+  { "name": "19", "level1": "257", "level2": "4029", "level3": "65874" },
+  { "name": "20", "level1": "930", "level2": "7652", "level3": "20183" },
+
+  { "name": "21", "level1": "340", "level2": "9814", "level3": "75680" },
+  { "name": "22", "level1": "701", "level2": "4532", "level3": "90817" },
+  { "name": "23", "level1": "869", "level2": "1240", "level3": "65093" },
+  { "name": "24", "level1": "428", "level2": "7953", "level3": "23149" },
+  { "name": "25", "level1": "156", "level2": "6031", "level3": "84720" },
+  { "name": "26", "level1": "594", "level2": "2871", "level3": "97026" },
+  { "name": "27", "level1": "803", "level2": "9156", "level3": "14362" },
+  { "name": "28", "level1": "317", "level2": "0485", "level3": "82974" },
+  { "name": "29", "level1": "467", "level2": "8390", "level3": "46815" },
+  { "name": "30", "level1": "752", "level2": "6018", "level3": "09513" },
+
+  { "name": "31", "level1": "029", "level2": "3416", "level3": "76094" },
+  { "name": "32", "level1": "684", "level2": "7109", "level3": "83925" },
+  { "name": "33", "level1": "471", "level2": "2863", "level3": "51746" },
+  { "name": "34", "level1": "596", "level2": "0482", "level3": "32607" },
+  { "name": "35", "level1": "820", "level2": "4371", "level3": "91564" },
+  { "name": "36", "level1": "145", "level2": "8792", "level3": "14059" },
+  { "name": "37", "level1": "908", "level2": "5640", "level3": "78361" },
+  { "name": "38", "level1": "763", "level2": "9204", "level3": "05286" },
+  { "name": "39", "level1": "210", "level2": "6851", "level3": "98130" },
+  { "name": "40", "level1": "634", "level2": "1502", "level3": "27486" },
+
+  { "name": "41", "level1": "478", "level2": "3162", "level3": "09453" },
+  { "name": "42", "level1": "902", "level2": "7814", "level3": "56107" },
+  { "name": "43", "level1": "315", "level2": "4207", "level3": "86019" },
+  { "name": "44", "level1": "867", "level2": "5093", "level3": "23710" },
+  { "name": "45", "level1": "042", "level2": "1983", "level3": "35409" },
+  { "name": "46", "level1": "761", "level2": "4285", "level3": "90721" },
+  { "name": "47", "level1": "583", "level2": "7602", "level3": "41950" },
+  { "name": "48", "level1": "190", "level2": "8534", "level3": "28697" },
+  { "name": "49", "level1": "624", "level2": "0971", "level3": "57823" },
+  { "name": "50", "level1": "953", "level2": "6148", "level3": "12087" },
+
+  { "name": "51", "level1": "478", "level2": "0629", "level3": "75310" },
+  { "name": "52", "level1": "526", "level2": "9381", "level3": "24607" },
+  { "name": "53", "level1": "014", "level2": "5206", "level3": "96837" },
+  { "name": "54", "level1": "760", "level2": "1483", "level3": "57029" },
+  { "name": "55", "level1": "892", "level2": "7350", "level3": "61348" },
+  { "name": "56", "level1": "104", "level2": "6971", "level3": "45092" },
+  { "name": "57", "level1": "365", "level2": "8029", "level3": "38407" },
+  { "name": "58", "level1": "270", "level2": "3541", "level3": "89562" },
+  { "name": "59", "level1": "836", "level2": "5290", "level3": "70215" },
+  { "name": "60", "level1": "957", "level2": "1402", "level3": "03958" },
+
+  { "name": "61", "level1": "603", "level2": "2145", "level3": "97140" },
+  { "name": "62", "level1": "581", "level2": "9706", "level3": "54219" },
+  { "name": "63", "level1": "740", "level2": "8612", "level3": "30719" },
+  { "name": "64", "level1": "498", "level2": "5231", "level3": "68975" },
+  { "name": "65", "level1": "319", "level2": "4806", "level3": "50627" },
+  { "name": "66", "level1": "054", "level2": "2631", "level3": "78490" },
+  { "name": "67", "level1": "827", "level2": "9043", "level3": "83967" },
+  { "name": "68", "level1": "763", "level2": "4510", "level3": "21836" },
+  { "name": "69", "level1": "120", "level2": "3702", "level3": "91645" },
+  { "name": "70", "level1": "684", "level2": "9153", "level3": "05482" },
+
+  { "name": "71", "level1": "931", "level2": "7804", "level3": "64087" },
+  { "name": "72", "level1": "640", "level2": "2981", "level3": "73215" },
+  { "name": "73", "level1": "528", "level2": "6149", "level3": "85027" },
+  { "name": "74", "level1": "716", "level2": "9538", "level3": "49260" },
+  { "name": "75", "level1": "402", "level2": "5379", "level3": "29804" },
+  { "name": "76", "level1": "894", "level2": "7153", "level3": "03721" },
+  { "name": "77", "level1": "357", "level2": "8206", "level3": "56198" },
+  { "name": "78", "level1": "013", "level2": "6748", "level3": "42085" },
+  { "name": "79", "level1": "546", "level2": "1093", "level3": "89702" },
+  { "name": "80", "level1": "982", "level2": "5016", "level3": "30541" },
+
+  { "name": "81", "level1": "043", "level2": "7612", "level3": "18970" },
+  { "name": "82", "level1": "260", "level2": "9058", "level3": "76423" },
+  { "name": "83", "level1": "374", "level2": "8125", "level3": "56290" },
+  { "name": "84", "level1": "952", "level2": "6481", "level3": "01764" },
+  { "name": "85", "level1": "187", "level2": "2039", "level3": "45820" },
+  { "name": "86", "level1": "698", "level2": "3401", "level3": "17250" },
+  { "name": "87", "level1": "531", "level2": "7084", "level3": "29674" },
+  { "name": "88", "level1": "709", "level2": "5148", "level3": "68012" },
+  { "name": "89", "level1": "826", "level2": "4390", "level3": "32547" },
+  { "name": "90", "level1": "154", "level2": "9875", "level3": "40126" },
+
+  { "name": "91", "level1": "730", "level2": "4561", "level3": "85320" },
+  { "name": "92", "level1": "269", "level2": "8304", "level3": "71905" },
+  { "name": "93", "level1": "840", "level2": "1273", "level3": "69051" },
+  { "name": "94", "level1": "397", "level2": "6182", "level3": "25430" },
+  { "name": "95", "level1": "015", "level2": "3207", "level3": "98056" },
+  { "name": "96", "level1": "487", "level2": "9520", "level3": "14790" },
+  { "name": "97", "level1": "260", "level2": "4873", "level3": "61528" },
+  { "name": "98", "level1": "519", "level2": "0732", "level3": "84671" },
+  { "name": "99", "level1": "604", "level2": "2895", "level3": "07341" },
+  { "name": "100", "level1": "873", "level2": "9602", "level3": "51804" },
+   { "name": "101", "level1": "247", "level2": "9061", "level3": "57802" },
+  { "name": "102", "level1": "963", "level2": "4810", "level3": "21697" },
+  { "name": "103", "level1": "580", "level2": "7394", "level3": "46057" },
+  { "name": "104", "level1": "431", "level2": "6507", "level3": "92718" },
+  { "name": "105", "level1": "078", "level2": "2940", "level3": "36845" },
+  { "name": "106", "level1": "829", "level2": "5170", "level3": "90436" },
+  { "name": "107", "level1": "315", "level2": "7809", "level3": "81640" },
+  { "name": "108", "level1": "609", "level2": "4352", "level3": "70248" },
+  { "name": "109", "level1": "574", "level2": "1603", "level3": "94501" },
+  { "name": "110", "level1": "820", "level2": "9837", "level3": "12465" },
+
+  { "name": "111", "level1": "692", "level2": "3108", "level3": "50794" },
+  { "name": "112", "level1": "146", "level2": "5082", "level3": "87610" },
+  { "name": "113", "level1": "703", "level2": "2496", "level3": "53018" },
+  { "name": "114", "level1": "487", "level2": "6013", "level3": "89245" },
+  { "name": "115", "level1": "954", "level2": "7123", "level3": "04829" },
+  { "name": "116", "level1": "582", "level2": "1390", "level3": "76083" },
+  { "name": "117", "level1": "036", "level2": "9587", "level3": "24170" },
+  { "name": "118", "level1": "781", "level2": "3049", "level3": "96752" },
+  { "name": "119", "level1": "260", "level2": "4159", "level3": "30569" },
+  { "name": "120", "level1": "834", "level2": "0761", "level3": "51829" },
+
+  { "name": "121", "level1": "742", "level2": "3189", "level3": "60978" },
+  { "name": "122", "level1": "501", "level2": "8274", "level3": "43016" },
+  { "name": "123", "level1": "316", "level2": "5902", "level3": "78164" },
+  { "name": "124", "level1": "958", "level2": "2406", "level3": "67310" },
+  { "name": "125", "level1": "704", "level2": "3619", "level3": "89520" },
+  { "name": "126", "level1": "849", "level2": "7150", "level3": "04753" },
+  { "name": "127", "level1": "270", "level2": "5894", "level3": "16237" },
+  { "name": "128", "level1": "453", "level2": "8071", "level3": "29650" },
+  { "name": "129", "level1": "982", "level2": "3601", "level3": "58014" },
+  { "name": "130", "level1": "035", "level2": "1742", "level3": "96078" },
+
+  { "name": "131", "level1": "128", "level2": "4903", "level3": "76205" },
+  { "name": "132", "level1": "674", "level2": "8312", "level3": "25940" },
+  { "name": "133", "level1": "930", "level2": "4571", "level3": "80615" },
+  { "name": "134", "level1": "267", "level2": "5108", "level3": "37450" },
+  { "name": "135", "level1": "342", "level2": "7695", "level3": "91804" },
+  { "name": "136", "level1": "580", "level2": "0127", "level3": "64319" },
+  { "name": "137", "level1": "706", "level2": "4231", "level3": "18592" },
+  { "name": "138", "level1": "452", "level2": "1683", "level3": "70291" },
+  { "name": "139", "level1": "819", "level2": "2057", "level3": "95640" },
+  { "name": "140", "level1": "547", "level2": "9360", "level3": "48123" },
+
+  { "name": "141", "level1": "603", "level2": "1487", "level3": "97205" },
+  { "name": "142", "level1": "918", "level2": "2540", "level3": "30768" },
+  { "name": "143", "level1": "071", "level2": "6985", "level3": "45280" },
+  { "name": "144", "level1": "624", "level2": "8370", "level3": "51906" },
+  { "name": "145", "level1": "408", "level2": "7163", "level3": "28459" },
+  { "name": "146", "level1": "253", "level2": "9406", "level3": "76501" },
+  { "name": "147", "level1": "517", "level2": "6021", "level3": "39840" },
+  { "name": "148", "level1": "836", "level2": "4519", "level3": "07215" },
+  { "name": "149", "level1": "902", "level2": "7184", "level3": "13650" },
+  { "name": "150", "level1": "364", "level2": "8205", "level3": "94712" },
+  { "name": "151", "level1": "281", "level2": "5079", "level3": "26483" },
+  { "name": "152", "level1": "940", "level2": "1837", "level3": "70521" },
+  { "name": "153", "level1": "536", "level2": "0294", "level3": "91875" },
+  { "name": "154", "level1": "718", "level2": "4629", "level3": "53047" },
+  { "name": "155", "level1": "863", "level2": "1570", "level3": "24960" },
+  { "name": "156", "level1": "104", "level2": "5932", "level3": "87026" },
+  { "name": "157", "level1": "259", "level2": "4180", "level3": "76931" },
+  { "name": "158", "level1": "470", "level2": "8361", "level3": "30548" },
+  { "name": "159", "level1": "397", "level2": "2506", "level3": "68420" },
+  { "name": "160", "level1": "605", "level2": "9713", "level3": "21845" },
+
+  { "name": "161", "level1": "348", "level2": "0275", "level3": "95013" },
+  { "name": "162", "level1": "159", "level2": "6843", "level3": "72104" },
+  { "name": "163", "level1": "820", "level2": "3469", "level3": "19507" },
+  { "name": "164", "level1": "756", "level2": "8094", "level3": "32091" },
+  { "name": "165", "level1": "423", "level2": "5106", "level3": "87452" },
+  { "name": "166", "level1": "980", "level2": "2541", "level3": "16087" },
+  { "name": "167", "level1": "614", "level2": "9720", "level3": "50836" },
+  { "name": "168", "level1": "302", "level2": "4581", "level3": "69720" },
+  { "name": "169", "level1": "781", "level2": "6290", "level3": "45208" },
+  { "name": "170", "level1": "529", "level2": "1736", "level3": "90824" },
+
+  { "name": "171", "level1": "867", "level2": "3412", "level3": "01945" },
+  { "name": "172", "level1": "640", "level2": "8157", "level3": "26309" },
+  { "name": "173", "level1": "094", "level2": "7362", "level3": "58140" },
+  { "name": "174", "level1": "251", "level2": "9604", "level3": "70348" },
+  { "name": "175", "level1": "486", "level2": "0129", "level3": "57832" },
+  { "name": "176", "level1": "350", "level2": "8241", "level3": "94610" },
+  { "name": "177", "level1": "728", "level2": "4095", "level3": "68123" },
+  { "name": "178", "level1": "913", "level2": "6570", "level3": "24098" },
+  { "name": "179", "level1": "467", "level2": "8021", "level3": "51239" },
+  { "name": "180", "level1": "502", "level2": "1486", "level3": "93750" },
+
+  { "name": "181", "level1": "786", "level2": "3092", "level3": "41508" },
+  { "name": "182", "level1": "143", "level2": "5806", "level3": "69827" },
+  { "name": "183", "level1": "892", "level2": "0317", "level3": "72054" },
+  { "name": "184", "level1": "207", "level2": "6589", "level3": "35146" },
+  { "name": "185", "level1": "315", "level2": "4702", "level3": "98206" },
+  { "name": "186", "level1": "941", "level2": "6230", "level3": "58704" },
+  { "name": "187", "level1": "658", "level2": "1974", "level3": "60312" },
+  { "name": "188", "level1": "701", "level2": "4283", "level3": "25690" },
+  { "name": "189", "level1": "503", "level2": "9624", "level3": "81405" },
+  { "name": "190", "level1": "487", "level2": "5302", "level3": "09146" },
+
+  { "name": "191", "level1": "694", "level2": "0173", "level3": "32587" },
+  { "name": "192", "level1": "820", "level2": "6719", "level3": "54093" },
+  { "name": "193", "level1": "174", "level2": "2953", "level3": "80612" },
+  { "name": "194", "level1": "603", "level2": "5870", "level3": "72491" },
+  { "name": "195", "level1": "478", "level2": "1395", "level3": "26014" },
+  { "name": "196", "level1": "932", "level2": "5608", "level3": "17045" },
+  { "name": "197", "level1": "841", "level2": "7035", "level3": "29607" },
+  { "name": "198", "level1": "056", "level2": "1893", "level3": "74021" },
+  { "name": "199", "level1": "512", "level2": "0647", "level3": "98350" },
+  { "name": "200", "level1": "728", "level2": "1530", "level3": "46719" },
+
+  { "name": "201", "level1": "906", "level2": "3275", "level3": "81429" },
+  { "name": "202", "level1": "351", "level2": "7460", "level3": "95201" },
+  { "name": "203", "level1": "174", "level2": "9086", "level3": "64032" },
+  { "name": "204", "level1": "482", "level2": "6153", "level3": "32075" },
+  { "name": "205", "level1": "850", "level2": "2479", "level3": "59041" },
+  { "name": "206", "level1": "729", "level2": "1348", "level3": "61840" },
+  { "name": "207", "level1": "631", "level2": "9702", "level3": "24056" },
+  { "name": "208", "level1": "418", "level2": "0539", "level3": "91267" },
+  { "name": "209", "level1": "203", "level2": "4891", "level3": "67540" },
+  { "name": "210", "level1": "567", "level2": "8103", "level3": "04219" },
+
+  { "name": "211", "level1": "740", "level2": "5321", "level3": "98146" },
+  { "name": "212", "level1": "168", "level2": "7094", "level3": "85320" },
+  { "name": "213", "level1": "913", "level2": "8465", "level3": "70248" },
+  { "name": "214", "level1": "625", "level2": "3019", "level3": "17480" },
+  { "name": "215", "level1": "057", "level2": "4291", "level3": "36825" },
+  { "name": "216", "level1": "780", "level2": "9154", "level3": "60218" },
+  { "name": "217", "level1": "394", "level2": "5708", "level3": "81562" },
+  { "name": "218", "level1": "209", "level2": "8631", "level3": "53067" },
+  { "name": "219", "level1": "836", "level2": "1029", "level3": "45970" },
+  { "name": "220", "level1": "412", "level2": "7590", "level3": "62834" },
+
+  { "name": "221", "level1": "548", "level2": "0361", "level3": "79240" },
+  { "name": "222", "level1": "981", "level2": "4526", "level3": "16043" },
+  { "name": "223", "level1": "607", "level2": "3941", "level3": "82510" },
+  { "name": "224", "level1": "350", "level2": "6217", "level3": "74982" },
+  { "name": "225", "level1": "258", "level2": "4076", "level3": "51349" },
+  { "name": "226", "level1": "034", "level2": "8152", "level3": "97068" },
+  { "name": "227", "level1": "892", "level2": "6307", "level3": "25401" },
+  { "name": "228", "level1": "741", "level2": "9506", "level3": "80326" },
+  { "name": "229", "level1": "106", "level2": "2743", "level3": "58092" },
+  { "name": "230", "level1": "563", "level2": "8901", "level3": "24790" },
+
+  { "name": "231", "level1": "849", "level2": "4270", "level3": "51682" },
+  { "name": "232", "level1": "295", "level2": "1634", "level3": "72018" },
+  { "name": "233", "level1": "460", "level2": "8927", "level3": "53401" },
+  { "name": "234", "level1": "712", "level2": "3069", "level3": "19845" },
+  { "name": "235", "level1": "938", "level2": "4157", "level3": "60219" },
+  { "name": "236", "level1": "574", "level2": "0216", "level3": "95380" },
+  { "name": "237", "level1": "801", "level2": "6549", "level3": "24731" },
+  { "name": "238", "level1": "263", "level2": "1094", "level3": "87520" },
+  { "name": "239", "level1": "047", "level2": "5823", "level3": "69104" },
+  { "name": "240", "level1": "319", "level2": "4672", "level3": "82056" },
+
+  { "name": "241", "level1": "605", "level2": "2481", "level3": "93720" },
+  { "name": "242", "level1": "782", "level2": "3950", "level3": "16438" },
+  { "name": "243", "level1": "951", "level2": "2047", "level3": "58306" },
+  { "name": "244", "level1": "436", "level2": "1582", "level3": "92047" },
+  { "name": "245", "level1": "864", "level2": "0179", "level3": "53012" },
+  { "name": "246", "level1": "503", "level2": "6174", "level3": "84259" },
+  { "name": "247", "level1": "712", "level2": "8340", "level3": "65901" },
+  { "name": "248", "level1": "280", "level2": "5394", "level3": "71426" },
+  { "name": "249", "level1": "657", "level2": "4102", "level3": "89230" },
+  { "name": "250", "level1": "930", "level2": "5781", "level3": "24167" },
+   { "name": "251", "level1": "640", "level2": "2793", "level3": "58146" },
+  { "name": "252", "level1": "158", "level2": "4607", "level3": "93024" },
+  { "name": "253", "level1": "473", "level2": "5921", "level3": "60821" },
+  { "name": "254", "level1": "820", "level2": "3156", "level3": "74920" },
+  { "name": "255", "level1": "946", "level2": "3081", "level3": "56207" },
+  { "name": "256", "level1": "702", "level2": "1548", "level3": "38946" },
+  { "name": "257", "level1": "528", "level2": "3604", "level3": "79152" },
+  { "name": "258", "level1": "107", "level2": "8294", "level3": "50683" },
+  { "name": "259", "level1": "359", "level2": "4701", "level3": "26815" },
+  { "name": "260", "level1": "864", "level2": "0172", "level3": "95320" },
+
+  { "name": "261", "level1": "293", "level2": "6150", "level3": "48071" },
+  { "name": "262", "level1": "781", "level2": "9406", "level3": "35210" },
+  { "name": "263", "level1": "054", "level2": "8361", "level3": "21795" },
+  { "name": "264", "level1": "617", "level2": "3098", "level3": "94028" },
+  { "name": "265", "level1": "802", "level2": "1459", "level3": "73604" },
+  { "name": "266", "level1": "578", "level2": "2019", "level3": "46310" },
+  { "name": "267", "level1": "934", "level2": "6702", "level3": "58126" },
+  { "name": "268", "level1": "420", "level2": "8153", "level3": "76019" },
+  { "name": "269", "level1": "365", "level2": "9082", "level3": "15794" },
+  { "name": "270", "level1": "890", "level2": "7543", "level3": "20651" },
+
+  { "name": "271", "level1": "476", "level2": "0319", "level3": "58270" },
+  { "name": "272", "level1": "120", "level2": "5867", "level3": "91043" },
+  { "name": "273", "level1": "539", "level2": "7410", "level3": "80246" },
+  { "name": "274", "level1": "684", "level2": "2591", "level3": "13750" },
+  { "name": "275", "level1": "910", "level2": "4783", "level3": "52406" },
+  { "name": "276", "level1": "264", "level2": "5078", "level3": "39184" },
+  { "name": "277", "level1": "703", "level2": "9241", "level3": "60857" },
+  { "name": "278", "level1": "841", "level2": "6359", "level3": "27015" },
+  { "name": "279", "level1": "527", "level2": "8943", "level3": "40129" },
+  { "name": "280", "level1": "031", "level2": "2687", "level3": "75420" },
+
+  { "name": "281", "level1": "695", "level2": "0124", "level3": "80713" },
+  { "name": "282", "level1": "782", "level2": "5406", "level3": "21943" },
+  { "name": "283", "level1": "936", "level2": "1807", "level3": "54602" },
+  { "name": "284", "level1": "310", "level2": "6925", "level3": "40781" },
+  { "name": "285", "level1": "458", "level2": "9712", "level3": "16083" },
+  { "name": "286", "level1": "260", "level2": "7439", "level3": "98251" },
+  { "name": "287", "level1": "874", "level2": "2095", "level3": "31056" },
+  { "name": "288", "level1": "952", "level2": "7840", "level3": "63108" },
+  { "name": "289", "level1": "046", "level2": "5218", "level3": "97310" },
+  { "name": "290", "level1": "781", "level2": "5360", "level3": "29468" },
+
+  { "name": "291", "level1": "530", "level2": "6819", "level3": "71504" },
+  { "name": "292", "level1": "184", "level2": "9572", "level3": "60321" },
+  { "name": "293", "level1": "426", "level2": "0781", "level3": "94830" },
+  { "name": "294", "level1": "805", "level2": "6431", "level3": "21704" },
+  { "name": "295", "level1": "372", "level2": "9605", "level3": "84061" },
+  { "name": "296", "level1": "901", "level2": "7532", "level3": "42069" },
+  { "name": "297", "level1": "254", "level2": "3867", "level3": "10592" },
+  { "name": "298", "level1": "670", "level2": "2941", "level3": "85310" },
+  { "name": "299", "level1": "413", "level2": "0759", "level3": "62850" },
+  { "name": "300", "level1": "809", "level2": "6314", "level3": "79520" },
+
+  { "name": "301", "level1": "721", "level2": "5460", "level3": "93218" },
+  { "name": "302", "level1": "103", "level2": "2984", "level3": "75096" },
+  { "name": "303", "level1": "856", "level2": "1479", "level3": "32064" },
+  { "name": "304", "level1": "479", "level2": "3602", "level3": "80521" },
+  { "name": "305", "level1": "690", "level2": "7814", "level3": "50392" },
+  { "name": "306", "level1": "204", "level2": "6531", "level3": "79840" },
+  { "name": "307", "level1": "567", "level2": "8219", "level3": "41053" },
+  { "name": "308", "level1": "341", "level2": "7208", "level3": "95604" },
+  { "name": "309", "level1": "908", "level2": "2547", "level3": "63125" },
+  { "name": "310", "level1": "125", "level2": "9703", "level3": "46810" },
+
+  { "name": "311", "level1": "260", "level2": "4038", "level3": "15974" },
+  { "name": "312", "level1": "754", "level2": "8091", "level3": "30269" },
+  { "name": "313", "level1": "398", "level2": "1264", "level3": "57028" },
+  { "name": "314", "level1": "046", "level2": "9753", "level3": "21850" },
+  { "name": "315", "level1": "691", "level2": "2435", "level3": "78024" },
+  { "name": "316", "level1": "502", "level2": "7149", "level3": "83610" },
+  { "name": "317", "level1": "843", "level2": "0527", "level3": "61980" },
+  { "name": "318", "level1": "712", "level2": "6590", "level3": "40825" },
+  { "name": "319", "level1": "853", "level2": "4071", "level3": "92610" },
+  { "name": "320", "level1": "914", "level2": "5803", "level3": "76209" },
+
+  { "name": "321", "level1": "675", "level2": "3901", "level3": "84052" },
+  { "name": "322", "level1": "230", "level2": "6847", "level3": "95102" },
+  { "name": "323", "level1": "984", "level2": "1502", "level3": "74639" },
+  { "name": "324", "level1": "301", "level2": "4578", "level3": "69205" },
+  { "name": "325", "level1": "268", "level2": "9143", "level3": "05761" },
+  { "name": "326", "level1": "746", "level2": "0953", "level3": "28140" },
+  { "name": "327", "level1": "805", "level2": "2917", "level3": "43610" },
+  { "name": "328", "level1": "497", "level2": "5136", "level3": "80241" },
+  { "name": "329", "level1": "520", "level2": "8693", "level3": "41057" },
+  { "name": "330", "level1": "671", "level2": "2059", "level3": "98340" },
+
+  { "name": "331", "level1": "437", "level2": "9625", "level3": "80124" },
+  { "name": "332", "level1": "108", "level2": "4567", "level3": "25930" },
+  { "name": "333", "level1": "589", "level2": "0734", "level3": "61290" },
+  { "name": "334", "level1": "260", "level2": "9735", "level3": "50481" },
+  { "name": "335", "level1": "734", "level2": "2819", "level3": "90615" },
+  { "name": "336", "level1": "916", "level2": "8407", "level3": "32540" },
+  { "name": "337", "level1": "564", "level2": "1928", "level3": "07351" },
+  { "name": "338", "level1": "208", "level2": "3541", "level3": "68970" },
+  { "name": "339", "level1": "973", "level2": "4801", "level3": "25640" },
+  { "name": "340", "level1": "456", "level2": "1327", "level3": "80921" },
+
+  { "name": "341", "level1": "705", "level2": "4182", "level3": "39610" },
+  { "name": "342", "level1": "642", "level2": "7091", "level3": "35820" },
+  { "name": "343", "level1": "281", "level2": "9307", "level3": "15640" },
+  { "name": "344", "level1": "359", "level2": "1628", "level3": "70492" },
+  { "name": "345", "level1": "087", "level2": "5349", "level3": "61250" },
+  { "name": "346", "level1": "760", "level2": "9154", "level3": "32058" },
+  { "name": "347", "level1": "491", "level2": "3067", "level3": "57820" },
+  { "name": "348", "level1": "803", "level2": "2579", "level3": "46192" },
+  { "name": "349", "level1": "624", "level2": "9305", "level3": "71058" },
+  { "name": "350", "level1": "158", "level2": "7640", "level3": "30249" }
+]
+
+        `;
+
+        //audio
+        const beepPopAudio = new Audio('sounds/beepPop.mp3');
+        const correctAudio = new Audio('sounds/correct.wav');
+        const entertAudio = new Audio('sounds/flip.wav');
+
+        // --- Core Game Variables ---
+        let levelCodes = JSON.parse(LEVEL_CODES_JSON);
+        let currentLevel = 1; // 1, 2, or 3
+        let currentCombo = ''; // The target combination for the current level
+        let playerInput = []; // Current digits entered by the player
+        let timerInterval;
+        let startTime;
+
+        // --- DOM Elements ---
+        const startScreen = document.getElementById('start-screen');
+        const gamePlay = document.getElementById('game-play');
+        const levelSelect = document.getElementById('level-select');
+        const randomSwitch = document.getElementById('random-switch');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const startError = document.getElementById('start-error');
+        const gameInfo = document.getElementById('game-info');
+        const timerDisplay = document.getElementById('timer');
+        const historyBoard = document.getElementById('history-board');
+        const feedbackLights = document.getElementById('feedback-lights');
+        const inputBox = document.getElementById('input-box');
+        const keypad = document.getElementById('keypad');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const finalTimeDisplay = document.getElementById('final-time');
+
+        // --- Utility Functions ---
+
+        /**
+         * Formats time in seconds into MM:SS string.
+         * @param {number} totalSeconds - The total elapsed seconds.
+         * @returns {string} Formatted time string.
+         */
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        /**
+         * Initializes the dropdown with level sets from the JSON data.
+         */
+        function populateLevelSelect() {
+            levelCodes.forEach((levelSet, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = levelSet.name || `Level Set ${index + 1}`;
+                levelSelect.appendChild(option);
+            });
+        }
+
+        // --- Game Setup and Start ---
+
+        /**
+         * Handles the click on the Start Game button.
+         */
+        function handleStartGame() {
+            startError.textContent = '';
+
+            let selectedLevelSet;
+            if (randomSwitch.checked) {
+                const randomIndex = Math.floor(Math.random() * levelCodes.length);
+                selectedLevelSet = levelCodes[randomIndex];
+            } else {
+                const selectedIndex = parseInt(levelSelect.value);
+                selectedLevelSet = levelCodes[selectedIndex];
+            }
+
+            if (!selectedLevelSet) {
+                startError.textContent = "Error: Could not select a level set.";
+                return;
+            }
+
+            // Store the selected level set for use throughout the game
+            window.activeLevelSet = selectedLevelSet;
+
+            // Transition to Level 1
+            startScreen.style.display = 'none';
+            gamePlay.style.display = 'grid';
+
+            // Start the timer
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Begin the first level
+            startLevel(1);
+        }
+
+        /**
+         * Starts a new level (1, 2, or 3).
+         * @param {number} level - The level number to start.
+         */
+        function startLevel(level) {
+            currentLevel = level;
+            const levelKey = `level${level}`;
+            currentCombo = window.activeLevelSet[levelKey];
+            playerInput = [];
+            historyBoard.innerHTML = '<h3>Guess History</h3>'; // Clear history for new level
+
+            if (!currentCombo) {
+                console.error(`Combination for ${levelKey} not found.`);
+                return;
+            }
+
+            const digitLength = currentCombo.length;
+            gameInfo.textContent = `Level ${level} (${digitLength} Digits)`;
+
+            // Re-render the input boxes and lights
+            renderGameElements(digitLength);
+        }
+
+        /**
+         * Renders the input boxes and feedback lights based on the required digit length.
+         * @param {number} length - The required length of the combination.
+         */
+        function renderGameElements(length) {
+            // Render Input Boxes
+            inputBox.innerHTML = '';
+            feedbackLights.innerHTML = '';
+            for (let i = 0; i < length; i++) {
+                const digitDiv = document.createElement('div');
+                digitDiv.classList.add('input-digit');
+                digitDiv.id = `input-digit-${i}`;
+                inputBox.appendChild(digitDiv);
+
+                const lightDiv = document.createElement('div');
+                lightDiv.classList.add('light');
+                lightDiv.id = `light-${i}`;
+                feedbackLights.appendChild(lightDiv);
+            }
+            updateInputDisplay();
+            updateLights([]); // Reset lights
+        }
+
+        // --- Game Logic ---
+
+        /**
+         * Updates the display of the player's current input and the active box.
+         */
+        function updateInputDisplay() {
+            const digitElements = inputBox.querySelectorAll('.input-digit');
+            digitElements.forEach((el, index) => {
+                el.textContent = playerInput[index] || '';
+                el.classList.remove('active');
+                if (index === playerInput.length && index < currentCombo.length) {
+                    el.classList.add('active'); // Highlight the next expected input
+                }
+            });
+            // If the input is full, remove active highlight
+            if (playerInput.length === currentCombo.length) {
+                digitElements[currentCombo.length - 1].classList.remove('active');
+            }
+        }
+
+        /**
+         * Updates the feedback lights based on the check result.
+         * @param {string[]} feedback - Array of 'green', 'orange', or 'red' strings.
+         */
+        function updateLights(feedback) {
+            const lightElements = feedbackLights.querySelectorAll('.light');
+            lightElements.forEach((light, index) => {
+                light.className = 'light'; // Reset classes
+                if (feedback[index]) {
+                    light.classList.add(`lit-${feedback[index]}`);
+                }
+            });
+        }
+
+        /**
+         * Checks the player's guess against the current combination.
+         * @returns {{isCorrect: boolean, feedback: string[]}}
+         */
+        function checkGuess() {
+            const guess = playerInput.join('');
+            const target = currentCombo;
+            const targetDigits = target.split('');
+            const feedback = new Array(target.length).fill('red'); // Default to red (incorrect/not present)
+            let isCorrect = true;
+
+            if (guess.length !== target.length) return { isCorrect: false, feedback: feedback };
+
+            // 1. Check for Green (Correct position)
+            for (let i = 0; i < target.length; i++) {
+                if (guess[i] === target[i]) {
+                    feedback[i] = 'green';
+                } else {
+                    isCorrect = false;
+                }
+            }
+
+            // 2. Check for Orange (Correct digit, wrong position)
+            // Note: Green positions are handled, now check non-green positions for orange/red
+            for (let i = 0; i < target.length; i++) {
+                if (feedback[i] === 'red' && target.includes(guess[i])) {
+                    // Check if this digit has already been "matched" as green or orange 
+                    // (This is a simplified check that works for most combination games, 
+                    //  but a full "Mastermind" implementation is more complex. This meets the stated requirement.)
+                    feedback[i] = 'orange';
+                }
+            }
+
+            return { isCorrect, feedback };
+        }
+
+        /**
+         * Adds the current guess to the history board.
+         * @param {string[]} feedback - Array of 'green', 'orange', or 'red' strings.
+         */
+        function addGuessToHistory(feedback) {
+            const guessRow = document.createElement('div');
+            guessRow.classList.add('guess-row');
+
+            playerInput.forEach((digit, index) => {
+                const digitSpan = document.createElement('span');
+                digitSpan.classList.add('guess-digit', `color-${feedback[index]}`);
+                digitSpan.textContent = digit;
+                guessRow.appendChild(digitSpan);
+            });
+
+            // Prepend the new guess to the history board
+            const historyTitle = historyBoard.querySelector('h3');
+            historyBoard.insertBefore(guessRow, historyTitle.nextSibling);
+        }
+
+        /**
+         * Called when the player presses the ENTER button.
+         */
+        function handleEnter() {
+            if (playerInput.length !== currentCombo.length) {
+                // Not enough digits
+                return;
+            }
+
+            const { isCorrect, feedback } = checkGuess();
+
+            updateLights(feedback);
+            addGuessToHistory(feedback);
+
+            if (isCorrect) {
+                // START OF AUDIO MODIFICATION 3
+                correctAudio.play();
+                // Success!
+                setTimeout(() => {
+                    if (currentLevel < 3) {
+                        startLevel(currentLevel + 1);
+                    } else {
+                        endGame();
+                    }
+                }, 500); // Wait half a second for feedback to register
+            } else {
+                // Reset input for next guess
+                playerInput = [];
+                setTimeout(updateInputDisplay, 100);
+            }
+        }
+
+        /**
+         * Updates the elapsed time display.
+         */
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            timerDisplay.textContent = `Time: ${formatTime(elapsed)}`;
+            window.totalElapsedTime = elapsed;
+        }
+
+        /**
+         * Ends the game and displays the results.
+         */
+        function endGame() {
+            clearInterval(timerInterval);
+
+            finalTimeDisplay.textContent = `Total Time: ${formatTime(window.totalElapsedTime)}`;
+            gameOverModal.style.display = 'flex';
+        }
+
+        // --- Event Handlers ---
+
+        // Keypad button click handler
+        keypad.addEventListener('click', (e) => {
+            const btn = e.target.closest('.keypad-btn');
+            if (!btn) return;
+
+            const value = btn.getAttribute('data-value');
+
+            if (value >= '0' && value <= '9') {
+                // Play a fresh sound on every number press
+                beepPopAudio.currentTime = 0;
+                beepPopAudio.play();
+                // Digit Input
+                if (playerInput.length < currentCombo.length) {
+                    playerInput.push(value);
+                    updateInputDisplay();
+                }
+            } else if (value === 'clear') {
+                // Clear/Delete
+                playerInput.pop();
+                updateInputDisplay();
+                updateLights([]); // Clear lights on delete
+            } else if (value === 'enter') {
+                // Enter Guess
+                entertAudio.currentTime = 0;
+                entertAudio.play();
+                handleEnter();
+            }
+        });
+
+        // Start button handler
+        startGameBtn.addEventListener('click', handleStartGame);
+
+        // Random switch handler
+        randomSwitch.addEventListener('change', () => {
+            levelSelect.disabled = randomSwitch.checked;
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            populateLevelSelect();
+        });
+    </script>
+</body>
+
+</html>
