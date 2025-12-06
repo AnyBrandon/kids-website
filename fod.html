@@ -155,16 +155,204 @@
             pointer-events: none;
             /* Prevent accidental blocking of tile clicks */
         }
+
+        /* New Notification Bar Styling */
+        #notification-bar {
+            margin-top: 20px;
+            padding: 10px 20px;
+            min-height: 2em;
+            /* Ensure it takes up space even when empty */
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            font-size: 1.2em;
+            background-color: #16213e;
+            /* Dark background matching the border */
+            border: 2px solid #e94560;
+            /* Highlight color */
+            border-radius: 8px;
+            opacity: 0;
+            /* Start hidden */
+            transition: opacity 0.5s, transform 0.5s;
+            transform: translateY(10px);
+        }
+
+        #notification-bar.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification-error {
+            border-color: #cc3333 !important;
+            background-color: #4f0000 !important;
+        }
+
+        /* New Stunned Tile Style */
+        .stunned-tile {
+            /* Make the tile visually striking */
+            border: 4px dashed #ff0000 !important;
+            box-shadow: 0 0 15px #ff0000;
+            opacity: 0.8;
+            animation: pulse-stun 1s infinite alternate;
+        }
+
+        /* Add a simple pulsing animation */
+        @keyframes pulse-stun {
+            from {
+                transform: scale(1.0);
+            }
+
+            to {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Style for Info Button */
+        #info-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            background-color: #e94560;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            /* Hidden by default */
+            position: fixed;
+            z-index: 2000;
+            /* High z-index to cover everything */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            /* Dark background overlay */
+        }
+
+        .modal-content {
+            background-color: #16213e;
+            color: #ffffff;
+            margin: 15% auto;
+            /* 15% from the top and centered */
+            padding: 25px;
+            border: 5px solid #e94560;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 0 30px rgba(233, 69, 96, 0.7);
+        }
+
+        .close-button {
+            color: #ffc400;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .modal-content h2 {
+            color: #00ffff;
+        }
+
+        .modal-content h3 {
+            color: #e94560;
+            margin-top: 15px;
+        }
+
+        #tile-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        #tile-info th,
+        #tile-info td {
+            border: 1px solid #3b5998;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #tile-info th {
+            background-color: #0d8363;
+        }
     </style>
 </head>
 
 <body>
-    <h1>👑 Fog of Darkzor: Dynamic Rescue 🛡️</h1>
+    <h1>👑 Fog of Darkzor: The King's rescue 🛡️</h1>
+    <button id="info-button">ℹ️ How to Play</button>
     <div id="status"></div>
     <div id="game-board"></div>
+    <div id="notification-bar"></div>
     <button id="reset-button" onclick="startGame()">Start New Quest</button>
 
+    <div id="how-to-play-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeModal()">&times;</span>
+            <h2>How to Play: Fog of Darkzor</h2>
+            <p>You and your opponent race across the mysterious grid to rescue the King Ado (👑).</p>
 
+            <hr>
+
+            <h3>Game Rules:</h3>
+            <ul>
+                <li>Move to any **adjacent** (up, down, left, right) tile on your turn.</li>
+                <li>The map is hidden! Tiles are only revealed when you step on them.</li>
+                <li>The first player to land on the **King (👑)** wins!</li>
+            </ul>
+
+            <hr>
+
+            <h3>Tile Effects:</h3>
+            <table id="tile-info">
+                <thead>
+                    <tr>
+                        <th>Tile</th>
+                        <th>Effect</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>⚡ Trap</td>
+                        <td>Stuns you, giving your opponent 2 consecutive turns.</td>
+                    </tr>
+                    <tr>
+                        <td>💣 Bomb</td>
+                        <td>Sends you back to your starting position.</td>
+                    </tr>
+                    <tr>
+                        <td>👟 Boot</td>
+                        <td>Grants you 1 extra move.</td>
+                    </tr>
+                    <tr>
+                        <td>🌀 Teleport</td>
+                        <td>Allows you to jump to ANY open tile.</td>
+                    </tr>
+                    <tr>
+                        <td>👤 Clone</td>
+                        <td>Swaps your position with your opponent's.</td>
+                    </tr>
+                    <tr>
+                        <td>↔️ Expansion</td>
+                        <td>(Max 2) Adds a new 4-column section to the board! Gives you an extra turn.</td>
+                    </tr>
+                    <tr>
+                        <td>❓ Clue</td>
+                        <td>Gives a hint about the King's proximity.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
         // --- Global Game State ---
@@ -195,7 +383,8 @@
         const elements = {
             board: document.getElementById('game-board'),
             status: document.getElementById('status'),
-            reset: document.getElementById('reset-button')
+            reset: document.getElementById('reset-button'),
+            notification: document.getElementById('notification-bar')
         };
 
         // Tile distribution UPDATED with Expansion tile
@@ -419,12 +608,20 @@
                 players[currentPlayer].position = newIndex;
                 revealedTiles[newIndex] = true;
 
-                isTeleporting = false;
+                isTeleporting = false; // Teleport complete
 
+                // resolveTileEffect handles the tile the player landed on,
+                // which might set extraMoves (e.g., if they land on a Boot).
                 resolveTileEffect(newIndex);
 
-                // Switch turn AFTER resolving teleport effect
-                if (!extraTurn) switchTurn();
+                // --- FIX: Correct Turn Switch Logic for Teleport Destination ---
+                if (extraMoves > 0) {
+                    extraMoves--; // Keep the same player for the bonus move
+                } else {
+                    switchTurn(); // Switch turn if no bonus move
+                }
+                // --- END FIX ---
+
                 updateBoardDisplay();
                 updateStatus();
                 return;
@@ -433,10 +630,14 @@
 
             const oldIndex = players[currentPlayer].position;
             const beepSound = new Audio('sounds/beepPop.mp3');
+            const stepSound = new Audio('sounds/flip.wav');
 
             if (getDistance(oldIndex, newIndex) > 1 && oldIndex !== -1) {
                 beepSound.play();
                 return;
+            }
+            else {
+                stepSound.play();
             }
 
             // Update Player Position
@@ -470,21 +671,32 @@
                 return;
             }
             if (tileType === 'trap') {
+                const trapSound = new Audio('sounds/wrong.wav');
+                trapSound.play();
                 const otherPlayerId = currentPlayer === 1 ? 2 : 1;
+                const tileElement = elements.board.children[index]; // Get the HTML element
 
                 // Current player is stunned
                 players[currentPlayer].stunned = true;
 
+                // 🌟 NEW: Add stun visual to the tile
+                tileElement.classList.add('stunned-tile');
+
                 // Give the other player TWO consecutive turns
-                // We'll set extraTurn for the other player after switching turn
                 showNotification(`⚡ Trap Activated! Player ${currentPlayer} is STUNNED. Player ${otherPlayerId} gets TWO consecutive moves!`);
 
                 // Consume the trap
                 board[index] = 'safe';
+
                 // Immediately switch turn to the other player
                 switchTurn();
-                // Set extraTurn to true for the other player
-                extraMoves = 2; // <-- give 2 moves
+
+                // Set extraMoves for the other player
+                extraMoves = 2;
+
+                setTimeout(() => {
+                    tileElement.classList.remove('stunned-tile');
+                }, 4000); // Remove the visual after a few seconds
 
                 // Update board display immediately to highlight the correct player
                 updateBoardDisplay();
@@ -493,27 +705,39 @@
                 return; // exit since trap ends the current player's move
             }
             else if (tileType === 'bomb') {
+                const bombSound = new Audio('sounds/bomb.wav');
+                bombSound.play();
                 players[currentPlayer].position = players[currentPlayer].startPos;
                 showNotification(`💣 Bomb! Player ${currentPlayer} returns to start!`);
                 board[index] = 'safe'; // Consume trap
             } else if (tileType === 'boot') {
+                const bootSound = new Audio('sounds/rare.wav');
+                bootSound.play();
                 extraMoves++; // give 1 extra move
                 board[index] = 'safe'; // Consume power-up
                 showNotification(`👟 Boot Power-up! Player ${currentPlayer} gets an extra move!`);
             }
             else if (tileType === 'teleport') {
+                const teleSound = new Audio('sounds/ranCard.wav');
+                teleSound.play();
                 isTeleporting = true;
                 board[index] = 'safe'; // Consume power-up
                 showNotification(`🌀 Teleport Activated! Click **ANY** open tile to jump!`);
             } else if (tileType === 'clone') {
+                const cloneSound = new Audio('sounds/magicalCards.wav');
+                cloneSound.play();
                 const otherPlayer = currentPlayer === 1 ? 2 : 1;
                 [players[currentPlayer].position, players[otherPlayer].position] =
                     [players[otherPlayer].position, players[currentPlayer].position];
                 showNotification(`👤 Darkzor Clone! Players have swapped positions!`);
                 board[index] = 'safe'; // Consume trap
             } else if (tileType === 'expansion' && expandedCount < 2) { // New Expansion Logic
+                const expansionSound = new Audio('sounds/negative.wav');
+                expansionSound.play();
                 handleExpansion(index);
             } else if (tileType === 'clue') {
+                const clueSound = new Audio('sounds/correct.wav');
+                clueSound.play();
                 checkClue(index);
             }
 
@@ -536,11 +760,11 @@
 
             let clueText = "";
             if (distance <= 4) {
-                clueText = `The King is **very close**`;
+                clueText = `The King is very close`;
             } else if (distance <= 8) {
-                clueText = `The King is **nearby**`;
+                clueText = `The King is nearby`;
             } else {
-                clueText = `The King is **far away**`;
+                clueText = `The King is far away`;
             }
             showNotification(`Clue Found! ${clueText}`);
         }
@@ -555,15 +779,27 @@
 
             for (let i = 0; i < BOARD_SIZE; i++) {
                 const tile = tiles[i];
+
+                // --- Save and Restore Stunned Class ---
+                // Temporarily check if the tile is currently stunned before clearing classes
+                const wasStunned = tile.classList.contains('stunned-tile');
+
                 tile.innerHTML = '';
-                tile.className = 'tile';
+                tile.className = 'tile'; // <-- This line wipes out 'stunned-tile'
+
+                // Re-apply saved class *before* other classes are added
+                if (wasStunned) {
+                    tile.classList.add('stunned-tile');
+                }
+                // --- End Save/Restore ---
+
 
                 const tileType = board[i];
                 const isCurrentPlayerHere = i === currentPlayerPos;
                 const isOtherPlayerHere = i === otherPlayerPos;
 
                 // --- Reveal Tile Type ---
-                if (revealedTiles[i]) {
+                if (revealedTiles[i] || isCurrentPlayerHere || isOtherPlayerHere) { // Keep tile revealed if a player is on it
                     tile.classList.add(tileType);
                     if (TILE_CONFIG[tileType] && TILE_CONFIG[tileType].symbol) {
                         tile.innerHTML += TILE_CONFIG[tileType].symbol;
@@ -595,50 +831,48 @@
             const player = players[currentPlayer];
 
             if (isTeleporting) {
-                elements.status.innerHTML = `<span style="color:#8c00b3;">**TELEPORT MODE:** Player ${currentPlayer} (${player.emoji}), select your destination tile!</span>`;
+                elements.status.innerHTML = `<span style="color:#8c00b3;">**TELEPORT MODE:** Player ${currentPlayer}, select your destination tile!</span>`;
             } else if (player.stunned) {
-                elements.status.innerHTML = `<span style="color:#e94560;">Player ${currentPlayer} (${player.emoji}) is **STUNNED**! Turn skipped.</span>`;
+                elements.status.innerHTML = `<span style="color:#e94560;">Player ${currentPlayer} is **STUNNED**! Turn skipped.</span>`;
                 setTimeout(() => {
                     player.stunned = false;
                     switchTurn();
                     updateStatus();
                 }, 1500);
             } else if (extraTurn) {
-                elements.status.innerHTML = `<span style="color:#00ffff;">Player ${currentPlayer} (${player.emoji}) gets an **EXTRA TURN**! Choose wisely.</span>`;
+                elements.status.innerHTML = `<span style="color:#00ffff;">Player ${currentPlayer} gets an **EXTRA TURN**! Choose wisely.</span>`;
             } else {
                 elements.status.innerHTML = ``;
             }
         }
 
         function showNotification(message, isError = false) {
-            const notification = document.createElement('div');
-            notification.innerHTML = message;
-            notification.style.cssText = `
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: ${isError ? 'rgba(200, 0, 0, 0.9)' : 'rgba(0, 0, 0, 0.8)'};
-                padding: 15px 30px;
-                border-radius: 10px;
-                color: white;
-                font-size: 1.5em;
-                z-index: 1000;
-                animation: fadeout 3s forwards;
-            `;
-            document.body.appendChild(notification);
+            const bar = elements.notification;
 
-            if (!document.getElementById('fadeout-style')) {
-                const style = document.createElement('style');
-                style.id = 'fadeout-style';
-                style.innerHTML = '@keyframes fadeout { 0% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }';
-                document.head.appendChild(style);
+            // Clear any previous timeout
+            if (bar.timeoutId) {
+                clearTimeout(bar.timeoutId);
             }
 
-            setTimeout(() => notification.remove(), 3000);
+            // Apply content and styles
+            bar.innerHTML = message;
+            bar.classList.add('show');
+            if (isError) {
+                bar.classList.add('notification-error');
+            } else {
+                bar.classList.remove('notification-error');
+            }
+
+            // Set a timeout to fade the notification out
+            bar.timeoutId = setTimeout(() => {
+                bar.classList.remove('show');
+                bar.innerHTML = '';
+            }, 3500); // Display for 3.5 seconds
         }
 
         function endGame(winner) {
+            const victorySound = new Audio('sounds/victory.wav');
+            victorySound.play();
             gameActive = false;
             elements.status.innerHTML = `🎉 **Player ${winner}** (${players[winner].emoji}) rescued King Ado Adi and won the Quest! 🎉`;
             elements.reset.style.display = 'block';
@@ -649,6 +883,36 @@
 
             showNotification(`VICTORY! Player ${winner} Rescues the King!`);
         }
+
+        // --- Modal Logic ---
+
+        function openModal() {
+            document.getElementById('how-to-play-modal').style.display = 'block';
+            gameActive = false; // Pause the game while the modal is open
+        }
+
+        function closeModal() {
+            document.getElementById('how-to-play-modal').style.display = 'none';
+            // Only resume the game if the reset button isn't visible (game is active)
+            if (elements.reset.style.display === 'none') {
+                gameActive = true;
+            }
+        }
+
+        // --- Event Listener ---
+
+        // Add this line after the functions to hook up the button:
+        document.getElementById('info-button').addEventListener('click', openModal);
+
+        // Also add a listener to close modal if the user clicks outside the content
+        window.onclick = function (event) {
+            const modal = document.getElementById('how-to-play-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // --- End Modal Logic ---
 
         window.onload = startGame;
     </script>
