@@ -592,6 +592,22 @@
             background-color: var(--color-red);
         }
 
+        /* NEW STYLE: For the special victory image */
+        .modal-content img.special-win-img {
+            display: block;
+            width: 100%;
+            max-width: 250px;
+            margin: 15px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px var(--color-shadow);
+        }
+
+        /* Optional: Style the heading for special win */
+        .modal-content.special-win h2 {
+            color: var(--color-primary);
+            /* Use primary color for special flair */
+        }
+
         /* --- END CORE GAME LIGHT STYLES --- */
     </style>
 </head>
@@ -1139,6 +1155,7 @@
         const beepPopAudio = new Audio('sounds/beepPop.mp3');
         const correctAudio = new Audio('sounds/correct.wav');
         const entertAudio = new Audio('sounds/flip.wav');
+        const victoryAudio = new Audio('sounds/victory.wav');
 
         // --- Core Game Variables ---
         let levelCodes = JSON.parse(LEVEL_CODES_JSON);
@@ -1406,10 +1423,49 @@
         /**
          * Ends the game and displays the results.
          */
+        /**
+         * Ends the game and displays the results.
+         */
+        /**
+         * Ends the game and displays the results.
+         */
         function endGame() {
             clearInterval(timerInterval);
 
-            finalTimeDisplay.textContent = `Total Time: ${formatTime(window.totalElapsedTime)}`;
+            const totalTimeSeconds = window.totalElapsedTime;
+            const modalContent = gameOverModal.querySelector('.modal-content');
+            const messageParagraph = modalContent.querySelector('p:not(#final-time)'); // Selects the first <p> message
+
+            // Check if Ploofi mode is active (based on <body> class)
+            const isPloofiMode = document.body.classList.contains('ploofi-mode');
+
+            // Determine which image to show based on the mode
+            const specialWinImage = isPloofiMode ? 'images/rand2.png' : 'images/BmgLost1.png';
+
+            // Default/Reset to standard win content
+            modalContent.classList.remove('special-win');
+            modalContent.querySelector('h2').textContent = 'CRACKED!';
+            messageParagraph.innerHTML = 'Congratulations! You cracked all three combinations.';
+
+            // --- Special Win Condition Check (1 minute or under) ---
+            // 1 minute = 60 seconds
+            if (totalTimeSeconds <= 60) {
+                // 1. Update Content and Style
+                modalContent.classList.add('special-win');
+                modalContent.querySelector('h2').textContent = 'PERFECT SCORE!';
+
+                // 2. Display Image and custom label
+                messageParagraph.innerHTML = `
+            WOOHOO! Genius in the house!
+            <img class="special-win-img" src="${specialWinImage}" alt="Special Victory Image">
+        `;
+
+                // 3. Play Audio
+                victoryAudio.currentTime = 0;
+                victoryAudio.play();
+            }
+
+            finalTimeDisplay.textContent = `Total Time: ${formatTime(totalTimeSeconds)}`;
             gameOverModal.style.display = 'flex';
         }
 
