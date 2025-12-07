@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 Grinch's Gamble: Survival 🎅</title>
+    <style>
+        /* --- General Styling & Setup --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #0c4a6e);
+            /* Deep Blue Winter Background */
+            color: #ecf0f1;
+            /* Light text */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+
+        h1 {
+            color: #fca311;
+            /* Gold/Orange Accent */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin: 15px 0;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        /* --- Player Setup Modal --- */
+        #setupModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .setup-content {
+            background: #fff8e1;
+            /* Cream/Yellowish Background */
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            color: #2c3e50;
+            /* Dark Blue Text */
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+        }
+
+        .setup-content h2 {
+            color: #c0392b;
+            /* Festive Red */
+            margin-bottom: 20px;
+        }
+
+        .player-input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .player-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .player-input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        #startGameBtn {
+            padding: 12px 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            /* Green Button */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        #startGameBtn:hover {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        /* --- Game Info & Controls --- */
+        #gameInfo {
+            width: 100%;
+            max-width: 800px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #playerArea {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fca311;
+            flex: 1 1 50%;
+            min-width: 250px;
+            text-align: left;
+        }
+
+        #drawSection {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+
+        #drawButton {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            /* Red Button */
+            color: white;
+            border: 3px solid #922b21;
+            border-radius: 10px;
+            box-shadow: 0 4px 0 #922b21;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        #drawButton:hover:not(:disabled) {
+            background: linear-gradient(145deg, #c0392b, #e74c3c);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #922b21;
+        }
+
+        #drawButton:active:not(:disabled) {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #922b21;
+        }
+
+        #drawButton:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            box-shadow: 0 4px 0 #7f8c8d;
+        }
+
+        #diceDisplay {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 2px solid #2c3e50;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        #drawResult {
+            flex: 1 1 100%;
+            text-align: center;
+            font-size: 1.2em;
+            margin-top: 10px;
+            padding: 8px;
+            border: 2px dashed #f1c40f;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            color: #f1c40f;
+        }
+
+        /* --- Gifts Grid --- */
+        #giftsContainer {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            padding: 20px 0;
+        }
+
+        .gift {
+            position: relative;
+            aspect-ratio: 1;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+            background: none;
+            transition: transform 0.2s;
+        }
+
+        .gift img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.5));
+        }
+
+        .gift:hover:not(.revealed):not(.shaking) {
+            transform: scale(1.05);
+        }
+
+        .gift.revealed {
+            cursor: default;
+        }
+
+        .shaking {
+            animation: shake 0.5s infinite;
+        }
+
+        .gift-index {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-size: 0.7em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* --- End Game Modal --- */
+        #endModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .end-content {
+            background: #e74c3c;
+            /* Red */
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px #f1c40f;
+            text-align: center;
+            color: white;
+        }
+
+        .end-content h2 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #f1c40f;
+        }
+
+        .end-content p {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+        }
+
+        #playAgainBtn {
+            padding: 12px 30px;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: #2ecc71;
+            /* Green */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* --- Keyframe Animations --- */
+        @keyframes shake {
+            0% {
+                transform: translate(1px, 1px) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(-1px, -2px) rotate(-1deg);
+            }
+
+            50% {
+                transform: translate(-3px, 0px) rotate(1deg);
+            }
+
+            75% {
+                transform: translate(3px, 2px) rotate(0deg);
+            }
+        }
+
+        @keyframes dice-roll {
+            0% {
+                transform: rotateY(0deg);
+            }
+
+            100% {
+                transform: rotateY(720deg);
+            }
+        }
+
+        .dice-anim {
+            animation: dice-roll 0.5s infinite linear;
+        }
+
+
+        /* --- Responsive Design --- */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            #giftsContainer {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+                gap: 5px;
+            }
+
+            #gameInfo {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            #playerArea,
+            #drawSection,
+            #drawResult {
+                flex: 1 1 100%;
+                text-align: center;
+                margin-top: 5px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎲 Christmas Mania 🎅</h1>
+
+    <div id="setupModal">
+        <div class="setup-content">
+            <h2>Start the Christmas Mania!</h2>
+            <p>Enter the names of all players (min 2, max 6). Leave inputs blank for fewer players.</p>
+            <div id="playerInputs">
+                <div class="player-input-group"><label for="player1">Player 1:</label><input type="text" id="player1"
+                        placeholder="Required (e.g., Rudolph)" maxlength="12"></div>
+                <div class="player-input-group"><label for="player2">Player 2:</label><input type="text" id="player2"
+                        placeholder="Required (e.g., Frosty)" maxlength="12"></div>
+                <div class="player-input-group"><label for="player3">Player 3:</label><input type="text" id="player3"
+                        placeholder="Optional" maxlength="12"></div>
+                <div class="player-input-group"><label for="player4">Player 4:</label><input type="text" id="player4"
+                        placeholder="Optional" maxlength="12"></div>
+                <div class="player-input-group"><label for="player5">Player 5:</label><input type="text" id="player5"
+                        placeholder="Optional" maxlength="12"></div>
+                <div class="player-input-group"><label for="player6">Player 6:</label><input type="text" id="player6"
+                        placeholder="Optional" maxlength="12"></div>
+            </div>
+            <button id="startGameBtn">Start Game</button>
+        </div>
+    </div>
+
+
+    <div id="gameInfo">
+        <div id="playerArea">Current Turn: <span id="currentPlayerName"></span></div>
+        <div id="drawSection">
+            <button id="drawButton">Draw Pick Count</button>
+            <div id="diceDisplay">?</div>
+        </div>
+        <div id="drawResult">Click 'Draw Pick Count' to start your turn!</div>
+    </div>
+
+    <div id="giftsContainer">
+        </div>
+
+    <div id="endModal">
+        <div class="end-content">
+            <img src="images/grinch.png" alt="Grinch" style="width: 100px; margin-bottom: 20px;">
+            <h2 id="endTitle">Game Over!</h2>
+            <p id="endMessage"></p>
+            <button id="playAgainBtn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Configuration ---
+        const TOTAL_GIFTS = 50;
+        const GRINCH_COUNT = 2;
+        // All other gifts are now 'safe', power-ups are removed for simplification.
+        const SAFE_GIFT_COUNT = TOTAL_GIFTS - GRINCH_COUNT;
+        const MIN_PLAYERS = 2;
+        const MAX_PLAYERS = 6;
+
+        const giftTypes = [
+            ...Array(SAFE_GIFT_COUNT).fill('safe'),
+            ...Array(GRINCH_COUNT).fill('grinch'),
+        ];
+
+        // Pick Counts: 1-3. Weighted to be slightly less risky.
+        const pickChances = [1, 2, 3];
+        const pickProbabilities = [35, 35, 30]; // New probabilities: 1: 35%, 2: 35%, 3: 30%
+
+        // --- DOM Elements ---
+        const setupModal = document.getElementById('setupModal');
+        const playerInputsDiv = document.getElementById('playerInputs');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const drawButton = document.getElementById('drawButton');
+        const diceDisplay = document.getElementById('diceDisplay');
+        const drawResultDiv = document.getElementById('drawResult');
+        const giftsContainer = document.getElementById('giftsContainer');
+        const currentPlayerNameSpan = document.getElementById('currentPlayerName');
+        const endModal = document.getElementById('endModal');
+        const endTitle = document.getElementById('endTitle');
+        const endMessage = document.getElementById('endMessage');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+
+        // --- Game State ---
+        let players = [];
+        let currentPlayerIndex = 0;
+        let giftsData = [];
+        let picksLeft = 0;
+        let isDrawing = false;
+        let isGameOver = false;
+
+        // --- Utility Functions ---
+
+        /** Shuffles an array using the Fisher-Yates (Knuth) algorithm. */
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /** Picks a random number of gifts to open based on probabilities. */
+        function pickWeightedRandom() {
+            const total = pickProbabilities.reduce((a, b) => a + b, 0);
+            let r = Math.random() * total;
+            let sum = 0;
+            for (let i = 0; i < pickChances.length; i++) {
+                sum += pickProbabilities[i];
+                if (r < sum) return pickChances[i];
+            }
+            return pickChances[0];
+        }
+
+        /** Moves to the next active player. */
+        function nextPlayer() {
+            const activePlayers = players.filter(p => !p.eliminated);
+            if (activePlayers.length <= 1) {
+                endGame();
+                return;
+            }
+
+            // Find the index of the next active player
+            let startIndex = currentPlayerIndex;
+            do {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            } while (players[currentPlayerIndex].eliminated);
+
+            // Reset UI for the new turn
+            currentPlayerNameSpan.textContent = players[currentPlayerIndex].name;
+            drawResultDiv.textContent = `It's ${players[currentPlayerIndex].name}'s turn! Draw a pick count.`;
+            drawButton.disabled = false;
+            diceDisplay.textContent = '?';
+        }
+
+        /** Ends the current player's turn (after picks are done). */
+        function endTurn() {
+            picksLeft = 0;
+            drawButton.disabled = false;
+            nextPlayer();
+        }
+
+        /** Handles game over conditions. */
+        function endGame() {
+            isGameOver = true;
+            giftsContainer.style.display = 'none';
+            drawButton.disabled = true;
+
+            const activePlayers = players.filter(p => !p.eliminated);
+            let winner;
+
+            if (activePlayers.length === 1) {
+                winner = activePlayers[0];
+                endTitle.textContent = '🥳 GRAND WINNER! 🥳';
+                endMessage.textContent = `${winner.name} managed to avoid the Grinch and is the sole survivor!`;
+            } else {
+                // Should only trigger if gifts run out before one survivor remains
+                endTitle.textContent = '🎁 GIFTS EXHAUSTED! 🎁';
+                endMessage.textContent = `All gifts are open! We have ${activePlayers.length} survivors. It's a tie!`;
+            }
+
+            endModal.style.display = 'flex';
+        }
+
+        // --- Core Game Functions ---
+
+        /** Initial setup of the game state. */
+        function createGifts() {
+            giftsContainer.innerHTML = '';
+            giftsData = [];
+
+            // 1. Shuffle and assign types
+            const shuffledTypes = shuffle([...giftTypes]);
+
+            // 2. Create the DOM elements and data structure
+            giftsData = shuffledTypes.map((type, index) => {
+                const giftEl = document.createElement('button');
+                giftEl.classList.add('gift');
+                giftEl.dataset.index = index;
+                giftEl.dataset.type = type;
+
+                const img = document.createElement('img');
+                img.src = 'images/gift.png'; // All closed gifts look the same
+
+                const indexLabel = document.createElement('div');
+                indexLabel.className = 'gift-index';
+                indexLabel.textContent = index + 1;
+
+                giftEl.appendChild(img);
+                giftEl.appendChild(indexLabel);
+                giftsContainer.appendChild(giftEl);
+
+                // Add event listener
+                giftEl.addEventListener('click', () => handleGiftClick(index));
+
+                return {
+                    id: index + 1,
+                    type,
+                    revealed: false,
+                    element: giftEl
+                };
+            });
+        }
+
+        /** Handles clicking a closed gift. */
+        function handleGiftClick(index) {
+            if (isGameOver || picksLeft <= 0 || giftsData[index].revealed) return;
+
+            const gift = giftsData[index];
+            const currentPlayer = players[currentPlayerIndex];
+            const initialPicks = picksLeft;
+
+            // 1. Start shake animation
+            gift.element.classList.add('shaking');
+
+            // 2. Decrement picks
+            picksLeft--;
+            gift.revealed = true;
+            giftsData.filter(g => g.id === gift.id)[0].revealed = true;
+
+            // 3. Reveal and process after a delay
+            setTimeout(() => {
+                gift.element.classList.remove('shaking');
+
+                // Get the image element and change its source
+                let img = gift.element.querySelector('img');
+                img.src = `images/${getImageForType(gift.type)}.png`;
+                gift.element.classList.add('revealed');
+
+                // Check for Grinch
+                if (gift.type === 'grinch') {
+                    // Player is eliminated
+                    currentPlayer.eliminated = true;
+                    drawResultDiv.textContent = `🚨 ${currentPlayer.name} found the GRINCH! They are out! 😭`;
+
+                    // Mark gifts as non-clickable
+                    giftsData.forEach(g => g.element.style.pointerEvents = 'none');
+                    
+                    // Show eliminated status on screen (if you had a player list, otherwise it's just the message)
+
+                    setTimeout(() => {
+                        // After elimination, check for winner and move to next player
+                        if (players.filter(p => !p.eliminated).length <= 1) {
+                            endGame();
+                        } else {
+                            endTurn();
+                        }
+                    }, 2000); // 2 second pause for dramatic effect
+
+                } else {
+                    // Safe gift
+                    drawResultDiv.textContent = `${currentPlayer.name} found a safe gift! ${picksLeft} pick${picksLeft !== 1 ? 's' : ''} left.`;
+                    
+                    if (picksLeft === 0) {
+                        drawResultDiv.textContent = `Turn over! ${currentPlayer.name} opened all ${initialPicks} gifts safely.`;
+                        setTimeout(endTurn, 1500); // Short delay before next turn
+                    }
+                }
+
+                // Check if any gifts are left. If not, the game ends.
+                if (giftsData.every(g => g.revealed)) {
+                    endGame();
+                }
+
+            }, 1500); // 1.5 second shake/delay
+        }
+
+        /** Determines the image for a revealed gift. */
+        function getImageForType(type) {
+            switch (type) {
+                case 'safe':
+                    return 'coins'; // Using the 'coins' image for the safe/empty gift
+                case 'grinch':
+                    return Math.random() < 0.5 ? 'grinch' : 'grinch2';
+                default:
+                    return 'gift';
+            }
+        }
+
+        /** Handles the 'Draw Pick Count' button click. */
+        function handleDrawClick() {
+            if (isDrawing || picksLeft > 0 || isGameOver) return;
+
+            isDrawing = true;
+            drawButton.disabled = true;
+
+            // Start dice animation
+            diceDisplay.textContent = '🎲';
+            diceDisplay.classList.add('dice-anim');
+
+            setTimeout(() => {
+                let num = pickWeightedRandom();
+                picksLeft = num;
+                isDrawing = false;
+
+                diceDisplay.classList.remove('dice-anim');
+                diceDisplay.textContent = num === 0 ? '0' : num;
+
+                const currentPlayer = players[currentPlayerIndex].name;
+                
+                if (num === 0) {
+                    drawResultDiv.textContent = `${currentPlayer} drew 0 picks! Lucky skip.`;
+                    setTimeout(endTurn, 1000);
+                } else {
+                    drawResultDiv.textContent = `${currentPlayer} must open ${num} gift${num !== 1 ? 's' : ''}! Click a gift now!`;
+                }
+
+            }, 1000); // 1.5 second "drawing" delay
+        }
+
+        // --- Setup and Events ---
+
+        startGameBtn.addEventListener('click', () => {
+            players = [];
+            const inputElements = playerInputsDiv.querySelectorAll('input');
+            
+            // 1. Collect only players with names
+            inputElements.forEach((input) => {
+                const name = input.value.trim();
+                if (name) {
+                    players.push({
+                        name: name,
+                        eliminated: false
+                    });
+                }
+            });
+
+            if (players.length < MIN_PLAYERS) {
+                alert(`You need at least ${MIN_PLAYERS} players to start. Please fill in Player 1 and Player 2 names.`);
+                return;
+            }
+
+            setupModal.style.display = 'none';
+            isGameOver = false;
+            currentPlayerIndex = 0;
+            picksLeft = 0;
+            createGifts();
+            
+            // Start the game
+            currentPlayerNameSpan.textContent = players[currentPlayerIndex].name;
+            drawResultDiv.textContent = `It's ${players[currentPlayerIndex].name}'s turn! Draw a pick count.`;
+            drawButton.disabled = false;
+        });
+
+        drawButton.addEventListener('click', handleDrawClick);
+
+        playAgainBtn.addEventListener('click', () => {
+            // Simple reload for a full reset
+            window.location.reload();
+        });
+
+    </script>
+</body>
+
+</html>

@@ -386,11 +386,76 @@
         .hiddenDoneBtn {
             display: none !important;
         }
+
+        /* Add this to the existing <style> block */
+
+        #infoButton {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 15px;
+            font-size: 1em;
+            font-weight: bold;
+            background: #4b2e00;
+            /* Dark brown background */
+            color: #fff8dc;
+            /* Cream text */
+            border: 2px solid #a87000;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 #a87000;
+            transition: all 0.2s ease;
+            z-index: 1001;
+            /* Ensure it's above other elements */
+        }
+
+        #infoButton:hover {
+            background: #603a10;
+        }
+
+        #infoButton:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 0 #a87000;
+        }
+
+        /* New Modal Styling for Info Screen */
+        .info-modal-content {
+            background: #fff8dc;
+            border: 4px solid #4b2e00;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: left;
+            /* Change to left-aligned for better reading */
+            max-width: 90%;
+            width: 500px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            font-size: 1.1em;
+            color: #4b2e00;
+        }
+
+        .info-modal-content h2 {
+            text-align: center;
+            color: #ff6600;
+            margin-top: 0;
+        }
+
+        .info-modal-content button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: #ffe066;
+            border: 2px solid #a87000;
+            border-radius: 10px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+        }
     </style>
 </head>
 
 <body>
-
+    <button id="infoButton">How to Play</button>
     <h1>🐵 Monkey Bonanza 🍌</h1>
     <div id="mainWrapper">
         <div id="gameContainer">
@@ -442,6 +507,25 @@
         </div>
     </div>
 
+    <div id="infoModal" class="modal hidden">
+        <div class="info-modal-content">
+            <h2>How to Play Monkey Bonanza</h2>
+            <p><strong>Monkey Bonanza</strong> is a game of chance and risk for two players. The goal is to collect golden
+                bananas and avoid the **Crazy Monkey** barrel!</p>
+            <ul>
+                <li>Players take turns clicking **Draw** to randomly determine how many barrels they must open (0-3).
+                </li>
+                <li>You **must** open the drawn number of barrels.</li>
+                <li>Opening a **Banana** is safe.</li>
+                <li>Opening the **Monkey** means you lose the game instantly!</li>
+                <li>Special barrels like **Reverse** (reverse rounds or add +2 draws for your opponent), **Magic** (lets you peek at safe
+                    barrels), and **Power** (lets you pick the opponent's barrels).</li>
+                <li>When the turn is complete, the player switches. Good luck!</li>
+            </ul>
+            <button id="infoCloseBtn">Got It!</button>
+        </div>
+    </div>
+
     <script>
         const barrelTypes = [
             ...Array(19).fill('banana'),
@@ -450,6 +534,20 @@
             ...Array(2).fill('magic'),
             'power'
         ];
+
+        // Add these DOM element selections at the beginning of the script
+        const infoButton = document.getElementById("infoButton");
+        const infoModal = document.getElementById("infoModal");
+        const infoCloseBtn = document.getElementById("infoCloseBtn");
+
+        // Add this functionality at the end of the script
+        infoButton.addEventListener('click', () => {
+            infoModal.classList.remove('hidden');
+        });
+
+        infoCloseBtn.addEventListener('click', () => {
+            infoModal.classList.add('hidden');
+        });
 
         let currentPlayer = 'George';
         let otherPlayer = 'Rita';
