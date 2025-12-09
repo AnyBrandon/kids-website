@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Drawing Sketchpad</title>
+    <style>
+        /* --- CSS: Vibrant Dark Theme & Responsiveness --- */
+        :root {
+            --primary-color: #ff6b6b;
+            /* Bright Red/Pink */
+            --secondary-color: #4ecdc4;
+            /* Cyan/Teal */
+            --background-color: #2c3e50;
+            /* Deep Blue/Black */
+            --control-bg: #34495e;
+            --text-color: #ecf0f1;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--background-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            padding: 20px 10px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            font-size: 2em;
+            color: var(--secondary-color);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .drawing-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Canvas Style */
+        #drawCanvas {
+            border: 5px solid var(--primary-color);
+            background-color: white;
+            /* NEW GLOW: Outer shadow for depth, inner glow for the edge */
+            box-shadow:
+                0 0 15px rgba(255, 107, 107, 0.7),
+                /* Bright primary color glow */
+                0 8px 16px rgba(0, 0, 0, 0.5);
+            /* Deep shadow underneath */
+            touch-action: none;
+            width: 100%;
+            cursor: none;
+            /* NEW: Add the animation property */
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        /* Control Panel Styles */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background-color: var(--control-bg);
+            border-radius: 12px;
+            width: 100%;
+            justify-content: center;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .controls label {
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .controls button,
+        .controls input[type="color"] {
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Standard Button */
+        .controls button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        .controls button:hover:not(.active) {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Active Button (Rainbow, Eraser) */
+        .controls button.active {
+            background-color: var(--secondary-color);
+            color: var(--background-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        /* Brush Size Indicator */
+        #size-indicator {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            opacity: 0.8;
+            position: absolute;
+            pointer-events: none;
+            /* Allows drawing underneath */
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+            transition: width 0.1s, height 0.1s;
+            z-index: 10;
+            display: none;
+            /* Hidden by default */
+        }
+
+        /* Input Range Styling (Cooler Slider) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--text-color);
+            border-radius: 5px;
+            height: 10px;
+            width: 120px;
+            margin: 0 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            cursor: pointer;
+            border: 3px solid var(--primary-color);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group {
+                justify-content: space-between;
+                padding: 5px 0;
+            }
+
+            .controls button {
+                padding: 10px;
+            }
+
+            input[type="range"] {
+                width: 100px;
+            }
+        }
+
+        /* --- NEW: Pulsing Glow Animation Keyframes --- */
+        @keyframes pulse-glow {
+            0% {
+                /* Start with a softer glow */
+                box-shadow:
+                    0 0 10px rgba(255, 107, 107, 0.5),
+                    0 0 20px rgba(255, 107, 107, 0.3),
+                    0 8px 16px rgba(0, 0, 0, 0.5);
+            }
+
+            100% {
+                /* End with a brighter, more pronounced glow */
+                box-shadow:
+                    0 0 20px var(--primary-color),
+                    0 0 30px rgba(255, 107, 107, 0.7),
+                    0 8px 16px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        /* Input Range Styling (Cooler Slider) */
+        /* ... existing input[type="range"] styles ... */
+    </style>
+</head>
+
+<body>
+
+    <div id="size-indicator"></div>
+
+    <div class="drawing-container">
+
+        <canvas id="drawCanvas"></canvas>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="colorPicker">Color:</label>
+                <input type="color" id="colorPicker" value="#000000">
+            </div>
+
+            <div class="control-group">
+                <label for="brushSize">Size:</label>
+                <input type="range" id="brushSize" min="3" max="50" value="10">
+            </div>
+
+            <button id="eraserBtn">🧹 Eraser</button>
+            <button id="rainbowBtn">🌈 Rainbow Mode</button>
+
+            <button id="clearBtn">❌ Clear</button>
+            <button id="saveBtn">💾 Save Drawing</button>
+            <button id="loadBtn">🔄 Load Last Save</button>
+            <button id="downloadBtn">⬇️ Download PNG</button>
+        </div>
+    </div>
+
+    <script>
+        // --- JavaScript: Logic and Fun Features (Alerts Removed & Pointer Fix) ---
+
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+        const controls = {
+            color: document.getElementById('colorPicker'),
+            size: document.getElementById('brushSize'),
+            eraser: document.getElementById('eraserBtn'),
+            rainbow: document.getElementById('rainbowBtn'),
+            clear: document.getElementById('clearBtn'),
+            save: document.getElementById('saveBtn'),
+            load: document.getElementById('loadBtn'),
+            download: document.getElementById('downloadBtn'),
+        };
+        const sizeIndicator = document.getElementById('size-indicator');
+        const CANVAS_KEY = 'awesomeSketchpadData';
+
+        // Drawing state variables
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let brushColor = controls.color.value;
+        let brushSize = parseInt(controls.size.value);
+        let isEraserMode = false;
+        let isRainbowMode = false;
+        let hue = 0; // For rainbow mode
+
+        // --- 1. Canvas Setup and Responsiveness ---
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const containerWidth = container.clientWidth;
+
+            let tempCanvas = document.createElement('canvas');
+            let tempCtx = tempCanvas.getContext('2d');
+
+            if (canvas.width > 0 && canvas.height > 0) {
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                tempCtx.drawImage(canvas, 0, 0);
+            }
+
+            const size = Math.min(containerWidth, 900);
+            canvas.width = size;
+            canvas.height = size * 0.75;
+
+            if (tempCanvas.width > 0) {
+                ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
+            }
+
+            applyDrawingSettings();
+        }
+
+        function applyDrawingSettings() {
+            ctx.strokeStyle = isEraserMode ? 'white' : brushColor;
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.globalCompositeOperation = isEraserMode ? 'destination-out' : 'source-over';
+        }
+
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
+
+        // --- 2. Drawing Functions ---
+
+        function startDrawing(x, y) {
+            isDrawing = true;
+            // Uses page coordinates which are passed to draw
+            [lastX, lastY] = getCoordinates(x, y);
+        }
+
+        function draw(x, y) {
+            if (!isDrawing) return;
+
+            // Get the scaled canvas coordinates
+            const [currentX, currentY] = getCoordinates(x, y);
+
+            if (isRainbowMode) {
+                hue = (hue + 1) % 360;
+                ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`;
+            } else {
+                ctx.strokeStyle = isEraserMode ? 'white' : brushColor;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+
+            lastX = currentX;
+            lastY = currentY;
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.closePath();
+        }
+
+        /**
+         * Converts page coordinates (mouse/touch) into canvas-local coordinates (drawing buffer).
+         * Crucial for correct positioning on responsive canvases.
+         */
+        function getCoordinates(pageX, pageY) {
+            const rect = canvas.getBoundingClientRect();
+            // Scaling calculation: (screen_pos - canvas_start) * (canvas_pixels / screen_width)
+            const canvasX = (pageX - rect.left) * (canvas.width / rect.width);
+            const canvasY = (pageY - rect.top) * (canvas.height / rect.height);
+            return [canvasX, canvasY];
+        }
+
+
+        // --- 3. UI Feedback (Brush Indicator) ---
+        function updateIndicator(e) {
+            // FIX: The indicator uses clientX/Y which gives its position relative to the viewport.
+            // This is correct because the indicator itself is absolutely positioned on the viewport.
+            sizeIndicator.style.left = `${e.clientX}px`;
+            sizeIndicator.style.top = `${e.clientY}px`;
+
+            sizeIndicator.style.width = `${brushSize}px`;
+            sizeIndicator.style.height = `${brushSize}px`;
+
+            if (isEraserMode) {
+                sizeIndicator.style.backgroundColor = 'white';
+            } else if (isRainbowMode) {
+                sizeIndicator.style.backgroundColor = `hsl(${(hue + 10) % 360}, 100%, 50%)`;
+            }
+            else {
+                sizeIndicator.style.backgroundColor = brushColor;
+            }
+        }
+
+        canvas.addEventListener('mouseenter', () => { sizeIndicator.style.display = 'block'; });
+        canvas.addEventListener('mouseleave', () => { sizeIndicator.style.display = 'none'; });
+        canvas.addEventListener('mousemove', updateIndicator);
+
+
+        // --- 4. Event Listeners (Mouse & Touch) ---
+
+        // A. Mouse Events (Desktop)
+        canvas.addEventListener('mousedown', (e) => startDrawing(e.pageX, e.pageY));
+        canvas.addEventListener('mousemove', (e) => draw(e.pageX, e.pageY));
+        document.addEventListener('mouseup', stopDrawing);
+
+        // B. Touch Events (Mobile/Tablet)
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            startDrawing(touch.pageX, touch.pageY);
+            sizeIndicator.style.display = 'none';
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            draw(touch.pageX, touch.pageY);
+        });
+
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+
+
+        // --- 5. Control Listeners and Fun Modes ---
+
+        // A. Color Picker
+        controls.color.addEventListener('change', (e) => {
+            brushColor = e.target.value;
+            isEraserMode = false;
+            applyDrawingSettings();
+            controls.eraser.classList.remove('active');
+        });
+
+        // B. Brush Size Slider
+        controls.size.addEventListener('input', (e) => {
+            brushSize = parseInt(e.target.value);
+            applyDrawingSettings();
+        });
+
+        // C. Eraser Mode Toggle
+        controls.eraser.addEventListener('click', () => {
+            isEraserMode = !isEraserMode;
+            isRainbowMode = false;
+            applyDrawingSettings();
+            controls.eraser.classList.toggle('active', isEraserMode);
+            controls.rainbow.classList.remove('active');
+        });
+
+        // D. Rainbow Mode Toggle
+        controls.rainbow.addEventListener('click', () => {
+            isRainbowMode = !isRainbowMode;
+            isEraserMode = false;
+            applyDrawingSettings();
+            controls.rainbow.classList.toggle('active', isRainbowMode);
+            controls.eraser.classList.remove('active');
+        });
+
+        // E. Clear Button
+        controls.clear.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Optional: localStorage.removeItem(CANVAS_KEY);
+        });
+
+        // F. Save Drawing (Local Storage)
+        controls.save.addEventListener('click', () => {
+            const dataURL = canvas.toDataURL('image/png');
+            localStorage.setItem(CANVAS_KEY, dataURL);
+        });
+
+        // G. Load Drawing (Local Storage)
+        controls.load.addEventListener('click', () => {
+            const dataURL = localStorage.getItem(CANVAS_KEY);
+            if (dataURL) {
+                const img = new Image();
+                img.onload = function () {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                };
+                img.src = dataURL;
+            }
+        });
+
+        // H. Download Button
+        controls.download.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `awesome-sketchpad-art-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+    </script>
+</body>
+
+</html>

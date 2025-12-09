@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman Loco Edition</title>
+    <style>
+        /*
+         * ======================================
+         * CSS: VISUALS, LAYOUT, AND RESPONSIVENESS
+         * ======================================
+         */
+        :root {
+            /* Changed primary to a neutral, and added player themes */
+            --color-primary-neutral: #5d5d6d;
+            /* Neutral base for elements */
+            --color-secondary: #FFC371;
+            /* Orange/Yellow */
+            --color-background: #1e1e2f;
+            /* Dark Blue/Purple */
+            --color-card: #2f364d;
+            /* Slightly lighter card background */
+            --color-text: #f0f0f0;
+            --color-success: #4CAF50;
+            --color-fail: #f5b8b3;
+            --max-attempts: 7;
+
+            /* New Player Themes */
+            --color-p1-main: #3498db;
+            /* Blue for Player 1 */
+            --color-p1-hover: #5dade2;
+            --color-p2-main: #e74c3c;
+            /* Red for Player 2 */
+            --color-p2-hover: #ec7063;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: var(--color-background);
+            color: var(--color-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--color-card);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1fr;
+            /* Default to single column for mobile */
+        }
+
+        h1 {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: var(--color-secondary);
+            margin-bottom: 10px;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+        }
+
+        /* Player Stats and Boards */
+        .player-board {
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            min-height: 250px;
+        }
+
+        .player-board.active {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 15px var(--color-primary);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .player-name {
+            font-size: 1.4rem;
+            color: var(--color-primary);
+        }
+
+        .attempts-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--color-text);
+        }
+
+        .word-display {
+            text-align: center;
+            font-size: clamp(1.5rem, 6vw, 3rem);
+            letter-spacing: 10px;
+            margin: 20px 0;
+            min-height: 40px;
+            /* Ensure space even if word is short */
+            word-wrap: break-word;
+        }
+
+        /* Timer and Turn Indicator */
+        #turn-indicator {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #timer-display {
+            font-size: 1.5rem;
+            color: var(--color-secondary);
+            margin-top: 5px;
+        }
+
+        /* Keyboard */
+        #keyboard-container {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+            padding-top: 10px;
+        }
+
+        .key {
+            background: var(--color-primary-neutral);
+            /* Use neutral base */
+            color: var(--color-text);
+            border: none;
+            border-radius: 5px;
+            padding: 10px 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            flex-grow: 1;
+            min-width: 30px;
+            max-width: 40px;
+        }
+
+        /* Adjust key size for smaller screens (mobile) */
+        @media (max-width: 400px) {
+            .key {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+                max-width: 35px;
+            }
+        }
+
+        .key:hover:not(:disabled) {
+            background: #ff688c;
+        }
+
+        .key:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .key:disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        /* Key States */
+        .key.guessed-correct {
+            background: var(--color-success) !important;
+            opacity: 1 !important;
+        }
+
+        .key.guessed-incorrect {
+            background: var(--color-fail) !important;
+            opacity: 1 !important;
+        }
+
+        /* Attempts Visualization (Gallows) */
+        .gallows {
+            height: 5px;
+            background: var(--color-text);
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .gallows-bar {
+            height: 100%;
+            background: var(--color-fail);
+            width: 0%;
+            transition: width 0.3s ease-out;
+            border-radius: 5px;
+        }
+
+        .gallows-text {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--color-text);
+            white-space: nowrap;
+        }
+
+        /* Game Over Modal */
+        #modal {
+            display: none;
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modal-content {
+            background-color: var(--color-card);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+            max-width: 90%;
+            animation: slideIn 0.5s forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #modal-content h2 {
+            color: var(--color-secondary);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        #modal-content p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        #modal-content button {
+            background: var(--color-primary);
+            color: var(--color-text);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        #modal-content button:hover {
+            background: #ff688c;
+        }
+
+
+        /* Responsive Adjustments */
+        @media (min-width: 768px) {
+            #game-container {
+                grid-template-columns: 1fr 1fr;
+                /* Two columns for tablets/desktop */
+            }
+
+            .player-board {
+                min-height: 300px;
+            }
+
+            #turn-indicator,
+            #keyboard-container {
+                grid-column: 1 / -1;
+                /* Span both columns */
+            }
+
+            .gallows {
+                margin: 20px 0 10px;
+            }
+        }
+
+        /* --- Player Theme Definitions --- */
+
+        /* Player 1 Theme (Blue) */
+        .player-board.p1-theme .player-name {
+            color: var(--color-p1-main);
+            /* Blue name */
+        }
+
+        .player-board.p1-theme.active {
+            border-color: var(--color-p1-main);
+            /* Blue active border */
+            box-shadow: 0 0 15px var(--color-p1-main);
+        }
+
+        .p1-keyboard-key {
+            background: var(--color-p1-main);
+            /* Blue key background */
+        }
+
+        .p1-keyboard-key:hover:not(:disabled) {
+            background: var(--color-p1-hover);
+        }
+
+
+        /* Player 2 Theme (Red) */
+        .player-board.p2-theme .player-name {
+            color: var(--color-p2-main);
+            /* Red name */
+        }
+
+        .player-board.p2-theme.active {
+            border-color: var(--color-p2-main);
+            /* Red active border */
+            box-shadow: 0 0 15px var(--color-p2-main);
+        }
+
+        .p2-keyboard-key {
+            background: var(--color-p2-main);
+            /* Red key background */
+        }
+
+        .p2-keyboard-key:hover:not(:disabled) {
+            background: var(--color-p2-hover);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <h1>Hangman Loco Edition</h1>
+
+        <div id="player1-board" class="player-board active p1-theme">
+            <div class="player-header">
+                <span class="player-name">Player 1</span>
+                <span id="player1-attempts" class="attempts-display"></span>
+            </div>
+            <div class="gallows">
+                <div id="player1-bar" class="gallows-bar"></div>
+            </div>
+            <div id="player1-word" class="word-display"></div>
+        </div>
+
+        <div id="player2-board" class="player-board p2-theme">
+            <div class="player-header">
+                <span class="player-name">Player 2</span>
+                <span id="player2-attempts" class="attempts-display"></span>
+            </div>
+            <div class="gallows">
+                <div id="player2-bar" class="gallows-bar"></div>
+            </div>
+            <div id="player2-word" class="word-display"></div>
+        </div>
+
+        <div id="turn-indicator">
+            Current Turn: <span id="current-player-name">Player 1</span>
+            <div id="timer-display">Time Left: 60s</div>
+        </div>
+
+        <div id="keyboard-container">
+        </div>
+    </div>
+
+    <div id="modal">
+        <div id="modal-content">
+            <h2 id="modal-title"></h2>
+            <p id="modal-message"></p>
+            <p>Word 1: <span id="modal-word1"></span></p>
+            <p>Word 2: <span id="modal-word2"></span></p>
+            <button onclick="window.location.reload()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        /*
+         * ======================================
+         * JAVASCRIPT: GAME LOGIC AND INTERACTION
+         * ======================================
+         */
+
+        // --- 1. WORD LIST (Embedded JSON) ---
+        let wordList = [];
+
+        async function fetchWords() {
+            try {
+                const response = await fetch('hangWords.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                // Map the data format [{"1":"word"}, {"2":"word"}, ...] to a flat array of uppercase words.
+                wordList = data.map(obj => Object.values(obj)[0].toUpperCase());
+                console.log("Words loaded successfully.");
+            } catch (error) {
+                console.error("Could not fetch the word list:", error);
+                alert("Error loading word list. Ensure 'hangWords.json' is in the same folder.");
+                // Fallback in case of error (highly recommended)
+                wordList = ["FAIL", "SAFE", "GAME", "WORD"].map(w => w.toUpperCase());
+            }
+        }
+
+        // --- 2. GAME CONSTANTS AND STATE ---
+        const MAX_ATTEMPTS = 7;
+        const INITIAL_TIME = 60; // 60 seconds
+        let currentPlayer = 1;
+        let gameActive = true;
+        let timerInterval;
+
+        const gameState = {
+            1: {
+                word: '',
+                guessedWord: [],
+                incorrectGuesses: 0,
+                guessedLetters: new Set(),
+                timeRemaining: INITIAL_TIME,
+                elementId: 'player1',
+                boardElement: document.getElementById('player1-board'),
+                wordDisplay: document.getElementById('player1-word'),
+                attemptsDisplay: document.getElementById('player1-attempts'),
+                gallowsBar: document.getElementById('player1-bar')
+            },
+            2: {
+                word: '',
+                guessedWord: [],
+                incorrectGuesses: 0,
+                guessedLetters: new Set(),
+                timeRemaining: INITIAL_TIME,
+                elementId: 'player2',
+                boardElement: document.getElementById('player2-board'),
+                wordDisplay: document.getElementById('player2-word'),
+                attemptsDisplay: document.getElementById('player2-attempts'),
+                gallowsBar: document.getElementById('player2-bar')
+            }
+        };
+
+        // --- 3. HELPER FUNCTIONS ---
+
+        /**
+         * Selects two unique random words from the list.
+         * @returns {string[]} An array containing two unique words in uppercase.
+         */
+        function selectWords() {
+            // Use the fetched wordList directly
+            const keys = wordList;
+            if (keys.length < 2) {
+                // ... (error handling remains the same)
+                console.error("Not enough unique words in the list!");
+                return ["ERROR", "FATAL"];
+            }
+
+            // ... (rest of the function for selecting two unique words remains the same)
+            let index1 = Math.floor(Math.random() * keys.length);
+            let word1 = keys[index1];
+
+            let index2;
+            do {
+                index2 = Math.floor(Math.random() * keys.length);
+            } while (index2 === index1);
+
+            let word2 = keys[index2];
+
+            return [word1, word2];
+        }
+
+        /**
+         * Initializes the word, display, and attempts count for a player.
+         * @param {number} player - The player number (1 or 2).
+         * @param {string} word - The word to be guessed.
+         */
+        function initializePlayer(player, word) {
+            const playerState = gameState[player];
+            playerState.word = word;
+            playerState.guessedWord = Array(word.length).fill('_');
+            playerState.incorrectGuesses = 0;
+            playerState.guessedLetters.clear();
+
+            updateDisplay(player);
+        }
+
+        /**
+         * Updates the screen elements (word, attempts, gallows) for a player.
+         * @param {number} player - The player number (1 or 2).
+         */
+        function updateDisplay(player) {
+            const state = gameState[player];
+
+            // Update Word Display
+            state.wordDisplay.textContent = state.guessedWord.join(' ');
+
+            // Update Attempts Display
+            state.attemptsDisplay.textContent = `Errors: ${state.incorrectGuesses} / ${MAX_ATTEMPTS}`;
+
+            // Update Gallows (Error Bar)
+            const percentage = (state.incorrectGuesses / MAX_ATTEMPTS) * 100;
+            state.gallowsBar.style.width = `${percentage}%`;
+
+            // Update Keyboard State (only if it's the current player)
+            if (player === currentPlayer) {
+                updateKeyboard(state.guessedLetters);
+            }
+        }
+
+        /**
+         * Updates the appearance of the on-screen keyboard buttons.
+         * @param {Set<string>} guessedLetters - Set of letters already guessed by the current player.
+         */
+        function updateKeyboard(guessedLetters) {
+            document.querySelectorAll('.key').forEach(keyButton => {
+                const letter = keyButton.dataset.letter;
+                const playerState = gameState[currentPlayer];
+
+                keyButton.disabled = guessedLetters.has(letter);
+
+                // Remove previous state classes
+                keyButton.classList.remove('guessed-correct', 'guessed-incorrect');
+
+                if (guessedLetters.has(letter)) {
+                    // Check if the guessed letter is in the current player's word
+                    if (playerState.word.includes(letter)) {
+                        keyButton.classList.add('guessed-correct');
+                    } else {
+                        keyButton.classList.add('guessed-incorrect');
+                    }
+                }
+            });
+        }
+
+        /**
+         * Switches the turn to the other player.
+         */
+        function switchTurn() {
+            if (!gameActive) return;
+
+            // Stop the timer
+            clearInterval(timerInterval);
+
+            // Change current player
+            const previousPlayer = currentPlayer; // Store previous player
+            currentPlayer = currentPlayer === 1 ? 2 : 1;
+            const state = gameState[currentPlayer];
+
+            // Update visual active state
+            gameState[1].boardElement.classList.toggle('active', currentPlayer === 1);
+            gameState[2].boardElement.classList.toggle('active', currentPlayer === 2);
+            document.getElementById('current-player-name').textContent = `Player ${currentPlayer}`;
+
+            // *** NEW: Update keyboard theme for the new player ***
+            document.querySelectorAll('.key').forEach(keyButton => {
+                // Remove previous theme class
+                keyButton.classList.remove(`p${previousPlayer}-keyboard-key`);
+                // Add new theme class
+                keyButton.classList.add(`p${currentPlayer}-keyboard-key`);
+            });
+
+            // Update keyboard for the new player
+            updateKeyboard(state.guessedLetters);
+
+            // Restart timer
+            startTimer();
+        }
+
+        /**
+         * Starts or resumes the current player's time.
+         */
+        function startTimer() {
+            const state = gameState[currentPlayer];
+            const timerDisplay = document.getElementById('timer-display');
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                state.timeRemaining--;
+                timerDisplay.textContent = `Time Left: ${state.timeRemaining}s`;
+
+                if (state.timeRemaining <= 10) {
+                    timerDisplay.style.color = '#F44336'; // Red warning
+                } else {
+                    timerDisplay.style.color = 'var(--color-secondary)';
+                }
+
+                if (state.timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    handleGameOver(`Player ${currentPlayer} ran out of time!`, currentPlayer === 1 ? 2 : 1);
+                }
+            }, 1000);
+        }
+
+        /**
+         * Handles the game over condition, displaying a modal.
+         * @param {string} title - The main title of the modal.
+         * @param {number|null} winner - The winning player (1 or 2), or null for a tie/global loss.
+         */
+        function handleGameOver(title, winner) {
+            gameActive = false;
+            clearInterval(timerInterval);
+
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalWord1 = document.getElementById('modal-word1');
+            const modalWord2 = document.getElementById('modal-word2');
+
+            let message = '';
+
+            if (winner) {
+                message = `Congratulations! Player ${winner} guessed the word first!`;
+            } else if (gameState[1].incorrectGuesses >= MAX_ATTEMPTS && gameState[2].incorrectGuesses >= MAX_ATTEMPTS) {
+                message = "Both players ran out of attempts. It's a draw!";
+            } else if (title.includes("ran out of time")) {
+                message = `The other player wins!`;
+            }
+
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalWord1.textContent = gameState[1].word;
+            modalWord2.textContent = gameState[2].word;
+
+            modal.style.display = 'flex';
+        }
+
+        // --- 4. GAME CORE LOGIC ---
+
+        /**
+         * Processes a letter guess by the current player.
+         * @param {string} letter - The letter guessed (A-Z).
+         */
+        function handleGuess(letter) {
+            if (!gameActive) return;
+
+            const state = gameState[currentPlayer];
+
+            // Prevent double guessing
+            if (state.guessedLetters.has(letter)) {
+                return;
+            }
+
+            state.guessedLetters.add(letter);
+            let correctGuess = false;
+
+            // 1. Check if the letter is in the word
+            if (state.word.includes(letter)) {
+                correctGuess = true;
+                for (let i = 0; i < state.word.length; i++) {
+                    if (state.word[i] === letter) {
+                        state.guessedWord[i] = letter;
+                    }
+                }
+            } else {
+                // 2. Incorrect Guess
+                state.incorrectGuesses++;
+            }
+
+            updateDisplay(currentPlayer);
+
+            // 3. Check Win/Loss Conditions
+
+            // Check for Win
+            if (!state.guessedWord.includes('_')) {
+                handleGameOver(`VICTORY! Player ${currentPlayer} Wins!`, currentPlayer);
+                return;
+            }
+
+            // Check for Loss (Out of attempts)
+            if (state.incorrectGuesses >= MAX_ATTEMPTS) {
+                // If both players lose, it's a draw/total loss. Otherwise, the other player wins by default.
+                const otherPlayer = currentPlayer === 1 ? 2 : 1;
+                if (gameState[otherPlayer].incorrectGuesses >= MAX_ATTEMPTS) {
+                    handleGameOver(`DRAW! Both Players Failed.`, null);
+                } else {
+                    handleGameOver(`DEFEAT! Player ${currentPlayer} ran out of attempts.`, otherPlayer);
+                }
+                return;
+            }
+
+            // 4. Switch turn on an *incorrect* guess
+            if (!correctGuess) {
+                switchTurn();
+            } else {
+                // Keep the turn on a correct guess, but update keyboard
+                updateKeyboard(state.guessedLetters);
+            }
+        }
+
+        // --- 5. INITIALIZATION ---
+
+        /**
+         * Generates the on-screen keyboard buttons.
+         */
+        function createKeyboard() {
+            const container = document.getElementById('keyboard-container');
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+            letters.split('').forEach(letter => {
+                const button = document.createElement('button');
+                button.classList.add('key');
+                // *** NEW: Add the theme class for the starting player (Player 1) ***
+                button.classList.add('p1-keyboard-key');
+                button.textContent = letter;
+                button.dataset.letter = letter;
+                button.onclick = () => handleGuess(letter);
+                container.appendChild(button);
+            });
+        }
+
+        /**
+         * Main function to start the game.
+         */
+        async function startGame() {
+            await fetchWords();
+            const [word1, word2] = selectWords();
+
+            initializePlayer(1, word1);
+            initializePlayer(2, word2);
+
+            createKeyboard();
+
+            // Set initial attempts display (before first updateDisplay call)
+            gameState[1].attemptsDisplay.textContent = `Errors: 0 / ${MAX_ATTEMPTS}`;
+            gameState[2].attemptsDisplay.textContent = `Errors: 0 / ${MAX_ATTEMPTS}`;
+
+            // Set active state and start timer for Player 1
+            gameState[1].boardElement.classList.add('active');
+            gameState[2].boardElement.classList.remove('active');
+            document.getElementById('current-player-name').textContent = `Player 1`;
+
+            // Setup keyboard listeners for physical keys
+            document.addEventListener('keyup', (event) => {
+                if (gameActive) {
+                    const pressedKey = event.key.toUpperCase();
+                    if (pressedKey.length === 1 && pressedKey >= 'A' && pressedKey <= 'Z') {
+                        // Only process keys if the on-screen button is not disabled (not yet guessed)
+                        const keyButton = document.querySelector(`.key[data-letter="${pressedKey}"]`);
+                        if (keyButton && !keyButton.disabled) {
+                            handleGuess(pressedKey);
+                        }
+                    }
+                }
+            });
+
+            startTimer();
+        }
+
+        // --- Start the game when the page loads ---
+        window.onload = startGame;
+    </script>
+</body>
+
+</html>

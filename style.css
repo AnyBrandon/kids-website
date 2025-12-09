@@ -625,3 +625,101 @@ p {
   /* Stronger inner glow */
   transform: translateY(0);
 }
+
+.buttons .drawing-btn {
+  /* Base Button Styling */
+  --line-color: #333;
+  /* Dark color for the "pencil" lines */
+  --bg-color: #ffe999;
+  /* Light, parchment-like background */
+  --text-color: #111;
+  --border-thickness: 3px;
+
+  /* Appearance */
+  font-family: 'Comic Sans MS', 'Chalkduster', cursive;
+  /* Fun, hand-drawn font */
+  font-size: 1.25rem;
+  padding: 0.75rem 1.5rem;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  border: none;
+  border-radius: 8px 12px 6px 10px / 12px 6px 10px 8px;
+  /* Irregular, hand-cut corners */
+  outline: none;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24"><path fill="none" stroke="%23000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20c-4.418 0-8-3.582-8-8s3.582-8 8-8s8 3.582 8 8s-3.582 8-8 8z"/><path fill="%23000" d="M10 10v4h4v-4h-4z"/></svg>'), auto;
+  /* Custom sketchy cursor */
+
+  /* Hand-Drawn Shadow Effect (The "Lines") */
+  box-shadow:
+    /* Outer sketchy line (Slight offset and blur) */
+    calc(var(--border-thickness) * 1) calc(var(--border-thickness) * 1) 0 0 var(--line-color),
+    /* Inner sketchy line (Closer to the edge) */
+    calc(var(--border-thickness) * 0.5) calc(var(--border-thickness) * 0.5) 0 0 var(--line-color),
+    /* Baseline border */
+    0 0 0 var(--border-thickness) var(--line-color);
+
+  /* Animation */
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+  transform: rotate(0.5deg);
+  /* Initial slight tilt for that un-straight look */
+}
+
+/* --- HOVER EFFECT --- */
+.drawing-btn:hover {
+  --line-color: #1a1a1a;
+  /* Darker line on hover */
+  --bg-color: #ffd040;
+  /* Brighter background on hover */
+
+  /* A slight "wobble" and scale up */
+  transform: scale(1.03) rotate(-1deg);
+
+  /* Simulate pressing down (shifting the sketch lines closer) */
+  box-shadow:
+    calc(var(--border-thickness) * 0.5) calc(var(--border-thickness) * 0.5) 0 0 var(--line-color),
+    calc(var(--border-thickness) * 0.25) calc(var(--border-thickness) * 0.25) 0 0 var(--line-color),
+    0 0 0 var(--border-thickness) var(--line-color);
+}
+
+/* --- ACTIVE (CLICK) EFFECT --- */
+.drawing-btn:active {
+  /* 'Squish' the button when clicked, simulating elasticity */
+  transform: scale(0.95) rotate(0deg);
+
+  /* Remove the offsets to make it look 'pushed in' */
+  box-shadow:
+    0 0 0 0 var(--line-color),
+    0 0 0 0 var(--line-color),
+    0 0 0 var(--border-thickness) var(--line-color);
+}
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+
+/* For smaller tablets and large phones (e.g., screen width up to 768px) */
+@media (max-width: 768px) {
+  .drawing-btn {
+    /* Slightly reduce the overall font size and padding */
+    font-size: 1.1rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+/* For mobile phones (e.g., screen width up to 480px) */
+@media (max-width: 480px) {
+  .drawing-btn {
+    /* Reduce the drawing thickness for a lighter look on tiny screens */
+    --border-thickness: 2px;
+
+    /* Further reduce font size and padding */
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+
+    /* Adjust the rotational "wobble" to be less dramatic */
+    transform: rotate(0deg);
+  }
+
+  .drawing-btn:hover {
+    /* Reduce the scale on hover to avoid jumping too much on touch screens */
+    transform: scale(1.02) rotate(0deg);
+  }
+}

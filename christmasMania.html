@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎲 Grinch's Gamble: Survival 🎅</title>
+    <title>🎲 Christmas Mania 🎅</title>
     <style>
         /* --- General Styling & Setup --- */
         * {
@@ -26,13 +26,42 @@
             padding: 10px;
         }
 
-        h1 {
-            color: #fca311;
-            /* Gold/Orange Accent */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            margin: 15px 0;
-            font-size: 2em;
+        .christmas-title {
+            /* Targeting the new class */
+            /* Candy Cane Red Background */
+            color: white;
+            background: linear-gradient(90deg, #c0392b 0%, #e74c3c 100%);
+            /* Candy Cane Striping (Optional, but very cool) */
+            /* To use this, you would need a more complex setup, but the bold red works well */
+            border: 4px solid #f1c40f;
+            /* Festive Gold Border */
+            border-radius: 10px;
+            padding: 10px 20px;
+
+            /* Text Effect */
+            text-shadow:
+                -1px -1px 0 #1e3a8a,
+                /* Dark Blue Shadow for depth */
+                1px 1px 0 #1e3a8a,
+                3px 3px 5px rgba(0, 0, 0, 0.8);
+
+            margin: 15px auto;
+            font-size: 2.5em;
+            /* Make it bigger */
             text-align: center;
+            letter-spacing: 2px;
+            width: fit-content;
+            max-width: 90%;
+            /* Add a slight rotation for playfulness */
+            transform: rotate(-1deg);
+        }
+
+        /* Ensure responsive font size is still honored */
+        @media (max-width: 600px) {
+            .christmas-title {
+                font-size: 1.8em;
+                padding: 8px 15px;
+            }
         }
 
         /* --- Player Setup Modal --- */
@@ -120,12 +149,40 @@
         }
 
         #playerArea {
-            font-size: 1.2em;
+            /* Basic Layout & Sizing */
+            flex: 1 1 30%;
+            min-width: 150px;
+            text-align: center;
+            /* Center the text for a focused look */
+            padding: 10px;
+            border-radius: 10px;
+
+            /* The Cool Christmas Look */
+            background: rgba(255, 255, 255, 0.15);
+            /* Semi-transparent background */
+            border: 2px solid #e74c3c;
+            /* Festive Red Border */
+            box-shadow: 0 0 10px #f1c40f;
+            /* Subtle Gold Glow */
+
+            /* Text Styling */
+            font-size: 1em;
+            color: #ecf0f1;
+            /* Light text for contrast */
+            font-weight: normal;
+        }
+
+        /* Styling for the actual name */
+        #currentPlayerName {
+            display: block;
+            /* Make the name stand out on its own line */
+            font-size: 1.8em;
+            /* Make the name huge */
             font-weight: bold;
             color: #fca311;
-            flex: 1 1 50%;
-            min-width: 250px;
-            text-align: left;
+            /* Gold color for the player name */
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            margin-top: 5px;
         }
 
         #drawSection {
@@ -350,11 +407,58 @@
                 justify-content: center;
             }
         }
+
+        /* --- Game Info & Controls (Add Styling for Counter) --- */
+        #gameInfo {
+            /* ... existing styles for #gameInfo ... */
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #playerArea {
+            /* ... existing styles for #playerArea ... */
+            flex: 1 1 30%;
+            /* Adjust to make room for counter */
+            min-width: 150px;
+        }
+
+        #giftsCounter {
+            flex: 1 1 20%;
+            /* New flex item for the counter */
+            min-width: 100px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2ecc71;
+            /* Green/Safe color for the count */
+        }
+
+        #drawSection {
+            /* ... existing styles for #drawSection ... */
+            flex-shrink: 0;
+        }
+
+        /* --- Responsive Design (Adjust for Counter on small screens) --- */
+        @media (max-width: 600px) {
+            /* ... existing styles for media query ... */
+
+            #playerArea,
+            #giftsCounter,
+            /* Make counter take full width on small screens */
+            #drawSection,
+            #drawResult {
+                flex: 1 1 100%;
+                text-align: center;
+                margin-top: 5px;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 
 <body>
-    <h1>🎲 Christmas Mania 🎅</h1>
+    <h1 class="christmas-title">🎲 Christmas Mania 🎅</h1>
 
     <div id="setupModal">
         <div class="setup-content">
@@ -381,15 +485,20 @@
 
     <div id="gameInfo">
         <div id="playerArea">Current Turn: <span id="currentPlayerName"></span></div>
+
+        <div id="giftsCounter">
+            <span style="font-size: 0.8em; font-weight: normal; color: #bdc3c7;">Gifts Opened:</span><br>
+            <span id="openedCountDisplay">0</span> / 50
+        </div>
         <div id="drawSection">
-            <button id="drawButton">Draw Pick Count</button>
+            <button id="drawButton">Draw Dice</button>
             <div id="diceDisplay">?</div>
         </div>
         <div id="drawResult">Click 'Draw Pick Count' to start your turn!</div>
     </div>
 
     <div id="giftsContainer">
-        </div>
+    </div>
 
     <div id="endModal">
         <div class="end-content">
@@ -399,6 +508,9 @@
             <button id="playAgainBtn">Play Again</button>
         </div>
     </div>
+
+
+    <audio id="diceSound" src="sounds/dice.wav" preload="auto"></audio>
 
     <script>
         // --- Game Configuration ---
@@ -414,9 +526,9 @@
             ...Array(GRINCH_COUNT).fill('grinch'),
         ];
 
-        // Pick Counts: 1-3. Weighted to be slightly less risky.
-        const pickChances = [1, 2, 3];
-        const pickProbabilities = [35, 35, 30]; // New probabilities: 1: 35%, 2: 35%, 3: 30%
+        // Pick Counts: 0-3. Weighted to be less risky with a chance for 0 picks.
+        const pickChances = [0, 1, 2, 3]; // ADDED 0 HERE
+        const pickProbabilities = [10, 30, 30, 30]; // MODIFIED: 0: 10%, 1: 30%, 2: 30%, 3: 30%
 
         // --- DOM Elements ---
         const setupModal = document.getElementById('setupModal');
@@ -427,10 +539,14 @@
         const drawResultDiv = document.getElementById('drawResult');
         const giftsContainer = document.getElementById('giftsContainer');
         const currentPlayerNameSpan = document.getElementById('currentPlayerName');
+        const openedCountDisplay = document.getElementById('openedCountDisplay');
         const endModal = document.getElementById('endModal');
         const endTitle = document.getElementById('endTitle');
         const endMessage = document.getElementById('endMessage');
         const playAgainBtn = document.getElementById('playAgainBtn');
+
+        //audio
+        const diceSound = document.getElementById('diceSound');
 
         // --- Game State ---
         let players = [];
@@ -485,9 +601,17 @@
         }
 
         /** Ends the current player's turn (after picks are done). */
+        /** Ends the current player's turn (after picks are done). */
         function endTurn() {
             picksLeft = 0;
             drawButton.disabled = false;
+
+            // >> MODIFICATION 1: Re-enable interaction for all remaining gifts <<
+            // This allows the next player to click a gift AFTER they draw their pick count.
+            giftsData
+                .filter(g => !g.revealed)
+                .forEach(g => g.element.style.pointerEvents = 'auto');
+
             nextPlayer();
         }
 
@@ -503,7 +627,7 @@
             if (activePlayers.length === 1) {
                 winner = activePlayers[0];
                 endTitle.textContent = '🥳 GRAND WINNER! 🥳';
-                endMessage.textContent = `${winner.name} managed to avoid the Grinch and is the sole survivor!`;
+                endMessage.textContent = `${winner.name} dodged the Grinch and walked out as the Christmas legend!`;
             } else {
                 // Should only trigger if gifts run out before one survivor remains
                 endTitle.textContent = '🎁 GIFTS EXHAUSTED! 🎁';
@@ -557,6 +681,9 @@
         function handleGiftClick(index) {
             if (isGameOver || picksLeft <= 0 || giftsData[index].revealed) return;
 
+            // >> MODIFICATION 1: Temporarily disable ALL gift interactions <<
+            giftsData.forEach(g => g.element.style.pointerEvents = 'none');
+
             const gift = giftsData[index];
             const currentPlayer = players[currentPlayerIndex];
             const initialPicks = picksLeft;
@@ -568,6 +695,11 @@
             picksLeft--;
             gift.revealed = true;
             giftsData.filter(g => g.id === gift.id)[0].revealed = true;
+
+            // --- ADDED BLOCK --- gifts counter
+            const revealedCount = giftsData.filter(g => g.revealed).length;
+            openedCountDisplay.textContent = revealedCount;
+            // -------------------
 
             // 3. Reveal and process after a delay
             setTimeout(() => {
@@ -584,10 +716,8 @@
                     currentPlayer.eliminated = true;
                     drawResultDiv.textContent = `🚨 ${currentPlayer.name} found the GRINCH! They are out! 😭`;
 
-                    // Mark gifts as non-clickable
-                    giftsData.forEach(g => g.element.style.pointerEvents = 'none');
-                    
-                    // Show eliminated status on screen (if you had a player list, otherwise it's just the message)
+                    // Mark gifts as non-clickable (already done above, but keep it here for clarity)
+                    // giftsData.forEach(g => g.element.style.pointerEvents = 'none'); // REMOVE this line as it was the original logic
 
                     setTimeout(() => {
                         // After elimination, check for winner and move to next player
@@ -601,10 +731,15 @@
                 } else {
                     // Safe gift
                     drawResultDiv.textContent = `${currentPlayer.name} found a safe gift! ${picksLeft} pick${picksLeft !== 1 ? 's' : ''} left.`;
-                    
+
                     if (picksLeft === 0) {
                         drawResultDiv.textContent = `Turn over! ${currentPlayer.name} opened all ${initialPicks} gifts safely.`;
                         setTimeout(endTurn, 1500); // Short delay before next turn
+                    } else {
+                        // >> MODIFICATION 2: Re-enable interaction for the next pick <<
+                        giftsData
+                            .filter(g => !g.revealed)
+                            .forEach(g => g.element.style.pointerEvents = 'auto');
                     }
                 }
 
@@ -635,6 +770,11 @@
             isDrawing = true;
             drawButton.disabled = true;
 
+            if (diceSound) {
+                diceSound.currentTime = 0; // Rewind to the start
+                diceSound.play().catch(e => console.log("Audio playback failed:", e));
+            }
+
             // Start dice animation
             diceDisplay.textContent = '🎲';
             diceDisplay.classList.add('dice-anim');
@@ -648,7 +788,7 @@
                 diceDisplay.textContent = num === 0 ? '0' : num;
 
                 const currentPlayer = players[currentPlayerIndex].name;
-                
+
                 if (num === 0) {
                     drawResultDiv.textContent = `${currentPlayer} drew 0 picks! Lucky skip.`;
                     setTimeout(endTurn, 1000);
@@ -664,7 +804,7 @@
         startGameBtn.addEventListener('click', () => {
             players = [];
             const inputElements = playerInputsDiv.querySelectorAll('input');
-            
+
             // 1. Collect only players with names
             inputElements.forEach((input) => {
                 const name = input.value.trim();
@@ -686,11 +826,12 @@
             currentPlayerIndex = 0;
             picksLeft = 0;
             createGifts();
-            
+
             // Start the game
             currentPlayerNameSpan.textContent = players[currentPlayerIndex].name;
             drawResultDiv.textContent = `It's ${players[currentPlayerIndex].name}'s turn! Draw a pick count.`;
             drawButton.disabled = false;
+            openedCountDisplay.textContent = '0';
         });
 
         drawButton.addEventListener('click', handleDrawClick);
