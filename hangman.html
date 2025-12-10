@@ -65,13 +65,59 @@
             /* Default to single column for mobile */
         }
 
+        /* --- ALTERNATIVE: INDUSTRIAL GLITCH H1 STYLE --- */
+        /* --- REVISED: COMPACT GLITCH H1 STYLE (Words on one line) --- */
         h1 {
             grid-column: 1 / -1;
             text-align: center;
-            color: var(--color-secondary);
-            margin-bottom: 10px;
+
+            /* High Contrast Colors */
+            color: var(--color-fail);
+            background: var(--color-primary-neutral);
+
+            margin-bottom: 15px;
             font-size: clamp(1.5rem, 4vw, 2.5rem);
+            /* Reduced size */
+            font-weight: 900;
+            letter-spacing: 2px;
+            /* Reduced spacing */
+            text-transform: uppercase;
+            padding: 5px 0;
+            /* Reduced vertical padding */
+
+            /* Crucial change for one line */
+            white-space: nowrap;
+            overflow: hidden;
+            /* Hide if still too big, though font size should prevent it */
+
+            /* Aggressive Borders */
+            border-top: 3px solid var(--color-secondary);
+            /* Thinner border */
+            border-bottom: 3px solid var(--color-secondary);
+            /* Thinner border */
+
+            /* Text Manipulation for a Glitch/Warning effect */
+            transform: skewX(-3deg);
+            /* Less aggressive slant */
+            text-shadow: 1px 1px 0px var(--color-secondary);
+            /* Smaller offset shadow */
+
+            /* Subtle Background Animation */
+            animation: glitchBackground 1.5s infinite alternate;
         }
+
+        @keyframes glitchBackground {
+            0% {
+                background: var(--color-primary-neutral);
+            }
+
+            100% {
+                background: var(--color-card);
+            }
+        }
+
+        /* --- END REVISED H1 STYLE --- */
+        /* --- END INDUSTRIAL GLITCH H1 STYLE --- */
 
         /* Player Stats and Boards */
         .player-board {
@@ -96,8 +142,16 @@
         }
 
         .player-name {
-            font-size: 1.4rem;
-            color: var(--color-primary);
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            /* Slightly larger, more responsive font */
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            /* Subtle lift */
         }
 
         .attempts-display {
@@ -309,8 +363,11 @@
 
         /* Player 1 Theme (Blue) */
         .player-board.p1-theme .player-name {
-            color: var(--color-p1-main);
-            /* Blue name */
+            color: var(--color-text);
+            /* Text is white/light */
+            background: var(--color-p1-main);
+            /* Background is blue */
+            border: 2px solid var(--color-p1-hover);
         }
 
         .player-board.p1-theme.active {
@@ -331,8 +388,11 @@
 
         /* Player 2 Theme (Red) */
         .player-board.p2-theme .player-name {
-            color: var(--color-p2-main);
-            /* Red name */
+            color: var(--color-text);
+            /* Text is white/light */
+            background: var(--color-p2-main);
+            /* Background is red */
+            border: 2px solid var(--color-p2-hover);
         }
 
         .player-board.p2-theme.active {
@@ -348,6 +408,17 @@
 
         .p2-keyboard-key:hover:not(:disabled) {
             background: var(--color-p2-hover);
+        }
+
+        /* --- NEW: Info Button Style (Reddish/Warning) --- */
+        .info-button-style {
+            background: var(--color-p2-main) !important;
+            /* Use Player 2's Red */
+            color: var(--color-text) !important;
+            border: 2px solid var(--color-secondary);
+            /* Orange border for pop */
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.8);
+            /* Red glow effect */
         }
     </style>
 </head>
@@ -386,6 +457,16 @@
 
         <div id="keyboard-container">
         </div>
+        <div id="guess-button-container" style="grid-column: 1 / -1; text-align: center; margin-top: 10px;">
+            <button id="guess-word-button" class="key"
+                style="max-width: 200px; padding: 10px 30px; background: var(--color-secondary); color: var(--color-background);">
+                GUESS THE WORD!
+            </button>
+            <button id="info-button" class="info-button-style"
+                style="flex-grow: 0; max-width: 50px; padding: 10px; background: var(--color-p1-main); color: var(--color-text); font-size: 1.2rem; margin-left: 50px;">
+                ?
+            </button>
+        </div>
     </div>
 
     <div id="modal">
@@ -397,6 +478,62 @@
             <button onclick="window.location.reload()">Play Again</button>
         </div>
     </div>
+
+    <div id="guess-modal"
+        style="display: none; position: fixed; z-index: 20; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); justify-content: center; align-items: center;">
+        <div id="guess-modal-content"
+            style="background-color: var(--color-card); padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7); max-width: 90%; min-width: 300px;">
+            <h2 style="color: var(--color-secondary); font-size: 1.8rem; margin-bottom: 15px;">Final Guess for <span
+                    id="guess-modal-player">Player 1</span></h2>
+            <p style="margin-bottom: 10px;">Enter your single, final word guess:</p>
+            <input type="text" id="word-input" placeholder="Your Guess"
+                style="padding: 10px; width: 100%; margin-bottom: 20px; border-radius: 5px; border: 1px solid var(--color-primary-neutral); background: var(--color-background); color: var(--color-text); text-transform: uppercase;">
+            <button id="done-guess-button"
+                style="background: var(--color-success); color: var(--color-text); border: none; padding: 10px 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+                Done!
+            </button>
+        </div>
+    </div>
+    <div id="info-modal"
+        style="display: none; position: fixed; z-index: 30; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.9); backdrop-filter: blur(5px); justify-content: center; align-items: center;">
+        <div id="info-modal-content"
+            style="background-color: var(--color-card); padding: 30px; border-radius: 15px; text-align: left; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7); max-width: 450px; color: var(--color-text);">
+            <h2 style="color: var(--color-secondary); font-size: 1.8rem; margin-bottom: 15px; text-align: center;">How
+                to Play</h2>
+
+            <p style="margin-bottom: 10px; font-weight: bold;">Objective:</p>
+            <p style="margin-bottom: 20px;">Be the first player to correctly guess your hidden word before your opponent
+                guesses theirs, or before you run out of attempts or time.</p>
+
+            <h3 style="color: var(--color-p1-main); margin-top: 10px;">Turn Rules:</h3>
+            <ul style="margin-left: 20px; list-style-type: disc; margin-bottom: 20px;">
+                <li style="margin-bottom: 5px;">You have 60 seconds per turn. Running out of time results in an
+                    immediate loss.</li>
+                <li style="margin-bottom: 5px;">**Correct Guess:** You keep the turn and can guess again.</li>
+                <li style="margin-bottom: 5px;">**Incorrect Guess:** You lose 1 attempt, and the turn immediately
+                    switches to the other player.</li>
+            </ul>
+
+            <h3 style="color: var(--color-p2-main); margin-top: 10px;">Winning / Losing:</h3>
+            <ul style="margin-left: 20px; list-style-type: disc; margin-bottom: 20px;">
+                <li style="margin-bottom: 5px;">**Win:** Guess your word letter-by-letter or use the "Guess The Word!"
+                    button.</li>
+                <li style="margin-bottom: 5px;">**Loss:** Run out of the 7 available attempts, run out of time, or use
+                    the "Guess The Word!" button incorrectly.</li>
+                <li style="margin-bottom: 5px;">**Guess The Word!:** Each player can only use this feature **ONCE**. If
+                    you are wrong, you lose!</li>
+            </ul>
+
+            <button onclick="closeInfoModalAndResume()"
+                style="display: block; width: 100%; background: var(--color-secondary); color: var(--color-background); border: none; padding: 10px 20px; border-radius: 5px; font-size: 1rem; cursor: pointer; transition: background 0.2s; margin-top: 20px;">
+                Got It!
+            </button>
+        </div>
+    </div>
+
+    <audio id="audio-correct" src="sounds/bang.mp3" preload="auto"></audio>
+    <audio id="audio-incorrect" src="sounds/beepPop.mp3" preload="auto"></audio>
+    <audio id="audio-win" src="sounds/winSound.wav" preload="auto"></audio>
 
     <script>
         /*
@@ -441,6 +578,7 @@
                 guessedLetters: new Set(),
                 timeRemaining: INITIAL_TIME,
                 elementId: 'player1',
+                hasGuessed: false,
                 boardElement: document.getElementById('player1-board'),
                 wordDisplay: document.getElementById('player1-word'),
                 attemptsDisplay: document.getElementById('player1-attempts'),
@@ -453,6 +591,7 @@
                 guessedLetters: new Set(),
                 timeRemaining: INITIAL_TIME,
                 elementId: 'player2',
+                hasGuessed: false,
                 boardElement: document.getElementById('player2-board'),
                 wordDisplay: document.getElementById('player2-word'),
                 attemptsDisplay: document.getElementById('player2-attempts'),
@@ -487,6 +626,69 @@
             let word2 = keys[index2];
 
             return [word1, word2];
+        }
+
+        function showGuessModal() {
+            if (!gameActive) return;
+
+            const state = gameState[currentPlayer];
+            if (state.hasGuessed) {
+                alert(`Player ${currentPlayer} has already used their single word guess!`);
+                return;
+            }
+
+            // Stop timer while player inputs word
+            clearInterval(timerInterval);
+
+            // Update modal text and show it
+            document.getElementById('guess-modal-player').textContent = `Player ${currentPlayer}`;
+            document.getElementById('guess-modal').style.display = 'flex';
+            document.getElementById('word-input').value = ''; // Clear previous input
+            document.getElementById('word-input').focus();
+        }
+
+        /**
+         * Processes the full word guess from the modal input.
+         */
+        function processFullGuess() {
+            const guessInput = document.getElementById('word-input').value.trim().toUpperCase();
+            document.getElementById('guess-modal').style.display = 'none'; // Close modal immediately
+
+            if (guessInput === "") {
+                // If they hit done without typing, resume the game
+                startTimer();
+                return;
+            }
+
+            const state = gameState[currentPlayer];
+            const wordToGuess = state.word;
+            state.hasGuessed = true; // Use up the one guess attempt
+
+            // Find the button and disable it for the current player
+            const guessButton = document.getElementById('guess-word-button');
+            guessButton.disabled = true;
+            guessButton.style.opacity = 0.5;
+
+            if (guessInput === wordToGuess) {
+                // Correct Guess - WIN!
+                handleGameOver(`PERFECT GUESS! Player ${currentPlayer} Wins!`, currentPlayer);
+            } else {
+                // Incorrect Guess - LOSS!
+                const otherPlayer = currentPlayer === 1 ? 2 : 1;
+                handleGameOver(`FAILED GUESS! Player ${currentPlayer} Guessed Wrong.`, otherPlayer, true, wordToGuess);
+            }
+        }
+
+        function showInfoModal() {
+            // Stop the timer while the instructions are being read
+            clearInterval(timerInterval);
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        function closeInfoModalAndResume() {
+            document.getElementById('info-modal').style.display = 'none';
+            // Crucial: Resume the game timer
+            startTimer();
         }
 
         /**
@@ -525,6 +727,19 @@
             if (player === currentPlayer) {
                 updateKeyboard(state.guessedLetters);
             }
+        }
+
+        function playSound(isCorrect) {
+            const soundElement = isCorrect
+                ? document.getElementById('audio-correct')
+                : document.getElementById('audio-incorrect');
+
+            // Set current time to 0 to allow rapid re-playing of the sound
+            soundElement.currentTime = 0;
+            soundElement.play().catch(error => {
+                // Catching the promise error (e.g., if the user hasn't interacted with the page yet)
+                console.warn("Audio playback failed:", error);
+            });
         }
 
         /**
@@ -616,7 +831,7 @@
          * @param {string} title - The main title of the modal.
          * @param {number|null} winner - The winning player (1 or 2), or null for a tie/global loss.
          */
-        function handleGameOver(title, winner) {
+        function handleGameOver(title, winner, isFailedGuess = false, failedWord = '') {
             gameActive = false;
             clearInterval(timerInterval);
 
@@ -629,7 +844,16 @@
             let message = '';
 
             if (winner) {
-                message = `Congratulations! Player ${winner} guessed the word first!`;
+                const winSoundElement = document.getElementById('audio-win');
+                winSoundElement.currentTime = 0;
+                winSoundElement.play().catch(error => {
+                    console.warn("Win audio playback failed:", error);
+                });
+                if (isFailedGuess) {
+                    message = `The word was "${failedWord}". Congratulations to Player ${winner} on the default victory!`;
+                } else {
+                    message = `Congratulations! Player ${winner} won the game!`;
+                }
             } else if (gameState[1].incorrectGuesses >= MAX_ATTEMPTS && gameState[2].incorrectGuesses >= MAX_ATTEMPTS) {
                 message = "Both players ran out of attempts. It's a draw!";
             } else if (title.includes("ran out of time")) {
@@ -671,9 +895,11 @@
                         state.guessedWord[i] = letter;
                     }
                 }
+                playSound(true); // <--- ADD THIS LINE FOR CORRECT GUESS
             } else {
                 // 2. Incorrect Guess
                 state.incorrectGuesses++;
+                playSound(false); // <--- ADD THIS LINE FOR INCORRECT GUESS
             }
 
             updateDisplay(currentPlayer);
@@ -762,6 +988,10 @@
                     }
                 }
             });
+            // NEW: Add listeners for the guess modal
+            document.getElementById('guess-word-button').onclick = showGuessModal;
+            document.getElementById('done-guess-button').onclick = processFullGuess;
+            document.getElementById('info-button').onclick = showInfoModal;
 
             startTimer();
         }
