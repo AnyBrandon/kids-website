@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrono-Gardener</title>
+    <style>
+        /*
+        * CSS STYLES FOR CHRONO-GARDENER
+        * Visual Appeal & Responsiveness
+        */
+
+        :root {
+            /* Color Palette */
+            --color-bg: #1a1a2e; /* Dark background */
+            --color-ui: #2c3959; /* UI panel background */
+            --color-text: #e0e0e0; /* Light text */
+            --color-action: #ff6a88; /* Action button/seed color */
+            --color-prehistoric: #5c8374; /* Dark Teal */
+            --color-medieval: #93b1a6; /* Sage Green */
+            --color-modern: #c6e0c0; /* Light Mint */
+            --color-future: #f3f3e1; /* Off-White/Ethereal */
+
+            /* Layout */
+            --board-size: 80vmin;
+            --cell-size: calc(var(--board-size) / 4);
+        }
+
+        /* --- GLOBAL STYLES --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        h1 {
+            color: var(--color-action);
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        /* --- GAME CONTAINER --- */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- UI PANEL (Top) --- */
+        #ui-panel {
+            background-color: var(--color-ui);
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            flex-wrap: wrap; /* Allows wrapping on small screens */
+            gap: 5px;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: var(--color-action);
+        }
+
+        /* --- GAME BOARD (Middle) --- */
+        #game-board {
+            position: relative;
+            width: var(--board-size);
+            height: var(--board-size);
+            margin: 20px auto;
+            border: 4px solid var(--color-action);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .time-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            opacity: 0.8; /* Subtle layering effect */
+            transition: opacity 0.5s ease;
+        }
+
+        .layer-prehistoric { background-color: var(--color-prehistoric); z-index: 1; }
+        .layer-medieval { background-color: var(--color-medieval); z-index: 2; }
+        .layer-modern { background-color: var(--color-modern); z-index: 3; }
+        .layer-future { background-color: var(--color-future); z-index: 4; }
+
+        /* Highlight the active layer */
+        .time-layer.active { opacity: 1; }
+
+        .cell {
+            position: relative;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .cell:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .cell-content {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            /* Visual indicator of a planted item */
+        }
+
+        /* Plant Styles */
+        .P { color: var(--color-prehistoric); font-size: 2em; text-shadow: 0 0 5px black; } /* Prehistoric Tree */
+        .M { color: var(--color-medieval); font-size: 2em; text-shadow: 0 0 5px black; } /* Medieval Herb */
+        .D { color: var(--color-modern); font-size: 2em; text-shadow: 0 0 5px black; } /* Modern Drone */
+        .F { color: var(--color-future); font-size: 2em; text-shadow: 0 0 5px black; } /* Future Crystal */
+
+        /* --- CONTROLS PANEL (Bottom) --- */
+        #controls-panel {
+            background-color: var(--color-ui);
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 0 0 12px 12px;
+        }
+
+        .control-button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            background-color: var(--color-action);
+            color: var(--color-bg);
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            font-size: 1em;
+        }
+
+        .control-button:hover {
+            background-color: #ff8ca3;
+        }
+
+        .control-button:active {
+            transform: scale(0.98);
+        }
+
+        .time-select-button {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--color-text);
+            border: 2px solid transparent;
+        }
+
+        .time-select-button.active-time {
+            border-color: var(--color-action);
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* --- INFO AND MESSAGE BOX --- */
+        #message-box {
+            background-color: var(--color-ui);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 6px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        /* --- RESPONSIVENESS (Mobile/Small Screen) --- */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.2em;
+            }
+
+            #ui-panel {
+                justify-content: center;
+            }
+
+            .stat-item {
+                margin: 2px;
+                padding: 3px 5px;
+            }
+
+            .stat-value {
+                font-size: 1em;
+            }
+
+            .control-button {
+                padding: 8px 10px;
+                font-size: 0.85em;
+            }
+
+            /* Adjust board size for smaller screens */
+            :root {
+                --board-size: 90vw;
+            }
+
+            #game-board {
+                 margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Chrono-Gardener ⏳</h1>
+
+        <div id="ui-panel">
+            <div class="stat-item">Time Seeds<span id="seeds-count" class="stat-value">5</span></div>
+            <div class="stat-item">Loop: <span id="loop-count" class="stat-value">1</span></div>
+            <div class="stat-item">Goal: <span id="goal-target" class="stat-value">P-M-D-F in 0,0</span></div>
+        </div>
+
+        <div id="game-board">
+            <div id="layer-future" class="time-layer layer-future"></div>
+            <div id="layer-modern" class="time-layer layer-modern"></div>
+            <div id="layer-medieval" class="time-layer layer-medieval"></div>
+            <div id="layer-prehistoric" class="time-layer layer-prehistoric"></div>
+        </div>
+
+        <div id="controls-panel">
+            <button class="control-button time-select-button active-time" data-time="future" id="btn-future">Future</button>
+            <button class="control-button time-select-button" data-time="modern" id="btn-modern">Modern</button>
+            <button class="control-button time-select-button" data-time="medieval" id="btn-medieval">Medieval</button>
+            <button class="control-button time-select-button" data-time="prehistoric" id="btn-prehistoric">Prehistoric</button>
+            <button class="control-button" id="end-loop-btn">End Loop (Check Goal)</button>
+        </div>
+    </div>
+
+    <div id="message-box">
+        Welcome, Chrono-Gardener! Select a time layer and tap a cell to plant its corresponding seed.
+    </div>
+
+    <script>
+        /*
+        * JAVASCRIPT LOGIC FOR CHRONO-GARDENER
+        * Game State, Mechanics, and Rendering
+        */
+
+        const ROWS = 4;
+        const COLS = 4;
+        const MAX_SEEDS = 5;
+
+        // --- GAME STATE ---
+        let gameState = {
+            currentLoop: 1,
+            timeSeeds: MAX_SEEDS,
+            activeTime: 'future', // future, modern, medieval, prehistoric
+            board: [], // 4x4x4 array [layer][row][col]
+            goal: {
+                targetCell: { r: 0, c: 0 },
+                requiredPlants: ['P', 'M', 'D', 'F']
+            }
+        };
+
+        // Plant Types and their effects/symbols
+        const PLANT_TYPES = {
+            'prehistoric': { symbol: 'P', name: 'Prehistoric Tree', effect: 'future', effectSymbol: '🌱' },
+            'medieval': { symbol: 'M', name: 'Medieval Herb', effect: 'prehistoric', effectSymbol: '🌿' },
+            'modern': { symbol: 'D', name: 'Modern Drone', effect: 'medieval', effectSymbol: '🤖' },
+            'future': { symbol: 'F', name: 'Future Crystal', effect: 'modern', effectSymbol: '💎' }
+        };
+
+        // Mapping from time name to its index in the board array (for simplicity)
+        const TIME_LAYERS_MAP = ['future', 'modern', 'medieval', 'prehistoric'];
+        const TIME_LAYER_ELEMENTS = {
+            'future': document.getElementById('layer-future'),
+            'modern': document.getElementById('layer-modern'),
+            'medieval': document.getElementById('layer-medieval'),
+            'prehistoric': document.getElementById('layer-prehistoric')
+        };
+
+        // --- DOM ELEMENTS ---
+        const seedsCountEl = document.getElementById('seeds-count');
+        const loopCountEl = document.getElementById('loop-count');
+        const goalTargetEl = document.getElementById('goal-target');
+        const messageBoxEl = document.getElementById('message-box');
+        const endLoopBtn = document.getElementById('end-loop-btn');
+
+        // --- INITIALIZATION ---
+
+        function initializeBoard() {
+            gameState.board = [];
+            for (let i = 0; i < TIME_LAYERS_MAP.length; i++) {
+                let layer = [];
+                for (let r = 0; r < ROWS; r++) {
+                    layer.push(new Array(COLS).fill(null)); // null means empty cell
+                }
+                gameState.board.push(layer);
+            }
+        }
+
+        function createDOMBoard() {
+            for (const time in TIME_LAYER_ELEMENTS) {
+                const layerEl = TIME_LAYER_ELEMENTS[time];
+                layerEl.innerHTML = ''; // Clear previous
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.row = r;
+                        cell.dataset.col = c;
+                        cell.addEventListener('click', () => handleCellClick(r, c));
+                        layerEl.appendChild(cell);
+                    }
+                }
+            }
+        }
+
+        function startGame() {
+            initializeBoard();
+            createDOMBoard();
+            generateGoal();
+            updateUI();
+            updateBoardDisplay();
+            setActiveTime(gameState.activeTime);
+            messageBoxEl.textContent = `Loop ${gameState.currentLoop}: You have ${MAX_SEEDS} Time Seeds. Tap a cell to plant a ${PLANT_TYPES[gameState.activeTime].name}.`;
+        }
+
+        // --- GAME LOGIC ---
+
+        function handleCellClick(r, c) {
+            if (gameState.timeSeeds <= 0) {
+                showMessage("No Time Seeds left! End the loop to check your progress.", 'warning');
+                return;
+            }
+
+            const timeIndex = TIME_LAYERS_MAP.indexOf(gameState.activeTime);
+            const plantSymbol = PLANT_TYPES[gameState.activeTime].symbol;
+
+            if (gameState.board[timeIndex][r][c]) {
+                showMessage(`Cell (${r}, ${c}) in the ${gameState.activeTime} is already planted!`, 'warning');
+                return;
+            }
+
+            // 1. Plant the Seed
+            gameState.board[timeIndex][r][c] = plantSymbol;
+            gameState.timeSeeds--;
+            
+            // 2. Apply Time Effect (Cause and Effect)
+            applyTimeEffect(gameState.activeTime, r, c);
+
+            updateUI();
+            updateBoardDisplay();
+            showMessage(`Planted a ${PLANT_TYPES[gameState.activeTime].name} at (${r}, ${c}). ${gameState.timeSeeds} seeds remaining.`);
+        }
+
+        function applyTimeEffect(plantedTime, r, c) {
+            const plantData = PLANT_TYPES[plantedTime];
+            const effectTime = plantData.effect;
+            const effectSymbol = plantData.effectSymbol;
+            const effectTimeIndex = TIME_LAYERS_MAP.indexOf(effectTime);
+            
+            // The effect is to randomly clear a spot in the affected time layer, 
+            // demonstrating the unpredictable nature of time-travel gardening.
+            
+            // Check if the effect layer has a planted item to remove
+            let affectedCells = [];
+            for(let i=0; i<ROWS; i++) {
+                for(let j=0; j<COLS; j++) {
+                    if (gameState.board[effectTimeIndex][i][j]) {
+                         affectedCells.push({ r: i, c: j });
+                    }
+                }
+            }
+
+            if (affectedCells.length > 0) {
+                const randomIndex = Math.floor(Math.random() * affectedCells.length);
+                const { r: ar, c: ac } = affectedCells[randomIndex];
+                
+                // Clear the randomly affected cell
+                gameState.board[effectTimeIndex][ar][ac] = null;
+                showMessage(`*A time paradox occurred!* The ${plantedTime} plant caused instability, removing an item from the **${effectTime}** layer at (${ar}, ${ac}).`, 'effect');
+            } else {
+                 showMessage(`The ${plantedTime} plant caused minor instability in the **${effectTime}** layer, but found nothing to remove.`);
+            }
+        }
+        
+        function endLoop() {
+            if (checkWinCondition()) {
+                showMessage("🎉 **GOAL ACHIEVED!** The Chrono-Garden is stable!", 'win');
+                endLoopBtn.disabled = true;
+                return;
+            }
+
+            gameState.currentLoop++;
+            gameState.timeSeeds = MAX_SEEDS; // Refill seeds for the next loop
+            updateUI();
+            generateGoal(); // New goal every loop for difficulty
+            showMessage(`Loop ${gameState.currentLoop} begins! Goal not met. Time Seeds reset to ${MAX_SEEDS}. New goal set.`);
+        }
+
+        function checkWinCondition() {
+            const { targetCell, requiredPlants } = gameState.goal;
+            const r = targetCell.r;
+            const c = targetCell.c;
+
+            // Check if all required plants are present in the target cell across all layers
+            for (const plantSymbol of requiredPlants) {
+                // Find which time layer this plant symbol belongs to
+                let found = false;
+                for (let i = 0; i < TIME_LAYERS_MAP.length; i++) {
+                    const plantTypeKey = TIME_LAYERS_MAP[i];
+                    if (PLANT_TYPES[plantTypeKey].symbol === plantSymbol) {
+                        // Check if the required plant is in the correct layer at the target cell
+                        if (gameState.board[i][r][c] === plantSymbol) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!found) {
+                    return false; // Missing one of the required plants
+                }
+            }
+            return true; // All required plants are present in the target cell
+        }
+        
+        function generateGoal() {
+            // New target cell (random)
+            const newR = Math.floor(Math.random() * ROWS);
+            const newC = Math.floor(Math.random() * COLS);
+
+            // New required plants (shuffle requiredPlants and take a subset)
+            const allSymbols = ['P', 'M', 'D', 'F'];
+            allSymbols.sort(() => 0.5 - Math.random()); // Shuffle
+
+            // Require 3 or 4 plants (increases difficulty with loop)
+            const numRequired = Math.min(4, 2 + gameState.currentLoop);
+            const requiredSubset = allSymbols.slice(0, numRequired);
+
+            gameState.goal = {
+                targetCell: { r: newR, c: newC },
+                requiredPlants: requiredSubset.sort()
+            };
+
+            const goalString = requiredSubset.join('-');
+            goalTargetEl.textContent = `${goalString} in (${newR}, ${newC})`;
+        }
+
+
+        // --- UI & RENDERING ---
+
+        function updateUI() {
+            seedsCountEl.textContent = gameState.timeSeeds;
+            loopCountEl.textContent = gameState.currentLoop;
+            endLoopBtn.disabled = (gameState.timeSeeds > 0);
+            endLoopBtn.textContent = (gameState.timeSeeds > 0) ? `End Loop (Wait for ${gameState.timeSeeds} seeds)` : "End Loop (Check Goal)";
+        }
+
+        function updateBoardDisplay() {
+            TIME_LAYERS_MAP.forEach((time, index) => {
+                const layerEl = TIME_LAYER_ELEMENTS[time];
+                const layerData = gameState.board[index];
+                
+                // Get all cell elements in this layer
+                const cellElements = layerEl.querySelectorAll('.cell');
+                
+                cellElements.forEach(cellEl => {
+                    const r = parseInt(cellEl.dataset.row);
+                    const c = parseInt(cellEl.dataset.col);
+                    const plantSymbol = layerData[r][c];
+
+                    cellEl.innerHTML = ''; // Clear content
+
+                    if (plantSymbol) {
+                        const contentEl = document.createElement('div');
+                        contentEl.className = `cell-content ${plantSymbol}`;
+                        
+                        // Use emojis for visual representation
+                        if (plantSymbol === 'P') contentEl.textContent = '🌳';
+                        else if (plantSymbol === 'M') contentEl.textContent = '🍄';
+                        else if (plantSymbol === 'D') contentEl.textContent = '📡';
+                        else if (plantSymbol === 'F') contentEl.textContent = '✨';
+
+                        cellEl.appendChild(contentEl);
+                    }
+
+                    // Highlight the goal cell across all layers
+                    if (r === gameState.goal.targetCell.r && c === gameState.goal.targetCell.c) {
+                        cellEl.style.border = '3px dashed ' + (gameState.board[index][r][c] ? 'gold' : 'white');
+                    } else {
+                        cellEl.style.border = '1px solid rgba(0, 0, 0, 0.2)';
+                    }
+                });
+            });
+        }
+
+        function setActiveTime(time) {
+            // Set the active time in game state
+            gameState.activeTime = time;
+
+            // Update button styles
+            document.querySelectorAll('.time-select-button').forEach(btn => {
+                btn.classList.remove('active-time');
+            });
+            document.getElementById(`btn-${time}`).classList.add('active-time');
+
+            // Update layer visibility/opacity
+            document.querySelectorAll('.time-layer').forEach(layer => {
+                layer.classList.remove('active');
+            });
+            document.getElementById(`layer-${time}`).classList.add('active');
+        }
+
+        function showMessage(text, type = 'info') {
+            messageBoxEl.innerHTML = text;
+            // Optionally add more visual feedback based on type (e.g., color change)
+            if (type === 'win') {
+                messageBoxEl.style.backgroundColor = '#188038'; // Green
+            } else if (type === 'warning') {
+                 messageBoxEl.style.backgroundColor = '#fbbc04'; // Yellow
+            } else if (type === 'effect') {
+                 messageBoxEl.style.backgroundColor = '#4285f4'; // Blue
+            } else {
+                 messageBoxEl.style.backgroundColor = var(--color-ui);
+            }
+        }
+
+
+        // --- EVENT LISTENERS ---
+        document.querySelectorAll('.time-select-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const time = btn.dataset.time;
+                setActiveTime(time);
+                showMessage(`Time shifted to **${PLANT_TYPES[time].name}** planting era. Tap a cell to plant.`);
+            });
+        });
+
+        endLoopBtn.addEventListener('click', endLoop);
+
+        // --- START GAME ---
+        startGame();
+
+    </script>
+</body>
+</html>
