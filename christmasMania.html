@@ -466,9 +466,9 @@
             <p>Enter the names of all players (min 2, max 6). Leave inputs blank for fewer players.</p>
             <div id="playerInputs">
                 <div class="player-input-group"><label for="player1">Player 1:</label><input type="text" id="player1"
-                        placeholder="Required (e.g., Rudolph)" maxlength="12"></div>
+                        placeholder="Required (e.g., Franco)" maxlength="12"></div>
                 <div class="player-input-group"><label for="player2">Player 2:</label><input type="text" id="player2"
-                        placeholder="Required (e.g., Frosty)" maxlength="12"></div>
+                        placeholder="Required (e.g., Ploufi)" maxlength="12"></div>
                 <div class="player-input-group"><label for="player3">Player 3:</label><input type="text" id="player3"
                         placeholder="Optional" maxlength="12"></div>
                 <div class="player-input-group"><label for="player4">Player 4:</label><input type="text" id="player4"
@@ -502,7 +502,7 @@
 
     <div id="endModal">
         <div class="end-content">
-            <img src="images/grinch.png" alt="Grinch" style="width: 100px; margin-bottom: 20px;">
+            <img src="images/santaWin.png" alt="Grinch" style="width: 100px; margin-bottom: 20px;">
             <h2 id="endTitle">Game Over!</h2>
             <p id="endMessage"></p>
             <button id="playAgainBtn">Play Again</button>
@@ -511,13 +511,15 @@
 
 
     <audio id="diceSound" src="sounds/dice.wav" preload="auto"></audio>
+    <audio id="flipSound" src="sounds/flip.wav" preload="auto"></audio>
+    <audio id="grinchLaughSound" src="sounds/grinchLaugh.wav" preload="auto"></audio>
 
     <script>
         // --- Game Configuration ---
-        const TOTAL_GIFTS = 50;
-        const GRINCH_COUNT = 2;
+        const TOTAL_GIFTS = 50; //50
+        let GRINCH_COUNT;
+        let SAFE_GIFT_COUNT;
         // All other gifts are now 'safe', power-ups are removed for simplification.
-        const SAFE_GIFT_COUNT = TOTAL_GIFTS - GRINCH_COUNT;
         const MIN_PLAYERS = 2;
         const MAX_PLAYERS = 6;
 
@@ -547,6 +549,8 @@
 
         //audio
         const diceSound = document.getElementById('diceSound');
+        const flipSound = document.getElementById('flipSound');
+        const grinchLaughSound = document.getElementById('grinchLaughSound');
 
         // --- Game State ---
         let players = [];
@@ -626,8 +630,8 @@
 
             if (activePlayers.length === 1) {
                 winner = activePlayers[0];
-                endTitle.textContent = '🥳 GRAND WINNER! 🥳';
-                endMessage.textContent = `${winner.name} dodged the Grinch and walked out as the Christmas legend!`;
+                endTitle.textContent = '🥳 WINNER! 🥳';
+                endMessage.textContent = `${winner.name} escaped the Grinch and walked out as the Christmas legend!`;
             } else {
                 // Should only trigger if gifts run out before one survivor remains
                 endTitle.textContent = '🎁 GIFTS EXHAUSTED! 🎁';
@@ -640,12 +644,12 @@
         // --- Core Game Functions ---
 
         /** Initial setup of the game state. */
-        function createGifts() {
+        function createGifts(dynamicGiftTypes) {
             giftsContainer.innerHTML = '';
             giftsData = [];
 
             // 1. Shuffle and assign types
-            const shuffledTypes = shuffle([...giftTypes]);
+            const shuffledTypes = shuffle([...dynamicGiftTypes]);
 
             // 2. Create the DOM elements and data structure
             giftsData = shuffledTypes.map((type, index) => {
@@ -681,6 +685,12 @@
         function handleGiftClick(index) {
             if (isGameOver || picksLeft <= 0 || giftsData[index].revealed) return;
 
+            // --- ADDED BLOCK: Play flip sound ---
+            if (flipSound) {
+                flipSound.currentTime = 0; // Rewind to the start
+                flipSound.play().catch(e => console.log("Audio playback failed:", e));
+            }
+
             // >> MODIFICATION 1: Temporarily disable ALL gift interactions <<
             giftsData.forEach(g => g.element.style.pointerEvents = 'none');
 
@@ -713,6 +723,11 @@
                 // Check for Grinch
                 if (gift.type === 'grinch') {
                     // Player is eliminated
+                    // --- ADDED BLOCK: Play Grinch Laugh Sound ---
+                    if (grinchLaughSound) {
+                        grinchLaughSound.currentTime = 0; // Rewind to the start
+                        grinchLaughSound.play().catch(e => console.log("Audio playback failed:", e));
+                    }
                     currentPlayer.eliminated = true;
                     drawResultDiv.textContent = `🚨 ${currentPlayer.name} found the GRINCH! They are out! 😭`;
 
@@ -821,11 +836,25 @@
                 return;
             }
 
+            GRINCH_COUNT = players.length - 1;
+            SAFE_GIFT_COUNT = TOTAL_GIFTS - GRINCH_COUNT;
+
+            if (SAFE_GIFT_COUNT < 0) {
+                alert(`Error: Too many players (${players.length}) for the total gifts (${TOTAL_GIFTS}). Max players for this gift count is ${TOTAL_GIFTS + 1}.`);
+                return;
+            }
+
+            // 3. Re-create the giftTypes array dynamically
+            const giftTypes = [
+                ...Array(SAFE_GIFT_COUNT).fill('safe'),
+                ...Array(GRINCH_COUNT).fill('grinch'),
+            ];
+
             setupModal.style.display = 'none';
             isGameOver = false;
             currentPlayerIndex = 0;
             picksLeft = 0;
-            createGifts();
+            createGifts(giftTypes);
 
             // Start the game
             currentPlayerNameSpan.textContent = players[currentPlayerIndex].name;
