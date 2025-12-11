@@ -1,582 +1,820 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chrono-Gardener</title>
+    <title>Cipher Card Crack</title>
     <style>
-        /*
-        * CSS STYLES FOR CHRONO-GARDENER
-        * Visual Appeal & Responsiveness
-        */
-
+        /* --- CSS STYLES --- */
         :root {
-            /* Color Palette */
-            --color-bg: #1a1a2e; /* Dark background */
-            --color-ui: #2c3959; /* UI panel background */
-            --color-text: #e0e0e0; /* Light text */
-            --color-action: #ff6a88; /* Action button/seed color */
-            --color-prehistoric: #5c8374; /* Dark Teal */
-            --color-medieval: #93b1a6; /* Sage Green */
-            --color-modern: #c6e0c0; /* Light Mint */
-            --color-future: #f3f3e1; /* Off-White/Ethereal */
-
-            /* Layout */
-            --board-size: 80vmin;
-            --cell-size: calc(var(--board-size) / 4);
-        }
-
-        /* --- GLOBAL STYLES --- */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
+            --color-bg-dark: #0d1117;
+            --color-text-light: #c9d1d9;
+            --color-accent-blue: #58a6ff;
+            --color-correct-pos: #2ea043;
+            /* Green */
+            --color-correct-digit: #f0b34d;
+            /* Yellow/Orange */
+            --color-incorrect: #f85149;
+            /* Red */
+            --color-input-bg: #161b22;
+            --font-mono: 'Consolas', 'Courier New', monospace;
         }
 
         body {
-            background-color: var(--color-bg);
-            color: var(--color-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--color-bg-dark);
+            color: var(--color-text-light);
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 10px;
+            overflow-x: hidden;
             flex-direction: column;
             user-select: none;
+            touch-action: manipulation;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 900px;
+            padding: 20px 10px;
+            box-sizing: border-box;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--color-accent-blue);
+            padding-bottom: 10px;
         }
 
         h1 {
-            color: var(--color-action);
-            margin-bottom: 10px;
-            font-size: 1.5em;
+            color: var(--color-accent-blue);
+            margin: 0;
+            font-size: 2em;
         }
 
-        /* --- GAME CONTAINER --- */
-        #game-container {
+        /* --- Game Screen Split Layout --- */
+        #game-screen {
+            display: none;
+        }
+
+        .game-main {
             display: flex;
-            flex-direction: column;
-            width: 100%;
-            max-width: 800px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            gap: 20px;
+            margin-top: 15px;
         }
 
-        /* --- UI PANEL (Top) --- */
-        #ui-panel {
-            background-color: var(--color-ui);
-            padding: 10px;
+        /* Left Column: History */
+        .history-column {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        /* Right Column: Input & Keyboard */
+        .input-keyboard-column {
+            flex: 1;
+            min-width: 300px;
+        }
+
+
+        /* --- Difficulty Selector Screen --- */
+        #difficulty-screen {
+            text-align: center;
+        }
+
+        .difficulty-option {
+            background-color: var(--color-input-bg);
+            border: 2px solid var(--color-accent-blue);
+            color: var(--color-text-light);
+            padding: 15px;
+            margin: 10px 0;
+            width: 100%;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .difficulty-option:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+
+        .difficulty-option:active {
+            transform: scale(0.98);
+        }
+
+        /* --- Timer and Info --- */
+        .info-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.9em;
-            flex-wrap: wrap; /* Allows wrapping on small screens */
-            gap: 5px;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 5px 10px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 6px;
-        }
-
-        .stat-value {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: var(--color-action);
-        }
-
-        /* --- GAME BOARD (Middle) --- */
-        #game-board {
-            position: relative;
-            width: var(--board-size);
-            height: var(--board-size);
-            margin: 20px auto;
-            border: 4px solid var(--color-action);
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: var(--color-input-bg);
             border-radius: 8px;
-            overflow: hidden;
+            font-family: var(--font-mono);
+            font-size: 1.1em;
         }
 
-        .time-layer {
-            position: absolute;
+        #timer {
+            color: var(--color-correct-pos);
+        }
+
+        .code-length-display {
+            color: var(--color-accent-blue);
+        }
+
+        /* --- Input Display --- */
+        .input-display-container {
+            background-color: var(--color-input-bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        #current-input {
+            width: 100%;
+            min-height: 20px;
+            font-family: var(--font-mono);
+            font-size: 2em;
+            letter-spacing: 5px;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .placeholder-digit {
+            color: #444c56;
+        }
+
+        /* --- History / Feedback --- */
+        .history-wrapper {
+            background-color: var(--color-input-bg);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+
+        #history {
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 5px 0;
+        }
+
+        .guess-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-bottom: 1px dashed #30363d;
+        }
+
+        .guess-entry:last-child {
+            border-bottom: none;
+        }
+
+        .guess-code {
+            font-family: var(--font-mono);
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            width: 50%;
+            /* Adjusted width to fit all content */
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 2px;
+            /* Small gap between digits */
+        }
+
+        /* New styles for individual digit coloring */
+        .guess-digit {
+            transition: color 0.3s;
+            font-weight: bold;
+        }
+
+        .digit-pos {
+            color: var(--color-correct-pos);
+            /* Green */
+        }
+
+        .digit-digit {
+            color: var(--color-correct-digit);
+            /* Orange */
+        }
+
+        /* End of new styles */
+
+
+        .feedback-icons {
+            display: flex;
+            gap: 8px;
+            width: 50%;
+            justify-content: flex-end;
+        }
+
+        .feedback-icon {
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .icon-correct-pos {
+            background-color: var(--color-correct-pos);
+            color: var(--color-bg-dark);
+        }
+
+        .icon-correct-digit {
+            background-color: var(--color-correct-digit);
+            color: var(--color-bg-dark);
+        }
+
+        /* --- Keyboard --- */
+        #keyboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 10px 0;
+        }
+
+        .key {
+            background-color: var(--color-input-bg);
+            color: var(--color-text-light);
+            border: 1px solid var(--color-accent-blue);
+            padding: 18px 0;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.1s, transform 0.1s;
+            text-align: center;
+            touch-action: manipulation;
+        }
+
+        .key:hover {
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+
+        .key:active {
+            transform: scale(0.95);
+            background-color: var(--color-accent-blue);
+            color: var(--color-bg-dark);
+        }
+
+        .key-enter {
+            grid-column: span 3;
+            background-color: var(--color-correct-pos);
+            border-color: var(--color-correct-pos);
+            color: var(--color-bg-dark);
+        }
+
+        .key-delete {
+            background-color: var(--color-incorrect);
+            border-color: var(--color-incorrect);
+            color: var(--color-bg-dark);
+        }
+
+        /* --- Modal/Results Screen --- */
+        #results-modal {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            opacity: 0.8; /* Subtle layering effect */
-            transition: opacity 0.5s ease;
-        }
-
-        .layer-prehistoric { background-color: var(--color-prehistoric); z-index: 1; }
-        .layer-medieval { background-color: var(--color-medieval); z-index: 2; }
-        .layer-modern { background-color: var(--color-modern); z-index: 3; }
-        .layer-future { background-color: var(--color-future); z-index: 4; }
-
-        /* Highlight the active layer */
-        .time-layer.active { opacity: 1; }
-
-        .cell {
-            position: relative;
-            border: 1px solid rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s ease;
-            display: flex;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
             justify-content: center;
             align-items: center;
-            font-size: 1.5em;
-            cursor: pointer;
-        }
-
-        .cell:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .cell-content {
-            position: absolute;
-            width: 90%;
-            height: 90%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5em;
-            /* Visual indicator of a planted item */
-        }
-
-        /* Plant Styles */
-        .P { color: var(--color-prehistoric); font-size: 2em; text-shadow: 0 0 5px black; } /* Prehistoric Tree */
-        .M { color: var(--color-medieval); font-size: 2em; text-shadow: 0 0 5px black; } /* Medieval Herb */
-        .D { color: var(--color-modern); font-size: 2em; text-shadow: 0 0 5px black; } /* Modern Drone */
-        .F { color: var(--color-future); font-size: 2em; text-shadow: 0 0 5px black; } /* Future Crystal */
-
-        /* --- CONTROLS PANEL (Bottom) --- */
-        #controls-panel {
-            background-color: var(--color-ui);
-            padding: 10px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            width: 100%;
-            max-width: 800px;
-            border-radius: 0 0 12px 12px;
-        }
-
-        .control-button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 6px;
-            background-color: var(--color-action);
-            color: var(--color-bg);
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            font-size: 1em;
-        }
-
-        .control-button:hover {
-            background-color: #ff8ca3;
-        }
-
-        .control-button:active {
-            transform: scale(0.98);
-        }
-
-        .time-select-button {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--color-text);
-            border: 2px solid transparent;
-        }
-
-        .time-select-button.active-time {
-            border-color: var(--color-action);
-            background-color: rgba(255, 255, 255, 0.2);
-            transform: scale(1.05);
-        }
-
-        /* --- INFO AND MESSAGE BOX --- */
-        #message-box {
-            background-color: var(--color-ui);
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 6px;
-            width: 100%;
-            max-width: 800px;
+            flex-direction: column;
+            z-index: 100;
             text-align: center;
         }
 
-        /* --- RESPONSIVENESS (Mobile/Small Screen) --- */
-        @media (max-width: 600px) {
+        .modal-content {
+            padding: 30px;
+            background-color: var(--color-input-bg);
+            border-radius: 12px;
+            border: 4px solid var(--color-accent-blue);
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+        }
+
+        .modal-title {
+            color: var(--color-correct-pos);
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .modal-subtitle {
+            color: var(--color-text-light);
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        #revealed-card {
+            /* Better visual centering using display: block and margin: auto */
+            display: block;
+            margin: 0 auto 20px auto;
+            /* Center it horizontally */
+
+            max-width: 250px;
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 5px solid var(--color-accent-blue);
+
+            /* INITIAL OPACITY for the suspense reveal */
+            opacity: 0.01;
+            /* Transition for the smooth fade-in effect */
+            transition: opacity 4s ease-in-out;
+
+            /* Keep the original animation */
+            animation: cardReveal 2s ease-out;
+        }
+
+        /* Update the old cardReveal animation to only focus on rotation/scale */
+        /* Update the old cardReveal animation to only focus on rotation/scale */
+        @keyframes cardReveal {
+            0% {
+                transform: scale(0.1) rotateY(90deg);
+                /* Opacity will now be handled by JS after this animation */
+            }
+
+            80% {
+                transform: scale(1.05) rotateY(-5deg);
+            }
+
+            100% {
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+
+        .modal-button {
+            padding: 10px 20px;
+            background-color: var(--color-accent-blue);
+            color: var(--color-bg-dark);
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .modal-button:hover {
+            background-color: #79c0ff;
+        }
+
+        /* --- Mobile Responsiveness (Vertical Stacking) --- */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px 5px;
+            }
+
             h1 {
-                font-size: 1.2em;
+                font-size: 1.8em;
             }
 
-            #ui-panel {
-                justify-content: center;
+            /* Stack the columns vertically on small screens */
+            .game-main {
+                flex-direction: column;
+                gap: 10px;
             }
 
-            .stat-item {
-                margin: 2px;
-                padding: 3px 5px;
+            /* History comes before the keyboard on mobile */
+            .history-column {
+                order: 1;
+                min-width: unset;
             }
 
-            .stat-value {
-                font-size: 1em;
+            .input-keyboard-column {
+                order: 2;
+                min-width: unset;
             }
 
-            .control-button {
-                padding: 8px 10px;
-                font-size: 0.85em;
-            }
-
-            /* Adjust board size for smaller screens */
-            :root {
-                --board-size: 90vw;
-            }
-
-            #game-board {
-                 margin: 10px auto;
+            /* Adjustments for mobile input */
+            .key {
+                padding: 15px 0;
+                font-size: 1.3em;
             }
         }
     </style>
 </head>
+
 <body>
 
-    <div id="game-container">
-        <h1>Chrono-Gardener ⏳</h1>
+    <div class="container">
+        <header>
+            <h1>Cipher Card Crack</h1>
+            <p>Crack the code in 60 seconds to reveal a super card!</p>
+        </header>
 
-        <div id="ui-panel">
-            <div class="stat-item">Time Seeds<span id="seeds-count" class="stat-value">5</span></div>
-            <div class="stat-item">Loop: <span id="loop-count" class="stat-value">1</span></div>
-            <div class="stat-item">Goal: <span id="goal-target" class="stat-value">P-M-D-F in 0,0</span></div>
+        <div id="difficulty-screen">
+            <h2>Select Difficulty</h2>
+            <button class="difficulty-option" data-length="6" data-pool-start="1" data-pool-end="7">
+                COMMON (6 Digits) - Reveal Card 1-7
+            </button>
+            <button class="difficulty-option" data-length="7" data-pool-start="8" data-pool-end="12">
+                UNCOMMON (7 Digits) - Reveal Card 8-12
+            </button>
+            <button class="difficulty-option" data-length="8" data-pool-start="13" data-pool-end="16">
+                RARE (8 Digits) - Reveal Card 13-16
+            </button>
+            <button class="difficulty-option" data-length="9" data-pool-start="17" data-pool-end="19">
+                EPIC (9 Digits) - Reveal Card 17-19
+            </button>
+            <button class="difficulty-option" data-length="10" data-pool-start="20" data-pool-end="20">
+                LEGENDARY (10 Digits) - Reveal Card 20
+            </button>
         </div>
 
-        <div id="game-board">
-            <div id="layer-future" class="time-layer layer-future"></div>
-            <div id="layer-modern" class="time-layer layer-modern"></div>
-            <div id="layer-medieval" class="time-layer layer-medieval"></div>
-            <div id="layer-prehistoric" class="time-layer layer-prehistoric"></div>
-        </div>
+        <div id="game-screen">
 
-        <div id="controls-panel">
-            <button class="control-button time-select-button active-time" data-time="future" id="btn-future">Future</button>
-            <button class="control-button time-select-button" data-time="modern" id="btn-modern">Modern</button>
-            <button class="control-button time-select-button" data-time="medieval" id="btn-medieval">Medieval</button>
-            <button class="control-button time-select-button" data-time="prehistoric" id="btn-prehistoric">Prehistoric</button>
-            <button class="control-button" id="end-loop-btn">End Loop (Check Goal)</button>
+            <div class="info-bar">
+                <span id="timer">Time: 60s</span>
+                <span class="code-length-display">Code Length: <span id="code-length-value"></span></span>
+            </div>
+
+            <div class="game-main">
+                <div class="history-column">
+                    <h3>Attempt History</h3>
+                    <div class="history-wrapper">
+                        <div id="history">
+                            <p style="text-align:center; color: #444c56; font-style: italic;">No attempts yet...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-keyboard-column">
+                    <div class="input-display-container">
+                        <div id="current-input"></div>
+                    </div>
+
+                    <div id="keyboard">
+                        <div class="key" data-digit="1">1</div>
+                        <div class="key" data-digit="2">2</div>
+                        <div class="key" data-digit="3">3</div>
+                        <div class="key" data-digit="4">4</div>
+                        <div class="key" data-digit="5">5</div>
+                        <div class="key" data-digit="6">6</div>
+                        <div class="key" data-digit="7">7</div>
+                        <div class="key" data-digit="8">8</div>
+                        <div class="key" data-digit="9">9</div>
+                        <div class="key key-delete" data-action="delete">⌫ DEL</div>
+                        <div class="key" data-digit="0">0</div>
+                        <div class="key key-enter" data-action="enter">→ CRACK</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <div id="message-box">
-        Welcome, Chrono-Gardener! Select a time layer and tap a cell to plant its corresponding seed.
+    <div id="results-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modal-result-title"></h2>
+            <p class="modal-subtitle" id="modal-result-subtitle"></p>
+            <img id="revealed-card" src="" alt="Revealed Super Card">
+            <button class="modal-button" onclick="resetGame()">Play Again</button>
+        </div>
     </div>
 
     <script>
-        /*
-        * JAVASCRIPT LOGIC FOR CHRONO-GARDENER
-        * Game State, Mechanics, and Rendering
-        */
+        // --- JAVASCRIPT LOGIC ---
+        const difficultyScreen = document.getElementById('difficulty-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const difficultyButtons = document.querySelectorAll('.difficulty-option');
+        const codeLengthValue = document.getElementById('code-length-value');
+        const currentInputDisplay = document.getElementById('current-input');
+        const historyDiv = document.getElementById('history');
+        const timerDisplay = document.getElementById('timer');
+        const keyboard = document.getElementById('keyboard');
+        const modal = document.getElementById('results-modal');
+        const modalTitle = document.getElementById('modal-result-title');
+        const modalSubtitle = document.getElementById('modal-result-subtitle');
+        const revealedCardImg = document.getElementById('revealed-card');
 
-        const ROWS = 4;
-        const COLS = 4;
-        const MAX_SEEDS = 5;
+        let SECRET_CODE = [];
+        let CODE_LENGTH = 0;
+        let CARD_POOL_START = 0;
+        let CARD_POOL_END = 0;
+        let currentInput = '';
+        let timerInterval;
+        let timeLeft = 60;
 
-        // --- GAME STATE ---
-        let gameState = {
-            currentLoop: 1,
-            timeSeeds: MAX_SEEDS,
-            activeTime: 'future', // future, modern, medieval, prehistoric
-            board: [], // 4x4x4 array [layer][row][col]
-            goal: {
-                targetCell: { r: 0, c: 0 },
-                requiredPlants: ['P', 'M', 'D', 'F']
+        // --- Core Functions ---
+
+        /**
+         * Generates a random sequence of UNIQUE digits for the secret code.
+         */
+        function generateSecretCode(length) {
+
+            // --- MODIFICATION FOR TESTING ---
+            if (length === 6) {
+                // Set a fixed code for the 6-digit (COMMON) difficulty for testing
+                SECRET_CODE = ['1', '2', '3', '4', '5', '6'];
+                // console.log("Test Code (6-Digit):", SECRET_CODE.join('')); 
+                return; // Exit the function after setting the test code
             }
-        };
+            // --- END MODIFICATION ---
 
-        // Plant Types and their effects/symbols
-        const PLANT_TYPES = {
-            'prehistoric': { symbol: 'P', name: 'Prehistoric Tree', effect: 'future', effectSymbol: '🌱' },
-            'medieval': { symbol: 'M', name: 'Medieval Herb', effect: 'prehistoric', effectSymbol: '🌿' },
-            'modern': { symbol: 'D', name: 'Modern Drone', effect: 'medieval', effectSymbol: '🤖' },
-            'future': { symbol: 'F', name: 'Future Crystal', effect: 'modern', effectSymbol: '💎' }
-        };
+            const allDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
-        // Mapping from time name to its index in the board array (for simplicity)
-        const TIME_LAYERS_MAP = ['future', 'modern', 'medieval', 'prehistoric'];
-        const TIME_LAYER_ELEMENTS = {
-            'future': document.getElementById('layer-future'),
-            'modern': document.getElementById('layer-modern'),
-            'medieval': document.getElementById('layer-medieval'),
-            'prehistoric': document.getElementById('layer-prehistoric')
-        };
+            // Fisher-Yates shuffle to randomize and ensure uniqueness
+            for (let i = allDigits.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [allDigits[i], allDigits[j]] = [allDigits[j], allDigits[i]]; // Swap
+            }
 
-        // --- DOM ELEMENTS ---
-        const seedsCountEl = document.getElementById('seeds-count');
-        const loopCountEl = document.getElementById('loop-count');
-        const goalTargetEl = document.getElementById('goal-target');
-        const messageBoxEl = document.getElementById('message-box');
-        const endLoopBtn = document.getElementById('end-loop-btn');
+            // Take the first 'length' digits for the secret code
+            SECRET_CODE = allDigits.slice(0, length);
 
-        // --- INITIALIZATION ---
+            // console.log("Secret Code:", SECRET_CODE.join('')); // DEBUG: To check the code
+        }
 
-        function initializeBoard() {
-            gameState.board = [];
-            for (let i = 0; i < TIME_LAYERS_MAP.length; i++) {
-                let layer = [];
-                for (let r = 0; r < ROWS; r++) {
-                    layer.push(new Array(COLS).fill(null)); // null means empty cell
+        /**
+         * Initializes the game state based on the chosen difficulty.
+         */
+        function startGame(length, poolStart, poolEnd) {
+            CODE_LENGTH = length;
+            CARD_POOL_START = poolStart;
+            CARD_POOL_END = poolEnd;
+            currentInput = '';
+            timeLeft = 60;
+            historyDiv.innerHTML = '<p style="text-align:center; color: #444c56; font-style: italic;">No attempts yet...</p>';
+            timerDisplay.textContent = `Time: 60s`;
+            codeLengthValue.textContent = CODE_LENGTH;
+
+            generateSecretCode(CODE_LENGTH);
+            updateInputDisplay();
+
+            difficultyScreen.style.display = 'none';
+            gameScreen.style.display = 'block';
+
+            startTimer();
+        }
+
+        /**
+         * Starts the 60-second countdown timer.
+         */
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `Time: ${timeLeft}s`;
+                if (timeLeft <= 10) {
+                    timerDisplay.style.color = varToRgbString('--color-incorrect');
+                } else {
+                    timerDisplay.style.color = varToRgbString('--color-correct-pos');
                 }
-                gameState.board.push(layer);
-            }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showResults(false); // Game Over
+                }
+            }, 1000);
         }
 
-        function createDOMBoard() {
-            for (const time in TIME_LAYER_ELEMENTS) {
-                const layerEl = TIME_LAYER_ELEMENTS[time];
-                layerEl.innerHTML = ''; // Clear previous
-                for (let r = 0; r < ROWS; r++) {
-                    for (let c = 0; c < COLS; c++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'cell';
-                        cell.dataset.row = r;
-                        cell.dataset.col = c;
-                        cell.addEventListener('click', () => handleCellClick(r, c));
-                        layerEl.appendChild(cell);
-                    }
+        /**
+         * Utility function to get the value of a CSS variable.
+         */
+        function varToRgbString(cssVar) {
+            return getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+        }
+
+
+        /**
+         * Updates the visual display of the current input being typed.
+         */
+        function updateInputDisplay() {
+            let displayHtml = '';
+            for (let i = 0; i < CODE_LENGTH; i++) {
+                if (i < currentInput.length) {
+                    displayHtml += currentInput[i];
+                } else {
+                    displayHtml += `<span class="placeholder-digit">_</span>`;
                 }
             }
+            currentInputDisplay.innerHTML = displayHtml;
         }
 
-        function startGame() {
-            initializeBoard();
-            createDOMBoard();
-            generateGoal();
-            updateUI();
-            updateBoardDisplay();
-            setActiveTime(gameState.activeTime);
-            messageBoxEl.textContent = `Loop ${gameState.currentLoop}: You have ${MAX_SEEDS} Time Seeds. Tap a cell to plant a ${PLANT_TYPES[gameState.activeTime].name}.`;
-        }
-
-        // --- GAME LOGIC ---
-
-        function handleCellClick(r, c) {
-            if (gameState.timeSeeds <= 0) {
-                showMessage("No Time Seeds left! End the loop to check your progress.", 'warning');
+        /**
+         * Handles the player submitting a guess and calculates digit feedback for history coloring.
+         */
+        function submitGuess() {
+            if (currentInput.length !== CODE_LENGTH) {
+                alert(`The code must be exactly ${CODE_LENGTH} digits long!`);
                 return;
             }
 
-            const timeIndex = TIME_LAYERS_MAP.indexOf(gameState.activeTime);
-            const plantSymbol = PLANT_TYPES[gameState.activeTime].symbol;
+            const guess = currentInput.split('');
+            const secret = [...SECRET_CODE];
+            let correctPos = 0;
+            let correctDigit = 0;
 
-            if (gameState.board[timeIndex][r][c]) {
-                showMessage(`Cell (${r}, ${c}) in the ${gameState.activeTime} is already planted!`, 'warning');
-                return;
+            // Status array for each digit: 0=Incorrect, 1=Correct Position, 2=Correct Digit
+            const digitStatus = new Array(CODE_LENGTH).fill(0);
+
+            // 1. Check Correct Position (Green, Status 1)
+            for (let i = 0; i < CODE_LENGTH; i++) {
+                if (guess[i] === secret[i]) {
+                    correctPos++;
+                    digitStatus[i] = 1;
+                    guess[i] = null; // Mark as matched for the current guess array
+                    secret[i] = null; // Mark as matched for the current secret array
+                }
             }
 
-            // 1. Plant the Seed
-            gameState.board[timeIndex][r][c] = plantSymbol;
-            gameState.timeSeeds--;
-            
-            // 2. Apply Time Effect (Cause and Effect)
-            applyTimeEffect(gameState.activeTime, r, c);
-
-            updateUI();
-            updateBoardDisplay();
-            showMessage(`Planted a ${PLANT_TYPES[gameState.activeTime].name} at (${r}, ${c}). ${gameState.timeSeeds} seeds remaining.`);
-        }
-
-        function applyTimeEffect(plantedTime, r, c) {
-            const plantData = PLANT_TYPES[plantedTime];
-            const effectTime = plantData.effect;
-            const effectSymbol = plantData.effectSymbol;
-            const effectTimeIndex = TIME_LAYERS_MAP.indexOf(effectTime);
-            
-            // The effect is to randomly clear a spot in the affected time layer, 
-            // demonstrating the unpredictable nature of time-travel gardening.
-            
-            // Check if the effect layer has a planted item to remove
-            let affectedCells = [];
-            for(let i=0; i<ROWS; i++) {
-                for(let j=0; j<COLS; j++) {
-                    if (gameState.board[effectTimeIndex][i][j]) {
-                         affectedCells.push({ r: i, c: j });
+            // 2. Check Correct Digit, Wrong Position (Orange, Status 2)
+            for (let i = 0; i < CODE_LENGTH; i++) {
+                if (guess[i] !== null) { // Only check non-position-matched digits
+                    const secretIndex = secret.indexOf(guess[i]);
+                    if (secretIndex !== -1) {
+                        correctDigit++;
+                        digitStatus[i] = 2;
+                        secret[secretIndex] = null; // Mark the found digit in secret to prevent double-counting 
                     }
                 }
             }
 
-            if (affectedCells.length > 0) {
-                const randomIndex = Math.floor(Math.random() * affectedCells.length);
-                const { r: ar, c: ac } = affectedCells[randomIndex];
-                
-                // Clear the randomly affected cell
-                gameState.board[effectTimeIndex][ar][ac] = null;
-                showMessage(`*A time paradox occurred!* The ${plantedTime} plant caused instability, removing an item from the **${effectTime}** layer at (${ar}, ${ac}).`, 'effect');
+            // Check for Win Condition
+            if (correctPos === CODE_LENGTH) {
+                clearInterval(timerInterval);
+                showResults(true);
+                return;
+            }
+
+            // Remove placeholder if it's the first guess
+            if (historyDiv.children.length === 1 && historyDiv.children[0].tagName === 'P') {
+                historyDiv.innerHTML = '';
+            }
+
+            // Add feedback to history, passing the status array for coloring
+            addHistoryEntry(currentInput, correctPos, correctDigit, digitStatus);
+
+            // Reset input for the next try
+            currentInput = '';
+            updateInputDisplay();
+        }
+
+        /**
+         * Adds a new guess and its feedback to the history list, including colored digits.
+         * @param {string} guess - The player's guess string.
+         * @param {number} correctPos - Count of correct position matches.
+         * @param {number} correctDigit - Count of correct digit, wrong position matches.
+         * @param {number[]} digitStatus - Array of digit statuses (0, 1, or 2).
+         */
+        function addHistoryEntry(guess, correctPos, correctDigit, digitStatus) {
+            let guessCodeHtml = '';
+            for (let i = 0; i < guess.length; i++) {
+                let className = '';
+                if (digitStatus[i] === 1) {
+                    className = 'digit-pos'; // Green: Correct Position
+                } else if (digitStatus[i] === 2) {
+                    className = 'digit-digit'; // Orange: Correct Digit, Wrong Position
+                }
+                // Digit 0 (Incorrect) gets the default text color
+
+                guessCodeHtml += `<span class="guess-digit ${className}">${guess[i]}</span>`;
+            }
+
+            const entry = document.createElement('div');
+            entry.className = 'guess-entry';
+            entry.innerHTML = `
+                <div class="guess-code">${guessCodeHtml}</div>
+                <div class="feedback-icons">
+                    <div class="feedback-icon icon-correct-pos">${correctPos} <span style="font-size:0.7em;">P</span></div>
+                    <div class="feedback-icon icon-correct-digit">${correctDigit} <span style="font-size:0.7em;">D</span></div>
+                </div>
+            `;
+            // Insert at the top
+            historyDiv.insertBefore(entry, historyDiv.firstChild);
+            historyDiv.scrollTop = 0; // Scroll to show the newest entry
+        }
+
+        /**
+         * Determines the card image URL based on the difficulty pool.
+         */
+        function getCardUrl() {
+            // Randomly select a card number within the defined range
+            const cardNumber = Math.floor(Math.random() * (CARD_POOL_END - CARD_POOL_START + 1)) + CARD_POOL_START;
+
+            // Constructs the URL based on the specified structure
+            return `images/super/card${cardNumber}.jpg`;
+        }
+
+        /**
+         * Displays the results (win or lose) modal.
+         */
+        /**
+                * Displays the results (win or lose) modal.
+                */
+        function showResults(won) {
+            if (won) {
+                const cardUrl = getCardUrl();
+                modalTitle.textContent = "CODE CRACKED!";
+                modalTitle.style.color = varToRgbString('--color-correct-pos');
+                modalSubtitle.textContent = `Time remaining: ${timeLeft} seconds. You have revealed your card!`;
+                revealedCardImg.src = cardUrl;
+                revealedCardImg.style.display = 'block';
+
+                // --- NEW CODE START: ANIMATION & FADE-IN ---
+                // 1. Reset the animation and set initial low opacity for the reveal effect
+                revealedCardImg.style.animation = 'none';
+                revealedCardImg.style.opacity = 0.005; // Set initial low opacity (as defined in CSS)
+                revealedCardImg.offsetHeight; // Trigger reflow/repaint
+                revealedCardImg.style.animation = null; // Reapply the CSS animation (rotational effect)
+
+                // 2. Wait for the 1-second rotational animation to finish, then start the slow opacity fade-in
+                setTimeout(() => {
+                    revealedCardImg.style.opacity = 1; // Triggers the 2s CSS transition to fully reveal
+                }, 2000); // 1000ms = duration of the cardReveal CSS animation
+                // --- NEW CODE END ---
+
             } else {
-                 showMessage(`The ${plantedTime} plant caused minor instability in the **${effectTime}** layer, but found nothing to remove.`);
+                modalTitle.textContent = "FAILURE! TIME OUT!";
+                modalTitle.style.color = varToRgbString('--color-incorrect');
+                modalSubtitle.textContent = `The code was: ${SECRET_CODE.join('')}`;
+                revealedCardImg.style.display = 'none'; // Hide card on loss
             }
-        }
-        
-        function endLoop() {
-            if (checkWinCondition()) {
-                showMessage("🎉 **GOAL ACHIEVED!** The Chrono-Garden is stable!", 'win');
-                endLoopBtn.disabled = true;
-                return;
-            }
-
-            gameState.currentLoop++;
-            gameState.timeSeeds = MAX_SEEDS; // Refill seeds for the next loop
-            updateUI();
-            generateGoal(); // New goal every loop for difficulty
-            showMessage(`Loop ${gameState.currentLoop} begins! Goal not met. Time Seeds reset to ${MAX_SEEDS}. New goal set.`);
+            modal.style.display = 'flex';
         }
 
-        function checkWinCondition() {
-            const { targetCell, requiredPlants } = gameState.goal;
-            const r = targetCell.r;
-            const c = targetCell.c;
-
-            // Check if all required plants are present in the target cell across all layers
-            for (const plantSymbol of requiredPlants) {
-                // Find which time layer this plant symbol belongs to
-                let found = false;
-                for (let i = 0; i < TIME_LAYERS_MAP.length; i++) {
-                    const plantTypeKey = TIME_LAYERS_MAP[i];
-                    if (PLANT_TYPES[plantTypeKey].symbol === plantSymbol) {
-                        // Check if the required plant is in the correct layer at the target cell
-                        if (gameState.board[i][r][c] === plantSymbol) {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                
-                if (!found) {
-                    return false; // Missing one of the required plants
-                }
-            }
-            return true; // All required plants are present in the target cell
-        }
-        
-        function generateGoal() {
-            // New target cell (random)
-            const newR = Math.floor(Math.random() * ROWS);
-            const newC = Math.floor(Math.random() * COLS);
-
-            // New required plants (shuffle requiredPlants and take a subset)
-            const allSymbols = ['P', 'M', 'D', 'F'];
-            allSymbols.sort(() => 0.5 - Math.random()); // Shuffle
-
-            // Require 3 or 4 plants (increases difficulty with loop)
-            const numRequired = Math.min(4, 2 + gameState.currentLoop);
-            const requiredSubset = allSymbols.slice(0, numRequired);
-
-            gameState.goal = {
-                targetCell: { r: newR, c: newC },
-                requiredPlants: requiredSubset.sort()
-            };
-
-            const goalString = requiredSubset.join('-');
-            goalTargetEl.textContent = `${goalString} in (${newR}, ${newC})`;
+        /**
+         * Resets the game back to the difficulty selection screen.
+         */
+        function resetGame() {
+            clearInterval(timerInterval);
+            modal.style.display = 'none';
+            gameScreen.style.display = 'none';
+            difficultyScreen.style.display = 'block';
         }
 
+        // --- Event Handlers ---
 
-        // --- UI & RENDERING ---
-
-        function updateUI() {
-            seedsCountEl.textContent = gameState.timeSeeds;
-            loopCountEl.textContent = gameState.currentLoop;
-            endLoopBtn.disabled = (gameState.timeSeeds > 0);
-            endLoopBtn.textContent = (gameState.timeSeeds > 0) ? `End Loop (Wait for ${gameState.timeSeeds} seeds)` : "End Loop (Check Goal)";
-        }
-
-        function updateBoardDisplay() {
-            TIME_LAYERS_MAP.forEach((time, index) => {
-                const layerEl = TIME_LAYER_ELEMENTS[time];
-                const layerData = gameState.board[index];
-                
-                // Get all cell elements in this layer
-                const cellElements = layerEl.querySelectorAll('.cell');
-                
-                cellElements.forEach(cellEl => {
-                    const r = parseInt(cellEl.dataset.row);
-                    const c = parseInt(cellEl.dataset.col);
-                    const plantSymbol = layerData[r][c];
-
-                    cellEl.innerHTML = ''; // Clear content
-
-                    if (plantSymbol) {
-                        const contentEl = document.createElement('div');
-                        contentEl.className = `cell-content ${plantSymbol}`;
-                        
-                        // Use emojis for visual representation
-                        if (plantSymbol === 'P') contentEl.textContent = '🌳';
-                        else if (plantSymbol === 'M') contentEl.textContent = '🍄';
-                        else if (plantSymbol === 'D') contentEl.textContent = '📡';
-                        else if (plantSymbol === 'F') contentEl.textContent = '✨';
-
-                        cellEl.appendChild(contentEl);
-                    }
-
-                    // Highlight the goal cell across all layers
-                    if (r === gameState.goal.targetCell.r && c === gameState.goal.targetCell.c) {
-                        cellEl.style.border = '3px dashed ' + (gameState.board[index][r][c] ? 'gold' : 'white');
-                    } else {
-                        cellEl.style.border = '1px solid rgba(0, 0, 0, 0.2)';
-                    }
-                });
-            });
-        }
-
-        function setActiveTime(time) {
-            // Set the active time in game state
-            gameState.activeTime = time;
-
-            // Update button styles
-            document.querySelectorAll('.time-select-button').forEach(btn => {
-                btn.classList.remove('active-time');
-            });
-            document.getElementById(`btn-${time}`).classList.add('active-time');
-
-            // Update layer visibility/opacity
-            document.querySelectorAll('.time-layer').forEach(layer => {
-                layer.classList.remove('active');
-            });
-            document.getElementById(`layer-${time}`).classList.add('active');
-        }
-
-        function showMessage(text, type = 'info') {
-            messageBoxEl.innerHTML = text;
-            // Optionally add more visual feedback based on type (e.g., color change)
-            if (type === 'win') {
-                messageBoxEl.style.backgroundColor = '#188038'; // Green
-            } else if (type === 'warning') {
-                 messageBoxEl.style.backgroundColor = '#fbbc04'; // Yellow
-            } else if (type === 'effect') {
-                 messageBoxEl.style.backgroundColor = '#4285f4'; // Blue
-            } else {
-                 messageBoxEl.style.backgroundColor = var(--color-ui);
-            }
-        }
-
-
-        // --- EVENT LISTENERS ---
-        document.querySelectorAll('.time-select-button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const time = btn.dataset.time;
-                setActiveTime(time);
-                showMessage(`Time shifted to **${PLANT_TYPES[time].name}** planting era. Tap a cell to plant.`);
+        // 1. Difficulty Selection Handler
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const length = parseInt(button.dataset.length);
+                const poolStart = parseInt(button.dataset.poolStart);
+                const poolEnd = parseInt(button.dataset.poolEnd);
+                startGame(length, poolStart, poolEnd);
             });
         });
 
-        endLoopBtn.addEventListener('click', endLoop);
+        // 2. Keyboard Input Handler
+        keyboard.addEventListener('click', (e) => {
+            const target = e.target;
+            if (!target.classList.contains('key')) return;
 
-        // --- START GAME ---
-        startGame();
+            const digit = target.dataset.digit;
+            const action = target.dataset.action;
 
+            if (digit) {
+                // Prevent duplicate digits from being entered in the current input
+                if (currentInput.length < CODE_LENGTH && !currentInput.includes(digit)) {
+                    currentInput += digit;
+                }
+            } else if (action === 'delete') {
+                currentInput = currentInput.slice(0, -1);
+            } else if (action === 'enter') {
+                submitGuess();
+            }
+
+            updateInputDisplay();
+        });
+
+        // 3. Physical Keyboard Support (for desktop testing)
+        document.addEventListener('keydown', (e) => {
+            if (gameScreen.style.display === 'flex' || gameScreen.style.display === 'block') {
+                const key = e.key;
+
+                if (key >= '0' && key <= '9') {
+                    // Prevent duplicate digits via physical keyboard
+                    if (currentInput.length < CODE_LENGTH && !currentInput.includes(key)) {
+                        currentInput += key;
+                    }
+                } else if (key === 'Backspace') {
+                    currentInput = currentInput.slice(0, -1);
+                } else if (key === 'Enter') {
+                    submitGuess();
+                }
+
+                updateInputDisplay();
+            }
+        });
     </script>
 </body>
+
 </html>
