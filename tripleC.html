@@ -409,6 +409,122 @@
                 font-size: 1.3em;
             }
         }
+
+        /* --- NEW: Collectibles Modal Styles --- */
+
+        /* Reusing the modal base from #results-modal but renaming for clarity */
+        .full-screen-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            /* Slightly darker overlay */
+            display: none;
+            /* Starts hidden */
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 200;
+            /* Higher z-index than the results modal */
+            text-align: center;
+        }
+
+        #card-collection-grid {
+            display: grid;
+            /* Responsive grid: minimum 3 cards wide, adjusting to fit */
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            padding: 10px;
+            max-height: 400px;
+            /* Limit height for scrolling */
+            overflow-y: auto;
+        }
+
+        .collectible-card {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+            border: 3px solid var(--color-bg-dark);
+            /* Card border */
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Style for the header to facilitate button positioning */
+        #header-controls {
+            position: relative;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Mobile Responsiveness for Collectibles Grid */
+        @media (max-width: 450px) {
+            #card-collection-grid {
+                /* On very small screens, make the cards slightly larger and fewer columns */
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                max-height: 300px;
+            }
+        }
+
+        /* --- NEW: Cool Collectibles Button Styles --- */
+
+        #collectibles-btn {
+            /* Base style override */
+            padding: 8px 15px;
+            font-size: 1.1em !important;
+            position: absolute;
+            right: 20px;
+            top: 35px;
+            border: none !important;
+            /* Remove default border */
+            border-radius: 20px !important;
+            /* Pill shape */
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            /* Allows icon and text alignment */
+            align-items: center;
+            gap: 8px;
+
+            /* Cool Look */
+            background: linear-gradient(135deg, var(--color-accent-blue) 0%, #79c0ff 100%);
+            color: var(--color-bg-dark);
+            /* Dark text on light background */
+            box-shadow:
+                0 4px 15px rgba(88, 166, 255, 0.4),
+                /* Blue glow/shadow */
+                0 2px 4px rgba(0, 0, 0, 0.5);
+
+            transition: all 0.2s ease;
+        }
+
+        #collectibles-btn:hover {
+            background: linear-gradient(135deg, #79c0ff 0%, var(--color-accent-blue) 100%);
+            box-shadow:
+                0 6px 20px rgba(88, 166, 255, 0.6),
+                /* Stronger glow on hover */
+                0 2px 5px rgba(0, 0, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        #collectibles-btn:active {
+            transform: translateY(0);
+            box-shadow:
+                0 4px 15px rgba(88, 166, 255, 0.4),
+                0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .collectible-icon {
+            font-size: 1.2em;
+            /* Make the icon slightly larger than the text */
+            line-height: 1;
+            /* Ensure vertical alignment */
+            color: gold;
+            /* Gold color for a special item icon */
+            text-shadow: 0 0 3px #ffa500;
+            /* Subtle orange glow for the icon */
+        }
     </style>
 </head>
 
@@ -416,26 +532,42 @@
 
     <div class="container">
         <header>
-            <h1>Cipher Card Crack</h1>
+            <div id="header-controls">
+                <h1 style="margin: 0;">Cipher Card Crack</h1>
+                <button id="collectibles-btn" class="modal-button"
+                    style="padding: 5px 10px; font-size: 0.9em; position: absolute; right: 20px; top: 35px;">
+                    <span class="collectible-icon">★</span>
+                    Collectibles
+                </button>
+            </div>
             <p>Crack the code in 60 seconds to reveal a super card!</p>
         </header>
+        <div id="collectibles-modal" class="full-screen-modal">
+            <div class="modal-content">
+                <h2 class="modal-title" style="color: var(--color-accent-blue);">Collectible Cards</h2>
+                <p class="modal-subtitle">Cards are collected & revealed by successfully cracking the code!</p>
+                <div id="card-collection-grid">
+                </div>
+                <button class="modal-button" onclick="closeCollectiblesModal()" style="margin-top: 20px;">Close</button>
+            </div>
+        </div>
 
         <div id="difficulty-screen">
             <h2>Select Difficulty</h2>
-            <button class="difficulty-option" data-length="6" data-pool-start="1" data-pool-end="7">
-                COMMON (6 Digits) - Reveal Card 1-7
+            <button class="difficulty-option" data-length="6" data-pool-start="1" data-pool-end="7" data-time="60">
+                COMMON (6 Digits)
             </button>
-            <button class="difficulty-option" data-length="7" data-pool-start="8" data-pool-end="12">
-                UNCOMMON (7 Digits) - Reveal Card 8-12
+            <button class="difficulty-option" data-length="7" data-pool-start="8" data-pool-end="12" data-time="70">
+                UNCOMMON (7 Digits)
             </button>
-            <button class="difficulty-option" data-length="8" data-pool-start="13" data-pool-end="16">
-                RARE (8 Digits) - Reveal Card 13-16
+            <button class="difficulty-option" data-length="8" data-pool-start="13" data-pool-end="16" data-time="80">
+                RARE (8 Digits)
             </button>
-            <button class="difficulty-option" data-length="9" data-pool-start="17" data-pool-end="19">
-                EPIC (9 Digits) - Reveal Card 17-19
+            <button class="difficulty-option" data-length="9" data-pool-start="16" data-pool-end="20" data-time="90">
+                EPIC (9 Digits)
             </button>
-            <button class="difficulty-option" data-length="10" data-pool-start="20" data-pool-end="20">
-                LEGENDARY (10 Digits) - Reveal Card 20
+            <button class="difficulty-option" data-length="10" data-pool-start="21" data-pool-end="22" data-time="100">
+                LEGENDARY (10 Digits)
             </button>
         </div>
 
@@ -514,10 +646,28 @@
         let timeLeft = 60;
 
         // --- Core Functions ---
-
+        let discoveredCards = new Set(); // Stores the card numbers (e.g., 1, 5, 22) that have been revealed
+        const TOTAL_CARDS = 22; // The range is from card1.jpg to card22.jpg
         /**
          * Generates a random sequence of UNIQUE digits for the secret code.
          */
+
+
+        function loadDiscoveredCards() {
+            const storedCards = localStorage.getItem('discoveredCards');
+            if (storedCards) {
+                try {
+                    // Parse the JSON array and convert it back into a Set
+                    const cardArray = JSON.parse(storedCards);
+                    discoveredCards = new Set(cardArray);
+                    // console.log("Loaded cards:", discoveredCards); // Debug
+                } catch (e) {
+                    console.error("Error loading discovered cards from local storage:", e);
+                    // If there's an error, just leave it as an empty Set
+                }
+            }
+        }
+
         function generateSecretCode(length) {
 
             // --- MODIFICATION FOR TESTING ---
@@ -544,16 +694,68 @@
         }
 
         /**
+ * Adds a discovered card to the set and stores it locally.
+ * This should be called *after* a card is successfully revealed.
+ */
+        function recordDiscoveredCard(cardNumber) {
+            discoveredCards.add(cardNumber);
+            // Optional: Store the set in local storage to persist between sessions
+            localStorage.setItem('discoveredCards', JSON.stringify(Array.from(discoveredCards)));
+        }
+
+        /**
+         * Closes the Collectibles Modal.
+         */
+        function closeCollectiblesModal() {
+            document.getElementById('collectibles-modal').style.display = 'none';
+        }
+
+        /**
+         * Generates the card grid and shows the Collectibles Modal.
+         */
+        function showCollectiblesModal() {
+            const grid = document.getElementById('card-collection-grid');
+            grid.innerHTML = ''; // Clear previous content
+
+            for (let i = 1; i <= TOTAL_CARDS; i++) {
+                const cardImg = document.createElement('img');
+                cardImg.className = 'collectible-card';
+                cardImg.src = `images/super/card${i}.jpg`;
+                cardImg.alt = `Card ${i}`;
+
+                // Check if the card has been discovered.
+                if (discoveredCards.has(i)) {
+                    // Full opacity for discovered cards
+                    cardImg.style.opacity = 1;
+                    cardImg.style.border = '3px solid var(--color-accent-blue)';
+                    cardImg.style.filter = 'none';
+                } else {
+                    // Very low opacity for locked cards
+                    cardImg.style.opacity = 0.4; // Increase opacity slightly so the grayscale is visible
+                    cardImg.style.border = '3px dashed #444c56'; // Dashed border for locked look
+                    cardImg.style.filter = 'grayscale(85%) brightness(50%)'; // Make it completely gray and a bit darker
+                }
+
+                grid.appendChild(cardImg);
+            }
+
+            document.getElementById('collectibles-modal').style.display = 'flex';
+        }
+
+        // --- NEW: Event Listener for Collectibles Button ---
+        document.getElementById('collectibles-btn').addEventListener('click', showCollectiblesModal);
+
+        /**
          * Initializes the game state based on the chosen difficulty.
          */
-        function startGame(length, poolStart, poolEnd) {
+        function startGame(length, poolStart, poolEnd, startTime) {
             CODE_LENGTH = length;
             CARD_POOL_START = poolStart;
             CARD_POOL_END = poolEnd;
             currentInput = '';
-            timeLeft = 60;
+            timeLeft = startTime; // Sets the time from the button's data attribute
             historyDiv.innerHTML = '<p style="text-align:center; color: #444c56; font-style: italic;">No attempts yet...</p>';
-            timerDisplay.textContent = `Time: 60s`;
+            timerDisplay.textContent = `Time: ${timeLeft}s`; // Updates the display immediately
             codeLengthValue.textContent = CODE_LENGTH;
 
             generateSecretCode(CODE_LENGTH);
@@ -706,12 +908,10 @@
         /**
          * Determines the card image URL based on the difficulty pool.
          */
-        function getCardUrl() {
+        function getCardNumber() {
             // Randomly select a card number within the defined range
             const cardNumber = Math.floor(Math.random() * (CARD_POOL_END - CARD_POOL_START + 1)) + CARD_POOL_START;
-
-            // Constructs the URL based on the specified structure
-            return `images/super/card${cardNumber}.jpg`;
+            return cardNumber;
         }
 
         /**
@@ -722,12 +922,17 @@
                 */
         function showResults(won) {
             if (won) {
-                const cardUrl = getCardUrl();
+                const cardNumber = getCardNumber(); // <-- CHANGED HERE
+                const cardUrl = `images/super/card${cardNumber}.jpg`;
                 modalTitle.textContent = "CODE CRACKED!";
                 modalTitle.style.color = varToRgbString('--color-correct-pos');
                 modalSubtitle.textContent = `Time remaining: ${timeLeft} seconds. You have revealed your card!`;
                 revealedCardImg.src = cardUrl;
                 revealedCardImg.style.display = 'block';
+
+                // --- NEW LINE: Record the card ---
+                recordDiscoveredCard(cardNumber);
+                // --- END NEW LINE ---
 
                 // --- NEW CODE START: ANIMATION & FADE-IN ---
                 // 1. Reset the animation and set initial low opacity for the reveal effect
@@ -764,12 +969,20 @@
         // --- Event Handlers ---
 
         // 1. Difficulty Selection Handler
-        difficultyButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const length = parseInt(button.dataset.length);
-                const poolStart = parseInt(button.dataset.poolStart);
-                const poolEnd = parseInt(button.dataset.poolEnd);
-                startGame(length, poolStart, poolEnd);
+        // --- Event Handlers ---
+
+        // 1. Difficulty Selection Handler
+        difficultyButtons.forEach(btn => { // Rename 'button' to 'btn' to reduce confusion
+            btn.addEventListener('click', (e) => { // Use the event object 'e'
+                // Use e.currentTarget to get the element that triggered the click
+                const clickedButton = e.currentTarget;
+
+                const length = parseInt(clickedButton.dataset.length);
+                const poolStart = parseInt(clickedButton.dataset.poolStart);
+                const poolEnd = parseInt(clickedButton.dataset.poolEnd);
+                const startTime = parseInt(clickedButton.dataset.time); // Reads the new attribute
+
+                startGame(length, poolStart, poolEnd, startTime); // Passes the new attribute
             });
         });
 
@@ -814,6 +1027,9 @@
                 updateInputDisplay();
             }
         });
+
+        loadDiscoveredCards()
+
     </script>
 </body>
 
