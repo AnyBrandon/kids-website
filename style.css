@@ -833,3 +833,20 @@ p {
   box-shadow: var(--chaos-glow);
   transition: transform .15s ease, box-shadow .3s ease;
 }
+
+.xmas-btn {
+  background: linear-gradient(135deg, #ff6ec4, #e21d12);
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 14px 30px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 255, 255, 0.3) inset;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
