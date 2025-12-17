@@ -525,6 +525,61 @@
             text-shadow: 0 0 3px #ffa500;
             /* Subtle orange glow for the icon */
         }
+
+        /* --- NEW: Rarity Section Header Style --- */
+        .rarity-header {
+            grid-column: 1 / -1;
+            /* Make the header span the full width of the grid */
+            text-align: left;
+            margin: 15px 5px 5px 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #30363d;
+            color: var(--color-accent-blue);
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        /* --- NEW: Info Button Style (Reusing modal button class and styling) --- */
+        #info-btn {
+            /* Base style override */
+            padding: 8px 15px;
+            font-size: 1.1em !important;
+            position: absolute;
+            /* --- KEY CHANGE: Position on the left --- */
+            left: 20px;
+            top: 35px;
+            border: none !important;
+            border-radius: 20px !important;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            /* Cool Look - Use accent blue */
+            background: linear-gradient(135deg, var(--color-accent-blue) 0%, #79c0ff 100%);
+            color: var(--color-bg-dark);
+            box-shadow:
+                0 4px 15px rgba(88, 166, 255, 0.4),
+                0 2px 4px rgba(0, 0, 0, 0.5);
+
+            transition: all 0.2s ease;
+        }
+
+        #info-btn:hover {
+            background: linear-gradient(135deg, #79c0ff 0%, var(--color-accent-blue) 100%);
+            box-shadow:
+                0 6px 20px rgba(88, 166, 255, 0.6),
+                0 2px 5px rgba(0, 0, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        #info-btn:active {
+            transform: translateY(0);
+            box-shadow:
+                0 4px 15px rgba(88, 166, 255, 0.4),
+                0 1px 2px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 
@@ -533,6 +588,11 @@
     <div class="container">
         <header>
             <div id="header-controls">
+                <button id="info-btn">
+                    <span style="font-size: 1.2em; line-height: 1;">?</span>
+                    Info
+                </button>
+
                 <h1 style="margin: 0;">Cipher Card Crack</h1>
                 <button id="collectibles-btn" class="modal-button"
                     style="padding: 5px 10px; font-size: 0.9em; position: absolute; right: 20px; top: 35px;">
@@ -540,15 +600,66 @@
                     Collectibles
                 </button>
             </div>
-            <p>Crack the code in 60 seconds to reveal a super card!</p>
+            <p>Crack the code in time to reveal a super card!</p>
         </header>
         <div id="collectibles-modal" class="full-screen-modal">
             <div class="modal-content">
                 <h2 class="modal-title" style="color: var(--color-accent-blue);">Collectible Cards</h2>
-                <p class="modal-subtitle">Cards are collected & revealed by successfully cracking the code!</p>
-                <div id="card-collection-grid">
+                <div id="card-collection-container">
+                    <p class="modal-subtitle" style="margin-bottom: 0;">Cards are collected & revealed by successfully
+                        cracking the code!</p>
+                    <p class="modal-subtitle" style="font-size: 0.9em; color: #f0b34d;">(Uncollected cards are
+                        grayscaled)</p>
+
+                    <div id="card-collection-grid">
+                    </div>
                 </div>
                 <button class="modal-button" onclick="closeCollectiblesModal()" style="margin-top: 20px;">Close</button>
+            </div>
+        </div>
+
+        <div id="info-modal" class="full-screen-modal">
+            <div class="modal-content" style="text-align: left;">
+                <h2 class="modal-title" style="color: var(--color-accent-blue); text-align: center;">How to Play</h2>
+                <p class="modal-subtitle" style="text-align: center;">Crack the unique digit code before time runs out!
+                </p>
+
+                <h3 style="color: var(--color-text-light);">The Goal</h3>
+                <p>You need to guess a secret code consisting of **unique digits** (0-9). The code length and difficulty
+                    depend on the level you select.</p>
+
+                <h3 style="color: var(--color-text-light);">Feedback Guide</h3>
+                <p>After you submit a guess, the history panel will give you feedback:</p>
+
+                <ul style="list-style-type: none; padding-left: 0;">
+                    <li>
+                        <div class="feedback-icon icon-correct-pos" style="display: inline-flex; margin-right: 10px;">X
+                            <span style="font-size:0.7em;">P</span>
+                        </div>
+                        <strong style="color: var(--color-correct-pos);">Correct Position (P):</strong> The digit is
+                        correct AND is in the right spot.
+                    </li>
+                    <li style="margin-top: 10px;">
+                        <div class="feedback-icon icon-correct-digit" style="display: inline-flex; margin-right: 10px;">
+                            Y <span style="font-size:0.7em;">D</span></div>
+                        <strong style="color: var(--color-correct-digit);">Correct Digit (D):</strong> The digit is in
+                        the code, but in the wrong spot.
+                    </li>
+                </ul>
+
+                <h3 style="color: var(--color-text-light);">Collectible Cards (The Reward!)</h3>
+                <p>
+                    Every time you successfully crack a code, you reveal a **Super Card** corresponding to
+                    that difficulty level (Common, Rare, Legendary, etc.).<br>
+                    All discovered cards are saved in the **Collectibles** section.
+                </p>
+                <p>
+                    <strong style="color: gold;">Collector's Challenge:</strong> If you manage to collect all the
+                    available cards (22), you will be awarded the ultimate **Money Prize** !
+                </p>
+
+                <button class="modal-button" onclick="closeInfoModal()" style="margin-top: 30px; width: 100%;">Got
+                    It!</button>
             </div>
         </div>
 
@@ -622,6 +733,20 @@
         </div>
     </div>
 
+    <div id="card-view-modal" class="full-screen-modal">
+        <div class="modal-content"
+            style="max-width: 400px; padding: 20px; border: none; background-color: transparent;">
+            <img id="large-card-image" src="" alt="Viewed Super Card"
+                style="width: 100%; height: auto; border-radius: 12px; border: 5px solid var(--color-accent-blue); transition: border-color 0.3s, filter 0.3s;">
+            <p id="card-status-text" style="margin-top: 15px; font-size: 1.2em; color: var(--color-text-light);"></p>
+            <button class="modal-button" onclick="closeCardViewModal()" style="margin-top: 20px;">Close View</button>
+        </div>
+    </div>
+
+    <audio id="key-sound" src="sounds/beepPop.mp3" preload="auto"></audio>
+    <audio id="win-sound" src="sounds/win.wav" preload="auto"></audio>
+    <audio id="loss-sound" src="sounds/lifeLost.wav" preload="auto"></audio>
+
     <script>
         // --- JAVASCRIPT LOGIC ---
         const difficultyScreen = document.getElementById('difficulty-screen');
@@ -637,6 +762,10 @@
         const modalSubtitle = document.getElementById('modal-result-subtitle');
         const revealedCardImg = document.getElementById('revealed-card');
 
+        const keySound = document.getElementById('key-sound');
+        const winSound = document.getElementById('win-sound');
+        const lossSound = document.getElementById('loss-sound');
+
         let SECRET_CODE = [];
         let CODE_LENGTH = 0;
         let CARD_POOL_START = 0;
@@ -645,6 +774,10 @@
         let timerInterval;
         let timeLeft = 60;
 
+        const cardViewModal = document.getElementById('card-view-modal');
+        const largeCardImage = document.getElementById('large-card-image');
+        const cardStatusText = document.getElementById('card-status-text');
+
         // --- Core Functions ---
         let discoveredCards = new Set(); // Stores the card numbers (e.g., 1, 5, 22) that have been revealed
         const TOTAL_CARDS = 22; // The range is from card1.jpg to card22.jpg
@@ -652,6 +785,29 @@
          * Generates a random sequence of UNIQUE digits for the secret code.
          */
 
+        function closeCardViewModal() {
+            cardViewModal.style.display = 'none';
+        }
+
+        function showCardViewModal(cardNumber, isDiscovered) {
+            const cardUrl = `images/super/card${cardNumber}.jpg`;
+            largeCardImage.src = cardUrl;
+
+            if (isDiscovered) {
+                largeCardImage.style.filter = 'none';
+                largeCardImage.style.border = '5px solid var(--color-correct-pos)';
+                cardStatusText.textContent = `Card #${cardNumber} - Collected!`;
+                cardStatusText.style.color = varToRgbString('--color-correct-pos');
+            } else {
+                // Apply the same grayscale/brightness filter as in the collection grid
+                largeCardImage.style.filter = 'grayscale(85%) brightness(50%)';
+                largeCardImage.style.border = '5px dashed #444c56';
+                cardStatusText.textContent = `Card #${cardNumber} - LOCKED`;
+                cardStatusText.style.color = '#f0b34d'; // Orange/Yellow color for "LOCKED"
+            }
+
+            cardViewModal.style.display = 'flex';
+        }
 
         function loadDiscoveredCards() {
             const storedCards = localStorage.getItem('discoveredCards');
@@ -671,12 +827,12 @@
         function generateSecretCode(length) {
 
             // --- MODIFICATION FOR TESTING ---
-            if (length === 6) {
+        //    if (length === 6) {
                 // Set a fixed code for the 6-digit (COMMON) difficulty for testing
-                SECRET_CODE = ['1', '2', '3', '4', '5', '6'];
+        //        SECRET_CODE = ['1', '2', '3', '4', '5', '6'];
                 // console.log("Test Code (6-Digit):", SECRET_CODE.join('')); 
-                return; // Exit the function after setting the test code
-            }
+        //        return; // Exit the function after setting the test code
+        //    }
             // --- END MODIFICATION ---
 
             const allDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -713,31 +869,67 @@
         /**
          * Generates the card grid and shows the Collectibles Modal.
          */
+        // Define the rarity map globally or inside the function
+        const RARITY_MAP = [
+            { name: "COMMON", start: 1, end: 7 },
+            { name: "UNCOMMON", start: 8, end: 12 },
+            { name: "RARE", start: 13, end: 15 },
+            { name: "EPIC", start: 16, end: 20 },
+            { name: "LEGENDARY", start: 21, end: 22 },
+        ];
+
+
+        /**
+         * Generates the card grid, grouped by rarity, and shows the Collectibles Modal.
+         */
+        /**
+                 * Generates the card grid, grouped by rarity, and shows the Collectibles Modal.
+                 * MODIFIED to make each card image clickable to show a larger view.
+                 */
         function showCollectiblesModal() {
             const grid = document.getElementById('card-collection-grid');
             grid.innerHTML = ''; // Clear previous content
 
-            for (let i = 1; i <= TOTAL_CARDS; i++) {
-                const cardImg = document.createElement('img');
-                cardImg.className = 'collectible-card';
-                cardImg.src = `images/super/card${i}.jpg`;
-                cardImg.alt = `Card ${i}`;
+            RARITY_MAP.forEach(rarity => {
+                // 1. Add Rarity Header
+                const header = document.createElement('h3');
+                header.className = 'rarity-header';
+                header.textContent = rarity.name;
+                grid.appendChild(header);
 
-                // Check if the card has been discovered.
-                if (discoveredCards.has(i)) {
-                    // Full opacity for discovered cards
-                    cardImg.style.opacity = 1;
-                    cardImg.style.border = '3px solid var(--color-accent-blue)';
-                    cardImg.style.filter = 'none';
-                } else {
-                    // Very low opacity for locked cards
-                    cardImg.style.opacity = 0.4; // Increase opacity slightly so the grayscale is visible
-                    cardImg.style.border = '3px dashed #444c56'; // Dashed border for locked look
-                    cardImg.style.filter = 'grayscale(85%) brightness(50%)'; // Make it completely gray and a bit darker
+                // 2. Add Cards for this rarity range
+                for (let i = rarity.start; i <= rarity.end; i++) {
+                    const cardImg = document.createElement('img');
+                    cardImg.className = 'collectible-card';
+                    cardImg.src = `images/super/card${i}.jpg`;
+                    cardImg.alt = `${rarity.name} Card ${i}`;
+
+                    // Check if the card has been discovered.
+                    const isDiscovered = discoveredCards.has(i); // Capture the state
+
+                    if (isDiscovered) {
+                        // Full opacity for discovered cards
+                        cardImg.style.opacity = 1;
+                        cardImg.style.border = '3px solid var(--color-correct-pos)'; // Change color for discovered
+                        cardImg.style.filter = 'none';
+                    } else {
+                        // Locked look
+                        cardImg.style.opacity = 0.4;
+                        cardImg.style.border = '3px dashed #444c56';
+                        cardImg.style.filter = 'grayscale(85%) brightness(50%)';
+                    }
+
+                    grid.appendChild(cardImg);
+
+                    // --- NEW CLICK HANDLER ---
+                    cardImg.style.cursor = 'pointer'; // Make it visually clickable
+                    cardImg.addEventListener('click', () => {
+                        // Call the new function to display the large card view
+                        showCardViewModal(i, isDiscovered);
+                    });
+                    // --- END NEW CLICK HANDLER ---
                 }
-
-                grid.appendChild(cardImg);
-            }
+            });
 
             document.getElementById('collectibles-modal').style.display = 'flex';
         }
@@ -795,6 +987,14 @@
             return getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
         }
 
+        function playKeySound() {
+            if (keySound) {
+                // Stop the audio if it's already playing, then reset and play
+                keySound.pause();
+                keySound.currentTime = 0;
+                keySound.play();
+            }
+        }
 
         /**
          * Updates the visual display of the current input being typed.
@@ -922,6 +1122,11 @@
                 */
         function showResults(won) {
             if (won) {
+                if (keySound) { keySound.pause(); } // Stop the key press sound
+                if (winSound) {
+                    winSound.currentTime = 0; // Ensure it starts from the beginning
+                    winSound.play();
+                }
                 const cardNumber = getCardNumber(); // <-- CHANGED HERE
                 const cardUrl = `images/super/card${cardNumber}.jpg`;
                 modalTitle.textContent = "CODE CRACKED!";
@@ -948,6 +1153,11 @@
                 // --- NEW CODE END ---
 
             } else {
+                if (keySound) { keySound.pause(); } // Stop the key press sound
+                if (lossSound) {
+                    lossSound.currentTime = 0; // Ensure it starts from the beginning
+                    lossSound.play();
+                }
                 modalTitle.textContent = "FAILURE! TIME OUT!";
                 modalTitle.style.color = varToRgbString('--color-incorrect');
                 modalSubtitle.textContent = `The code was: ${SECRET_CODE.join('')}`;
@@ -993,7 +1203,7 @@
 
             const digit = target.dataset.digit;
             const action = target.dataset.action;
-
+            playKeySound(); // Play the sound on any key press
             if (digit) {
                 // Prevent duplicate digits from being entered in the current input
                 if (currentInput.length < CODE_LENGTH && !currentInput.includes(digit)) {
@@ -1007,6 +1217,19 @@
 
             updateInputDisplay();
         });
+
+        function closeInfoModal() {
+            document.getElementById('info-modal').style.display = 'none';
+        }
+
+        /**
+         * Shows the Info Modal.
+         */
+        function showInfoModal() {
+            document.getElementById('info-modal').style.display = 'flex';
+        }
+
+        document.getElementById('info-btn').addEventListener('click', showInfoModal);
 
         // 3. Physical Keyboard Support (for desktop testing)
         document.addEventListener('keydown', (e) => {
