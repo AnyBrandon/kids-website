@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Evening</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #c5a059;
+            --gold-light: #e3c18a;
+            --dark-bg: #0f0f0f;
+            --text-light: #f4f4f4;
+            --soft-white: #fffdfa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--dark-bg);
+            font-family: 'Lato', sans-serif;
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* --- ENVELOPE ANIMATION --- */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .envelope-wrapper {
+            position: relative;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .envelope-wrapper.opened {
+            transform: translateY(200px) scale(0.8);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .envelope {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            background: #252525;
+            box-shadow: 0 30px 50px rgba(0,0,0,0.7);
+        }
+
+        /* The flap */
+        .envelope::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            z-index: 4;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 110px solid #333;
+            transform-origin: top;
+            transition: transform 0.5s ease;
+        }
+
+        .envelope-wrapper:hover .envelope::before {
+            transform: rotateX(20deg);
+        }
+
+        .wax-seal {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 60px; height: 60px;
+            background: radial-gradient(circle at 30% 30%, #d4af37, #8a6d3b);
+            border-radius: 50%;
+            transform: translate(-50%, -20%);
+            z-index: 5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display';
+            font-size: 1.4rem;
+            color: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- THE LETTER & GOLD SHINE --- */
+        .letter {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 350px;
+            max-height: 90vh;
+            background: var(--soft-white);
+            color: #222;
+            padding: 40px;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            z-index: 1;
+            box-shadow: 0 0 0 0px var(--gold); /* Base for the shine */
+        }
+
+        /* The Shining Border Effect */
+        .envelope-wrapper.opened + .letter {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            z-index: 20;
+            animation: goldShine 2s forwards 0.8s;
+        }
+
+        @keyframes goldShine {
+            0% { box-shadow: 0 0 0 0px var(--gold); }
+            50% { box-shadow: 0 0 25px 5px var(--gold), inset 0 0 10px var(--gold-light); }
+            100% { box-shadow: 0 0 0 2px var(--gold); }
+        }
+
+        .content {
+            text-align: center;
+            opacity: 0;
+            transition: opacity 1s 1.2s;
+        }
+
+        .envelope-wrapper.opened + .letter .content { opacity: 1; }
+
+        h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; letter-spacing: 1px; margin-bottom: 5px; }
+        h2 { font-family: 'Playfair Display', serif; font-style: italic; color: var(--gold); margin-bottom: 25px; font-weight: 400; font-size: 1.1rem; }
+        p { margin-bottom: 15px; line-height: 1.7; font-size: 0.9rem; color: #555; }
+
+        /* --- CLICKABLE LOCATION --- */
+        .details {
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+            margin: 25px 0;
+        }
+
+        .maps-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .maps-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .location-name {
+            display: block;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #000;
+            margin-bottom: 5px;
+        }
+
+        .address {
+            font-size: 0.85rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: underline;
+        }
+
+        /* --- TIMER --- */
+        #timer {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding-top: 10px;
+        }
+
+        .time-block { text-align: center; }
+        .time-num { display: block; font-size: 1.3rem; font-weight: 400; font-family: 'Playfair Display'; color: #000; }
+        .time-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 1px; color: #999; }
+
+        @media (max-width: 400px) {
+            .letter { width: 90vw; padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="envelope-wrapper" id="wrapper" onclick="openEnvelope()">
+    <div class="envelope">
+        <div class="wax-seal">35</div>
+    </div>
+</div>
+
+<div class="letter" id="letter">
+    <div class="content">
+        <h1>Birthday Dinner Invitation</h1>
+        <h2>to my favorite person</h2>
+        
+        <p>For your special day, join me for a night that matches your beauty, charm, and fire.</p>
+        
+        <div class="details">
+            <p><strong>March 5, 2026 &bull; 20:15</strong></p>
+            
+            <a href="https://www.google.com/maps/search/?api=1&query=Restaurant+Passionné+17+Rue+Bergère+75009+Paris" 
+               target="_blank" 
+               class="maps-link" 
+               title="View on Google Maps">
+                <span class="location-name">Restaurant Passionné</span>
+                <span class="address">17, Rue Bergère, 75009 Paris</span>
+            </a>
+        </div>
+
+        <p>Counting down the moments...</p>
+
+        <div id="timer">
+            <div class="time-block"><span class="time-num" id="days">00</span><span class="time-label">Days</span></div>
+            <div class="time-block"><span class="time-num" id="hours">00</span><span class="time-label">Hrs</span></div>
+            <div class="time-block"><span class="time-num" id="mins">00</span><span class="time-label">Mins</span></div>
+            <div class="time-block"><span class="time-num" id="secs">00</span><span class="time-label">Secs</span></div>
+        </div>
+    </div>
+</div>
+
+<audio id="bdayMusic" src="audio/romanticBdayInv.wav" preload="auto"></audio>
+
+<script>
+function openEnvelope() {
+    document.getElementById('wrapper').classList.add('opened');
+    // Add these lines:
+    const audio = document.getElementById('bdayMusic');
+    audio.play().catch(error => {
+        console.log("Autoplay was prevented. Click again or interact with the page.");
+    });
+}
+
+// Countdown Logic
+const targetDate = new Date("March 5, 2026 20:15:00").getTime();
+
+
+const countdown = setInterval(function() {
+    const now = new Date().getTime();
+    const distance = targetDate - now;
+
+    const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+    document.getElementById("days").innerHTML = String(d).padStart(2, '0');
+    document.getElementById("hours").innerHTML = String(h).padStart(2, '0');
+    document.getElementById("mins").innerHTML = String(m).padStart(2, '0');
+    document.getElementById("secs").innerHTML = String(s).padStart(2, '0');
+
+    if (distance < 0) {
+        clearInterval(countdown);
+        document.getElementById("timer").innerHTML = "<p style='color:var(--gold)'>The evening has arrived.</p>";
+    }
+}, 1000);
+</script>
+
+</body>
+</html>
