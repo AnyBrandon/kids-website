@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Story | A Lebanese Soul, a Spanish Heart, a Parisian Home</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --parchment: #fdf5e6;
+            --ink: #2c2c2c;
+            --accent: #8e2424;
+            --gold: #d4af37;
+            --leather: #3d2b1f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            font-family: 'Lora', serif;
+            color: var(--ink);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- COVER STATE --- */
+        #book-cover {
+            width: 400px;
+            height: 550px;
+            background: var(--leather);
+            border-radius: 5px 15px 15px 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            box-shadow: 20px 20px 60px rgba(0, 0, 0, 0.8), inset 5px 0 10px rgba(255, 255, 255, 0.1);
+            border-left: 10px solid #2a1d15;
+            z-index: 10;
+            transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1), opacity 0.5s;
+        }
+
+        .cover-title {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 2.2rem;
+            margin-bottom: 40px;
+            line-height: 1.4;
+            border-top: 1px solid var(--gold);
+            border-bottom: 1px solid var(--gold);
+            padding: 20px 0;
+        }
+
+        .read-btn {
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            padding: 12px 30px;
+            font-family: 'Playfair Display', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .read-btn:hover {
+            background: var(--gold);
+            color: var(--leather);
+        }
+
+        /* --- STORY STATE --- */
+        .book-container {
+            width: 95%;
+            max-width: 1200px;
+            height: 85vh;
+            background: var(--parchment);
+            /* Soft outer shadow + a dark 'edge' to simulate page thickness */
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.5),
+                10px 0 20px rgba(0, 0, 0, 0.3);
+            display: none;
+            position: relative;
+            flex-direction: row;
+            /* This creates the rounded outer corners and the flatter spine side */
+            border-radius: 5px 15px 15px 5px;
+            overflow: hidden;
+            animation: fadeIn 1s forwards;
+            /* The Spine Shadow */
+            border-left: 15px solid #2a1d15;
+            background-color: var(--parchment);
+            background-image: url("https://www.transparenttextures.com/patterns/p6.png");
+            background-repeat: repeat;
+        }
+
+        /* Creates the shadow in the middle where the pages meet */
+        .book-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 100%;
+            background: linear-gradient(to right,
+                    rgba(0, 0, 0, 0) 0%,
+                    rgba(0, 0, 0, 0.15) 50%,
+                    rgba(0, 0, 0, 0) 100%);
+            pointer-events: none;
+            /* Allows clicking through the shadow */
+            z-index: 5;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .media-pane {
+            width: 50%;
+            height: 100%;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-layer {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            transition: opacity 1.5s ease-in-out;
+            animation: kenburns 20s infinite alternate;
+        }
+
+        @keyframes kenburns {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.1);
+            }
+        }
+
+        .text-pane {
+            width: 50%;
+            height: 100%;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            /* Gradient starts dark at the 'fold' and gets lighter */
+            background:
+                linear-gradient(to right, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0) 10%),
+                url("https://www.transparenttextures.com/patterns/p6.png"),
+                var(--parchment);
+        }
+
+        .chapter-num {
+            font-family: 'Playfair Display', serif;
+            color: var(--accent);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .chapter-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .chapter-msg {
+            line-height: 1.8;
+            font-style: italic;
+        }
+
+        .nav-btn {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            background: var(--accent);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Playfair Display', serif;
+            display: none;
+            box-shadow: 0 4px 15px rgba(142, 36, 36, 0.3);
+        }
+
+        .nav-btn.ready {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(142, 36, 36, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(142, 36, 36, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(142, 36, 36, 0);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .book-container {
+                flex-direction: column;
+                height: 95vh;
+                overflow-y: auto;
+            }
+
+            .media-pane {
+                width: 50%;
+                height: 100%;
+                background: #000;
+                position: relative;
+                overflow: hidden;
+                /* Border on the right to separate it from the text page */
+                border-right: 1px solid rgba(0, 0, 0, 0.1);
+            }
+
+            #book-cover {
+                width: 90%;
+                height: 70vh;
+            }
+        }
+
+        /* Add this near your other chapter styles */
+        .small-text {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="book-cover">
+        <h1 class="cover-title">A Lebanese Soul,<br>A Spanish Heart,<br>A Parisian Home</h1>
+        <button class="read-btn" onclick="startStory()">Read Story</button>
+    </div>
+
+    <div class="book-container" id="book">
+        <div class="media-pane" id="mediaPane"></div>
+        <div class="text-pane">
+            <div class="chapter-num" id="chapNum"></div>
+            <h1 class="chapter-title" id="chapTitle"></h1>
+            <p class="chapter-msg" id="chapMsg"></p>
+            <button class="nav-btn" id="nextBtn" onclick="nextChapter()">Next Chapter</button>
+        </div>
+    </div>
+
+    <audio id="mainAudio"></audio>
+
+    <script>
+        let chapters = [];
+        let currentIdx = 0;
+        let photoInterval;
+
+        async function startStory() {
+            // Load JSON
+            const response = await fetch('theStory.json');
+            chapters = await response.json();
+
+            // Transition UI
+            document.getElementById('book-cover').style.transform = "translateX(-150%) rotateY(-20deg)";
+            setTimeout(() => {
+                document.getElementById('book-cover').style.display = "none";
+                document.getElementById('book').style.display = "flex";
+                renderChapter();
+            }, 600);
+        }
+
+        function renderChapter() {
+            const ch = chapters[currentIdx];
+            const nextBtn = document.getElementById('nextBtn');
+            const audio = document.getElementById('mainAudio');
+
+            // Update UI // testing next chapter button
+            nextBtn.classList.add('ready');
+            document.getElementById('chapNum').innerText = `Chapter ${ch.chapterNumber}`;
+            document.getElementById('chapTitle').innerText = ch.chapterName;
+            document.getElementById('chapMsg').innerText = ch.chapterMessage;
+
+            // Special handling for Chapter 10 font size
+            const chapMsgEl = document.getElementById('chapMsg');
+            if (ch.chapterNumber == 10) {
+                chapMsgEl.classList.add('small-text');
+            } else {
+                chapMsgEl.classList.remove('small-text');
+            }
+
+            // Photos Logic
+            clearInterval(photoInterval);
+            const mediaPane = document.getElementById('mediaPane');
+            mediaPane.innerHTML = '';
+
+            let photos = ch.chapterPhotos;
+            let currentPhotoIdx = 0;
+
+            const addPhoto = (src) => {
+                const div = document.createElement('div');
+                div.className = 'photo-layer';
+                div.style.backgroundImage = `url('images/storyPhotos/${src}')`;
+                return div;
+            };
+
+            if (photos.length > 0) {
+                let layers = photos.map(src => {
+                    let l = addPhoto(src);
+                    l.style.opacity = 0;
+                    mediaPane.appendChild(l);
+                    return l;
+                });
+                layers[0].style.opacity = 1;
+
+                if (layers.length > 1) {
+                    // 10 seconds for Chapter 2, 4 seconds for everyone else
+                    const speed =
+                        (ch.chapterNumber == 1 || ch.chapterNumber == 2) ? 10000 :
+                            (ch.chapterNumber == 6) ? 3150 :
+                                (ch.chapterNumber == 7) ? 3750 :
+                                    (ch.chapterNumber == 8) ? 5100 :
+                                        (ch.chapterNumber == 9) ? 3500 :
+                                            4500;
+
+                    photoInterval = setInterval(() => {
+                        layers[currentPhotoIdx].style.opacity = 0;
+                        currentPhotoIdx = (currentPhotoIdx + 1) % layers.length;
+                        layers[currentPhotoIdx].style.opacity = 1;
+                    }, speed);
+                }
+            }
+
+            // Audio Logic
+            audio.src = `audio/chapter${ch.chapterNumber}.mp3`;
+            audio.play();
+
+            audio.onended = () => {
+                if (currentIdx < chapters.length - 1) {
+                    nextBtn.classList.add('ready');
+                } else {
+                    // Final proposal styling if needed
+                    document.getElementById('book').style.boxShadow = "0 0 50px var(--gold)";
+                }
+            };
+        }
+
+        function nextChapter() {
+            currentIdx++;
+            renderChapter();
+        }
+    </script>
+</body>
+
+</html>
