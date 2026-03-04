@@ -308,10 +308,13 @@
 
             // Special handling for Chapter 10 font size
             const chapMsgEl = document.getElementById('chapMsg');
-            if (ch.chapterNumber == 10) {
+            if (
+                ch.chapterNumber == 6 ||
+                ch.chapterNumber == 7 ||
+                ch.chapterNumber == 8 ||
+                ch.chapterNumber == 10
+            ) {
                 chapMsgEl.classList.add('small-text');
-            } else {
-                chapMsgEl.classList.remove('small-text');
             }
 
             // Photos Logic
