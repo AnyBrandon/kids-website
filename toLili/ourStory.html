@@ -342,6 +342,18 @@
             // Update active button UI
             document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
+
+            const textPane = document.querySelector('.text-pane');
+            const chapTitle = document.getElementById('chapTitle');
+            const chapMsg = document.getElementById('chapMsg');
+
+            if (fileName.includes('_ar')) {
+                // Arabic specific styling
+                textPane.style.direction = 'rtl';
+                textPane.style.textAlign = 'right';
+                chapTitle.style.fontSize = '3rem'; // Made larger (from 2.5rem)
+                chapMsg.style.fontSize = '1.2rem';   // Made larger (from standard)
+            }
         }
 
         function renderChapter() {
