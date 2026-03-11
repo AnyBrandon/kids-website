@@ -362,8 +362,8 @@
             const audio = document.getElementById('mainAudio');
 
             // Update UI // testing next chapter button
-            // nextBtn.classList.add('ready');
-            nextBtn.classList.remove('ready');
+             nextBtn.classList.add('ready');
+          //  nextBtn.classList.remove('ready');
             document.getElementById('chapNum').innerText = `Chapter ${ch.chapterNumber}`;
             document.getElementById('chapTitle').innerText = ch.chapterName;
             document.getElementById('chapMsg').innerText = ch.chapterMessage;
@@ -377,6 +377,10 @@
                 ch.chapterNumber == 10
             ) {
                 chapMsgEl.classList.add('small-text');
+            }
+            // Specifically target Arabic Chapter 10 to be even smaller
+            if (ch.chapterNumber == 10 && selectedFile.includes('_ar')) {
+                chapMsgEl.style.fontSize = '1.1rem'; // Adjust this value as needed
             }
 
             // Photos Logic
@@ -437,7 +441,7 @@
 
         function nextChapter() {
             // Hide the button immediately when clicked
-            document.getElementById('nextBtn').classList.remove('ready');
+         //   document.getElementById('nextBtn').classList.remove('ready');
             currentIdx++;
             renderChapter();
         }
