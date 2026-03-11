@@ -254,10 +254,47 @@
             font-size: 0.9rem;
             line-height: 1.6;
         }
+
+        /* Language Selector Styles */
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            padding: 8px 15px;
+            font-family: 'Playfair Display', serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .lang-btn.active {
+            background: var(--gold);
+            color: var(--leather);
+        }
+
+        .lang-btn:hover {
+            background: var(--gold);
+            color: var(--leather);
+        }
     </style>
 </head>
 
 <body>
+
+    <div class="lang-selector" id="langSelector">
+        <button class="lang-btn active" onclick="setLanguage('theStory.json', this)">English</button>
+        <button class="lang-btn" onclick="setLanguage('theStory_es.json', this)">Español</button>
+        <button class="lang-btn" onclick="setLanguage('theStory_ar.json', this)">العربية</button>
+    </div>
 
     <div id="book-cover">
         <h1 class="cover-title">A Lebanese Soul,<br>A Spanish Heart,<br>A Parisian Home</h1>
@@ -277,22 +314,34 @@
     <audio id="mainAudio"></audio>
 
     <script>
+        let selectedFile = 'theStory.json'; // Default
         let chapters = [];
         let currentIdx = 0;
         let photoInterval;
 
         async function startStory() {
-            // Load JSON
-            const response = await fetch('theStory.json');
+            // 1. Hide the language selector when story starts
+            document.getElementById('langSelector').style.display = 'none';
+
+            // 2. Load the specific JSON based on selection
+            const response = await fetch(selectedFile);
             chapters = await response.json();
 
-            // Transition UI
+            // Transition UI (Rest of your existing code...)
             document.getElementById('book-cover').style.transform = "translateX(-150%) rotateY(-20deg)";
             setTimeout(() => {
                 document.getElementById('book-cover').style.display = "none";
                 document.getElementById('book').style.display = "flex";
                 renderChapter();
             }, 600);
+        }
+
+        function setLanguage(fileName, element) {
+            selectedFile = fileName;
+
+            // Update active button UI
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
         }
 
         function renderChapter() {
