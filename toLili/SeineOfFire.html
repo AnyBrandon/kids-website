@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0e1a" />
+<title>Seine of Fire — Beirut × Madrid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg-deep: #07090f; --bg-mid: #0d1320; --bg-rise: #161d2f;
+    --ink: #f4ede0; --ink-soft: rgba(244,237,224,0.55); --ink-faint: rgba(244,237,224,0.18);
+    --flame: #ffb061; --flame-deep: #e87044; --ember: #f9c97a;
+    --rose: #d9637a; --seine: #5f7fa6;
+    --radius: 18px; --easing: cubic-bezier(.4,0,.2,1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: 'Manrope', system-ui, sans-serif;
+    color: var(--ink); background: var(--bg-deep);
+    position: relative; overscroll-behavior: none;
+    user-select: none; -webkit-user-select: none;
+  }
+
+  .ambient {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 15%, rgba(255,176,97,0.18), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 85% 85%, rgba(95,127,166,0.22), transparent 65%),
+      radial-gradient(ellipse 60% 70% at 50% 50%, rgba(232,112,68,0.08), transparent 70%),
+      linear-gradient(180deg, #0a0e1a 0%, #07090f 60%, #050709 100%);
+    animation: ambientShift 22s ease-in-out infinite alternate;
+  }
+  @keyframes ambientShift {
+    0%   { transform: translate(0,0) scale(1); filter: hue-rotate(0deg); }
+    100% { transform: translate(-2%,1.5%) scale(1.05); filter: hue-rotate(8deg); }
+  }
+
+  .grain {
+    position: fixed; inset: -50%; z-index: 1; pointer-events: none;
+    opacity: 0.08; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    animation: grainShift 2.4s steps(8) infinite;
+  }
+  @keyframes grainShift {
+    0%,100% { transform: translate(0,0); }
+    25% { transform: translate(-3%,2%); }
+    50% { transform: translate(2%,-3%); }
+    75% { transform: translate(-2%,-2%); }
+  }
+
+  .stage {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    height: 100dvh; width: 100%; max-width: 540px; margin: 0 auto;
+    padding: max(env(safe-area-inset-top), 18px) 22px max(env(safe-area-inset-bottom), 18px);
+  }
+
+  .top-bar {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+    opacity: 0; animation: fadeDown .9s var(--easing) .1s forwards;
+  }
+  .top-tag {
+    font-family: 'Fraunces', serif; font-style: italic; font-weight: 400;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .top-tag::before { content: "✦ "; color: var(--flame); }
+  .top-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--flame);
+    box-shadow: 0 0 12px var(--flame), 0 0 24px rgba(255,176,97,.5);
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: .55; transform: scale(.85); }
+    50% { opacity: 1; transform: scale(1); }
+  }
+
+  .cover-wrap {
+    display: flex; justify-content: center; margin-bottom: 14px;
+    opacity: 0; animation: fadeUp 1s var(--easing) .25s forwards;
+  }
+  .cover {
+    position: relative;
+    width: 58vw; max-width: 240px; aspect-ratio: 1/1;
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow:
+      0 22px 50px -12px rgba(0,0,0,.7),
+      0 0 60px -10px rgba(255,140,80,.35),
+      inset 0 0 0 1px rgba(255,255,255,.08);
+    transition: transform .8s var(--easing);
+  }
+  .cover.playing { animation: cover-breathe 6s ease-in-out infinite; }
+  @keyframes cover-breathe {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.025); }
+  }
+  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,196,130,.12), transparent 55%),
+      linear-gradient(180deg, transparent 60%, rgba(0,0,0,.35));
+    pointer-events: none;
+  }
+  .cover-wrap::before {
+    content: ""; position: absolute;
+    width: 70vw; max-width: 280px; aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,140,80,.28), transparent 65%);
+    filter: blur(40px); z-index: -1;
+    animation: halo 8s ease-in-out infinite alternate;
+  }
+  @keyframes halo {
+    from { opacity: .55; transform: scale(.9); }
+    to { opacity: .9; transform: scale(1.08); }
+  }
+
+  .title-block {
+    text-align: center; margin-bottom: 16px;
+    opacity: 0; animation: fadeUp .9s var(--easing) .45s forwards;
+  }
+  .song-title {
+    font-family: 'Fraunces', serif; font-weight: 500;
+    font-variation-settings: "opsz" 96;
+    font-size: clamp(26px,6.4vw,34px);
+    letter-spacing: -0.01em; line-height: 1.05; color: var(--ink);
+  }
+  .song-title em {
+    font-style: italic; font-weight: 400; color: var(--flame);
+    font-variation-settings: "opsz" 144;
+  }
+  .song-artist {
+    margin-top: 6px; font-family: 'Manrope', sans-serif; font-weight: 400;
+    font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .song-artist .x {
+    color: var(--flame-deep); font-family: 'Fraunces', serif; font-style: italic;
+    margin: 0 6px; font-weight: 500;
+  }
+
+  .player {
+    display: flex; flex-direction: column; gap: 12px;
+    margin-bottom: 14px;
+    opacity: 0; animation: fadeUp .9s var(--easing) .65s forwards;
+  }
+  .progress-row {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Manrope', sans-serif; font-variant-numeric: tabular-nums;
+    font-size: 11px; letter-spacing: .08em; color: var(--ink-soft);
+  }
+  .progress {
+    flex: 1; height: 3px; background: rgba(255,255,255,.08);
+    border-radius: 2px; position: relative; cursor: pointer;
+  }
+  .progress-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+    background: linear-gradient(90deg, var(--flame-deep), var(--flame), var(--ember));
+    border-radius: 2px; box-shadow: 0 0 8px rgba(255,176,97,.6);
+    transition: width .12s linear;
+  }
+  .progress-fill::after {
+    content: ""; position: absolute; right: -5px; top: 50%;
+    transform: translateY(-50%);
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--ember); box-shadow: 0 0 10px rgba(255,200,130,.8);
+    opacity: 0; transition: opacity .2s;
+  }
+  .progress:hover .progress-fill::after,
+  .progress.dragging .progress-fill::after { opacity: 1; }
+
+  .controls { display: flex; align-items: center; justify-content: center; gap: 22px; }
+  .ctrl-btn {
+    background: none; border: none; color: var(--ink); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .2s var(--easing), color .2s;
+    padding: 8px;
+  }
+  .ctrl-btn:hover { color: var(--flame); }
+  .ctrl-btn:active { transform: scale(.92); }
+  .ctrl-btn svg { width: 22px; height: 22px; }
+  .play-btn {
+    width: 58px; height: 58px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--flame), var(--flame-deep));
+    box-shadow: 0 8px 22px -4px rgba(255,140,80,.55), inset 0 1px 0 rgba(255,255,255,.3);
+    transition: transform .25s var(--easing), box-shadow .25s;
+  }
+  .play-btn:hover { color: #fff; transform: scale(1.04); }
+  .play-btn:active { transform: scale(.96); }
+  .play-btn svg { width: 22px; height: 22px; color: #1a0f08; }
+
+  .lyrics-frame {
+    flex: 1; min-height: 0; position: relative;
+    border-radius: var(--radius); overflow: hidden;
+    background: linear-gradient(180deg, rgba(20,26,42,.55), rgba(13,19,32,.45));
+    border: 1px solid rgba(255,255,255,.05);
+    box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+    opacity: 0; animation: fadeUp .9s var(--easing) .85s forwards;
+  }
+  .lyrics-frame::before, .lyrics-frame::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 60px;
+    z-index: 3; pointer-events: none;
+  }
+  .lyrics-frame::before { top: 0; background: linear-gradient(180deg, rgba(13,19,32,.95), transparent); }
+  .lyrics-frame::after { bottom: 0; background: linear-gradient(0deg, rgba(13,19,32,.95), transparent); }
+
+  .lyrics {
+    height: 100%; overflow-y: auto;
+    padding: 50% 22px;
+    scroll-behavior: smooth;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .lyrics::-webkit-scrollbar { display: none; }
+
+  .lyric-line {
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-variation-settings: "opsz" 36;
+    font-size: clamp(16px,4.3vw,19px);
+    line-height: 1.55; color: var(--ink-faint);
+    text-align: center; margin: 14px 0; padding: 2px 4px;
+    transition: color .5s var(--easing), opacity .5s var(--easing),
+                transform .5s var(--easing), filter .5s;
+    will-change: opacity, transform, color; cursor: pointer;
+  }
+  .lyric-line.verse-start { margin-top: 28px; }
+  .lyric-line.past { color: rgba(244,237,224,.22); transform: scale(.96); }
+  .lyric-line.future { color: rgba(244,237,224,.28); transform: scale(.97); }
+  .lyric-line.active {
+    color: var(--ink); font-weight: 500; font-style: italic;
+    font-variation-settings: "opsz" 96;
+    transform: scale(1.02);
+    text-shadow: 0 0 22px rgba(255,176,97,.35), 0 0 50px rgba(255,140,80,.18);
+    filter: brightness(1.15);
+  }
+  .lyric-line.active::after {
+    content: ""; display: block; width: 32px; height: 1px;
+    margin: 12px auto 0;
+    background: linear-gradient(90deg, transparent, var(--flame), transparent);
+    opacity: .8; animation: shimmer 2s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%,100% { opacity: .4; transform: scaleX(.7); }
+    50% { opacity: 1; transform: scaleX(1.2); }
+  }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 420px) {
+    .stage { padding: max(env(safe-area-inset-top),14px) 16px max(env(safe-area-inset-bottom),14px); }
+    .cover { width: 50vw; }
+    .cover-wrap { margin-bottom: 10px; }
+    .title-block { margin-bottom: 12px; }
+    .player { gap: 10px; margin-bottom: 10px; }
+    .play-btn { width: 52px; height: 52px; }
+    .lyric-line { margin: 12px 0; }
+  }
+  @media (max-height: 700px) {
+    .cover { width: 38vw; max-width: 160px; }
+    .song-title { font-size: clamp(20px,5vw,26px); }
+    .song-artist { font-size: 10px; }
+    .play-btn { width: 50px; height: 50px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ambient, .grain, .cover.playing, .cover-wrap::before,
+    .lyric-line.active::after, .top-dot {
+      animation: none !important;
+    }
+    .lyrics { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="grain"></div>
+
+<main class="stage">
+
+  <div class="top-bar">
+    <span class="top-tag">Now playing</span>
+    <span class="top-dot" id="liveDot"></span>
+  </div>
+
+  <div class="cover-wrap">
+    <div class="cover" id="cover">
+      <img src="images/cover/coverSong.png" alt="Seine of Fire cover" />
+    </div>
+  </div>
+
+  <div class="title-block">
+    <h1 class="song-title">Seine of <em>Fire</em></h1>
+    <p class="song-artist">Beirut <span class="x">×</span> Madrid</p>
+  </div>
+
+  <div class="player">
+    <div class="progress-row">
+      <span id="timeNow">0:00</span>
+      <div class="progress" id="progress">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span id="timeTotal">2:39</span>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="backBtn" aria-label="Back 10 seconds">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 3-6.7" />
+          <polyline points="3 4 3 10 9 10" />
+          <text x="12" y="15" font-size="7" fill="currentColor" stroke="none" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700">10</text>
+        </svg>
+      </button>
+      <button class="ctrl-btn play-btn" id="playBtn" aria-label="Play / Pause">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </button>
+      <button class="ctrl-btn" id="fwdBtn" aria-label="Forward 10 seconds">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-3-6.7" />
+          <polyline points="21 4 21 10 15 10" />
+          <text x="12" y="15" font-size="7" fill="currentColor" stroke="none" text-anchor="middle" font-family="Manrope, sans-serif" font-weight="700">10</text>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <section class="lyrics-frame">
+    <div class="lyrics" id="lyrics" aria-live="polite"></div>
+  </section>
+
+</main>
+
+<audio id="audio" src="song/Seine of Fire (Beirut x Madrid).mp3" preload="metadata"></audio>
+
+<script>
+  /* ===== LYRICS — synced timings ===== */
+  const LYRICS = [
+    { t: 1.41,   text: "Met in Paris where the rain speaks slow, two strangers in the city glow,", verse: true },
+    { t: 5.96,   text: "He from Beirut with a restless mind, she from Madrid with a fire inside," },
+    { t: 11.62,  text: "Crossed on a bridge where the Seine runs deep, said one hello that they still keep," },
+    { t: 17.68,  text: "Different stories in the same cold air, but something in them already cared," },
+    { t: 23.81,  text: "He said “I’m chaos,” she said “I’m fight,” still they stayed through that Paris night." },
+
+    { t: 31.78,  text: "Now they’re living where the old streets bend, two lives trying to learn to blend,", verse: true },
+    { t: 37.38,  text: "Morning coffee in a shared small flat, arguing over this and that," },
+    { t: 42.81,  text: "Hummus meets tapas on Sunday plate, love and ego never separate," },
+    { t: 48.47,  text: "She raises voice, he turns away, both of them too proud to stay," },
+    { t: 55.65,  text: "But even when the words cut deep, they still come back before they sleep." },
+
+    { t: 61.86,  text: "Paris nights turn heavy with sound, love and anger spinning around,", verse: true },
+    { t: 67.24,  text: "She says “You don’t hear what I mean,” he says “You make everything mean,”" },
+    { t: 72.86,  text: "Doors might slam but hearts don’t break, just bend under the choices they make," },
+    { t: 78.45,  text: "Because every fight that pulls them apart, still leads back to the same shared heart," },
+    { t: 84.48,  text: "Two tempers burning in different tone, still they call each other home." },
+
+    { t: 93.36,  text: "They travel out through maps and pain, Madrid sun and Beirut rain,", verse: true },
+    { t: 99.16,  text: "But always back to Paris streets, where stubborn love refuses defeat," },
+    { t: 104.17, text: "Fights in taxis, laughs on trains, kisses after emotional rains," },
+    { t: 109.94, text: "Learning that love ain’t always peace, sometimes it’s war that never cease," },
+    { t: 116.87, text: "Still they choose to stay and try, under the same gray Paris sky." },
+
+    { t: 123.34, text: "Now they talk less war, more grace, same love written on each face,", verse: true },
+    { t: 128.46, text: "Arguments fade like morning mist, but they remember why they exist," },
+    { t: 134.23, text: "He holds her hand, she holds his name, different hearts but the same flame," },
+    { t: 139.85, text: "From Beirut roots to Madrid fire, Paris watched their love get higher," },
+    { t: 146.21, text: "Not perfect no but strong and real, and love is what they both still feel." },
+  ];
+
+  /* ===== ELEMENTS ===== */
+  const audio        = document.getElementById('audio');
+  const lyricsEl     = document.getElementById('lyrics');
+  const playBtn      = document.getElementById('playBtn');
+  const playIcon     = document.getElementById('playIcon');
+  const backBtn      = document.getElementById('backBtn');
+  const fwdBtn       = document.getElementById('fwdBtn');
+  const cover        = document.getElementById('cover');
+  const progress     = document.getElementById('progress');
+  const progressFill = document.getElementById('progressFill');
+  const timeNowEl    = document.getElementById('timeNow');
+  const timeTotalEl  = document.getElementById('timeTotal');
+
+  /* ===== BUILD LYRIC LINES ===== */
+  const lineNodes = LYRICS.map((line, i) => {
+    const el = document.createElement('div');
+    el.className = 'lyric-line future' + (line.verse ? ' verse-start' : '');
+    el.textContent = line.text;
+    el.dataset.index = i;
+    el.addEventListener('click', () => {
+      audio.currentTime = line.t;
+      if (audio.paused) audio.play();
+    });
+    lyricsEl.appendChild(el);
+    return el;
+  });
+
+  /* ===== PLAYBACK ===== */
+  const ICON_PLAY  = '<path d="M8 5v14l11-7z"/>';
+  const ICON_PAUSE = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
+
+  function togglePlay() {
+    if (audio.paused) audio.play();
+    else audio.pause();
+  }
+  playBtn.addEventListener('click', togglePlay);
+  audio.addEventListener('play',  () => { playIcon.innerHTML = ICON_PAUSE; cover.classList.add('playing'); });
+  audio.addEventListener('pause', () => { playIcon.innerHTML = ICON_PLAY;  cover.classList.remove('playing'); });
+  audio.addEventListener('ended', () => { playIcon.innerHTML = ICON_PLAY;  cover.classList.remove('playing'); });
+
+  backBtn.addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
+  fwdBtn .addEventListener('click', () => { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
+
+  function fmt(s) {
+    if (!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return m + ':' + sec;
+  }
+  audio.addEventListener('loadedmetadata', () => { timeTotalEl.textContent = fmt(audio.duration); });
+
+  /* ===== PROGRESS / SCRUB ===== */
+  function seekFromEvent(e) {
+    const rect = progress.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    if (audio.duration) audio.currentTime = pct * audio.duration;
+  }
+  let dragging = false;
+  progress.addEventListener('mousedown',  e => { dragging = true; progress.classList.add('dragging'); seekFromEvent(e); });
+  window.addEventListener('mousemove',    e => { if (dragging) seekFromEvent(e); });
+  window.addEventListener('mouseup',      () => { dragging = false; progress.classList.remove('dragging'); });
+  progress.addEventListener('touchstart', e => { dragging = true; progress.classList.add('dragging'); seekFromEvent(e); }, {passive:true});
+  progress.addEventListener('touchmove',  e => { if (dragging) seekFromEvent(e); }, {passive:true});
+  progress.addEventListener('touchend',   () => { dragging = false; progress.classList.remove('dragging'); });
+
+  /* ===== KARAOKE SYNC ===== */
+  let activeIdx = -1;
+
+  function findActiveIndex(t) {
+    let idx = -1;
+    for (let i = 0; i < LYRICS.length; i++) {
+      if (t >= LYRICS[i].t) idx = i;
+      else break;
+    }
+    return idx;
+  }
+
+  function scrollLineToCenter(node) {
+    const frameRect = lyricsEl.getBoundingClientRect();
+    const targetRect = node.getBoundingClientRect();
+    const offset = (targetRect.top - frameRect.top)
+                 - (lyricsEl.clientHeight / 2)
+                 + (node.clientHeight / 2);
+    lyricsEl.scrollTo({ top: lyricsEl.scrollTop + offset, behavior: 'smooth' });
+  }
+
+  function updateActive(t) {
+    const idx = findActiveIndex(t);
+    if (idx === activeIdx) return;
+    activeIdx = idx;
+    lineNodes.forEach((node, i) => {
+      node.classList.remove('active', 'past', 'future');
+      if      (i < idx)   node.classList.add('past');
+      else if (i === idx) node.classList.add('active');
+      else                node.classList.add('future');
+    });
+    if (idx >= 0) scrollLineToCenter(lineNodes[idx]);
+  }
+
+  audio.addEventListener('timeupdate', () => {
+    const t = audio.currentTime;
+    timeNowEl.textContent = fmt(t);
+    const pct = audio.duration ? (t / audio.duration) * 100 : 0;
+    progressFill.style.width = pct + '%';
+    updateActive(t);
+  });
+
+  /* ===== KEYBOARD ===== */
+  document.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, textarea')) return;
+    if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
+    else if (e.code === 'ArrowLeft')  { audio.currentTime = Math.max(0, audio.currentTime - 5); }
+    else if (e.code === 'ArrowRight') { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5); }
+  });
+
+  /* ===== INIT ===== */
+  updateActive(0);
+</script>
+
+</body>
+</html>
