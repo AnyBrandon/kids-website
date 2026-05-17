@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Slow Mo & Stress Show</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Orbitron', sans-serif;
+    background: radial-gradient(circle at top, #1a001f, #000);
+    color: #fff;
+    overflow-x: hidden;
+}
+
+/* glow background */
+body::before {
+    content: "";
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(#ff003c,#8a2be2,#00f5ff,#ff003c);
+    animation: spin 12s linear infinite;
+    opacity: 0.08;
+    z-index: -1;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* SPOTIFY STYLE TOP BAR */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 12px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #ff003c;
+    text-shadow: 0 0 10px #ff003c;
+}
+
+/* container */
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-top: 10px;
+    text-shadow: 0 0 10px #ff003c;
+}
+
+.cover {
+    width: 220px;
+    height: 220px;
+    border-radius: 20px;
+    margin: 20px auto;
+    overflow: hidden;
+    box-shadow: 0 0 25px #ff003c;
+}
+
+.cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* waveform */
+canvas {
+    width: 100%;
+    height: 80px;
+    margin-top: 10px;
+}
+
+/* player */
+.btn {
+    margin-top: 10px;
+    padding: 10px 20px;
+    border: none;
+    background: linear-gradient(90deg, #ff003c, #8a2be2);
+    color: white;
+    font-weight: bold;
+    border-radius: 30px;
+}
+
+/* progress bar */
+.progress-container {
+    width: 100%;
+    height: 6px;
+    background: #222;
+    border-radius: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg,#ff003c,#00f5ff);
+}
+
+/* lyrics */
+.lyrics {
+    margin-top: 30px;
+    text-align: left;
+    line-height: 1.8;
+    font-size: 0.95rem;
+    padding: 20px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(6px);
+
+    max-height: 300px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.line {
+    margin: 12px 0;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.line.active {
+    color: #00f5ff;
+    opacity: 1;
+    transform: translateX(6px);
+}
+
+/* mobile */
+@media (max-width: 600px) {
+    .title { font-size: 1.4rem; }
+    .cover { width: 180px; height: 180px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">SPOTIFY MODE: DISS TRACK ACTIVE</div>
+
+<div class="container">
+
+    <div class="title">Slow Mo & Stress Show</div>
+
+    <div class="cover">
+        <img src="images/slowMo.png" />
+    </div>
+
+    <canvas id="visualizer"></canvas>
+
+    <audio id="audio" src="sounds/LostCause.mp3"></audio>
+
+    <button class="btn" onclick="togglePlay()" id="btn">Play / Pause</button>
+
+    <div class="progress-container">
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="lyrics" id="lyricsBox">
+        <div class="line">Franco walks in, yeah the legend is loud,</div>
+        <div class="line">But the football pitch clears like he’s clearing the crowd,</div>
+        <div class="line">Ball at his feet? Nah, that’s a lost cause scene,</div>
+        <div class="line">Even the ref’s like “bro, what did you mean?”</div>
+
+        <div class="line">Ploufi in the room, stress on repeat,</div>
+        <div class="line">Nails disappear like a nervous snack treat,</div>
+        <div class="line">Bite after bite like a looping routine,</div>
+        <div class="line">Even her hands say “we’ve seen this routine.”</div>
+
+        <div class="line">He’s in Fortnite, lobby shakes when you hit “start”,</div>
+        <div class="line">Rocket League crashes when he plays his part,</div>
+        <div class="line">Everything moves slow like a loading screen curse,</div>
+        <div class="line">School in his past like “yeah, that got worse.”</div>
+
+        <div class="line">She hears one comment and spirals away,</div>
+        <div class="line">Tears on standby every single day,</div>
+        <div class="line">Math on the board looks like alien code to her,</div>
+        <div class="line">Her brain hits “error” in emotional mode.</div>
+
+        <div class="line">He can’t score, she can’t stop,</div>
+        <div class="line">He kicks air, her nails go pop pop pop,</div>
+        <div class="line">Together they’re chaos, a sitcom disaster,</div>
+        <div class="line">But somehow the world just keeps spinning faster.</div>
+    </div>
+
+</div>
+
+<script>
+const audio = document.getElementById("audio");
+const btn = document.getElementById("btn");
+const progress = document.getElementById("progress");
+const lyricsBox = document.getElementById("lyricsBox");
+const lines = document.querySelectorAll(".line");
+
+function togglePlay() {
+    if (audio.paused) {
+        audio.play();
+        startVisualizer();
+        btn.innerText = "Pause";
+    } else {
+        audio.pause();
+        btn.innerText = "Play";
+    }
+}
+
+/* progress + lyrics sync */
+audio.ontimeupdate = () => {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progress.style.width = percent + "%";
+
+    // lyric sync (approx per line)
+  const index = Math.floor(((audio.currentTime + 1) / audio.duration) * lines.length);
+
+    lines.forEach((l, i) => {
+        l.classList.toggle("active", i === index);
+        if (i === index) {
+            l.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    });
+
+    drawWave();
+};
+
+/* waveform */
+const canvas = document.getElementById("visualizer");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+
+let audioCtx, analyser, source, dataArray;
+
+function startVisualizer() {
+    if (audioCtx) return;
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    source = audioCtx.createMediaElementSource(audio);
+
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    analyser.fftSize = 128;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+}
+
+function drawWave() {
+    if (!analyser) return;
+
+    analyser.getByteFrequencyData(dataArray);
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    let barWidth = (canvas.width / dataArray.length);
+
+    for (let i = 0; i < dataArray.length; i++) {
+        let barHeight = dataArray[i] / 2;
+
+        ctx.fillStyle = "#ff003c";
+        ctx.fillRect(i * barWidth, 80 - barHeight, barWidth - 2, barHeight);
+    }
+}
+</script>
+
+</body>
+</html>
