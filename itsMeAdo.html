@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a1020" />
+<title>It's me Ado — for Georgy + Rita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Caveat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg-deep:   #07101f;
+    --bg-mid:    #0e1a2e;
+    --bg-rise:   #182640;
+    --ink:       #f0f4fa;
+    --ink-soft:  rgba(240,244,250,0.58);
+    --ink-faint: rgba(240,244,250,0.16);
+    --teal:      #2dd4bf;
+    --teal-bright: #5eead4;
+    --teal-deep: #0d9488;
+    --cyan:      #67e8f9;
+    --gold:      #fcd34d;
+    --gold-deep: #d4a017;
+    --amber:     #fb923c;
+    --indigo:    #6366f1;
+    --radius: 14px; --easing: cubic-bezier(.4,0,.2,1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: var(--ink); background: var(--bg-deep);
+    position: relative; overscroll-behavior: none;
+    user-select: none; -webkit-user-select: none;
+  }
+
+  /* ============ AMBIENT BACKGROUND ============ */
+  .ambient {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 10%, rgba(45,212,191,0.16), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 88% 90%, rgba(99,102,241,0.18), transparent 65%),
+      radial-gradient(ellipse 80% 60% at 50% 100%, rgba(252,211,77,0.06), transparent 60%),
+      linear-gradient(180deg, #0e1a2e 0%, #07101f 60%, #04080f 100%);
+    animation: ambientShift 26s ease-in-out infinite alternate;
+  }
+  @keyframes ambientShift {
+    0%   { transform: translate(0,0) scale(1); }
+    100% { transform: translate(-2%, 1.5%) scale(1.04); }
+  }
+
+  /* cool grain */
+  .grain {
+    position: fixed; inset: -50%; z-index: 1; pointer-events: none;
+    opacity: 0.07; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.7  0 0 0 0 0.9  0 0 0 0 1  0 0 0 1 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    animation: grainShift 3s steps(8) infinite;
+  }
+  @keyframes grainShift {
+    0%,100% { transform: translate(0,0); }
+    25% { transform: translate(-2%,2%); }
+    50% { transform: translate(2%,-2%); }
+    75% { transform: translate(-2%,-2%); }
+  }
+
+  /* star particles */
+  .stars { position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+  .star {
+    position: absolute; bottom: -20px;
+    width: 3px; height: 3px; border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 0 6px var(--teal-bright), 0 0 12px rgba(94,234,212,.45);
+    opacity: 0;
+    animation: starDrift 24s linear infinite;
+  }
+  .star.gold { background: var(--gold); box-shadow: 0 0 6px var(--gold), 0 0 14px rgba(252,211,77,.4); }
+  .star.cyan { background: var(--cyan); box-shadow: 0 0 6px var(--cyan), 0 0 14px rgba(103,232,249,.5); }
+  .star:nth-child(1) { left: 6%;  animation-delay: 0s;   animation-duration: 26s; }
+  .star:nth-child(2) { left: 18%; animation-delay: 5s;   animation-duration: 22s; }
+  .star:nth-child(3) { left: 30%; animation-delay: 11s;  animation-duration: 28s; }
+  .star:nth-child(4) { left: 44%; animation-delay: 3s;   animation-duration: 24s; }
+  .star:nth-child(5) { left: 56%; animation-delay: 15s;  animation-duration: 30s; }
+  .star:nth-child(6) { left: 68%; animation-delay: 8s;   animation-duration: 25s; }
+  .star:nth-child(7) { left: 80%; animation-delay: 13s;  animation-duration: 21s; }
+  .star:nth-child(8) { left: 92%; animation-delay: 1s;   animation-duration: 27s; }
+  @keyframes starDrift {
+    0%   { opacity: 0; transform: translateY(0) translateX(0); }
+    10%  { opacity: .85; }
+    50%  { transform: translateY(-50vh) translateX(-12px); opacity: .85; }
+    90%  { opacity: .6; }
+    100% { opacity: 0; transform: translateY(-110vh) translateX(8px); }
+  }
+  .star.twinkle { animation: starDrift 24s linear infinite, twinkle 1.6s ease-in-out infinite; }
+  @keyframes twinkle {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.6); }
+  }
+
+  /* ============ LAYOUT ============ */
+  .stage {
+    position: relative; z-index: 3;
+    display: flex; flex-direction: column;
+    height: 100dvh; width: 100%; max-width: 540px; margin: 0 auto;
+    padding: max(env(safe-area-inset-top), 16px) 22px max(env(safe-area-inset-bottom), 16px);
+  }
+
+  /* ============ TOP BAR ============ */
+  .top-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+    opacity: 0; animation: fadeDown .9s var(--easing) .1s forwards;
+  }
+  .crown-icon {
+    width: 14px; height: 14px; color: var(--gold);
+    filter: drop-shadow(0 0 6px rgba(252,211,77,.5));
+  }
+  .top-tag {
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600;
+    font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .top-tag b { color: var(--teal-bright); font-weight: 700; }
+  .top-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--teal);
+    box-shadow: 0 0 10px var(--teal), 0 0 20px rgba(45,212,191,.45);
+    animation: dotPulse 2s ease-in-out infinite;
+    margin-left: 4px;
+  }
+  @keyframes dotPulse {
+    0%,100% { opacity: .5; transform: scale(.85); }
+    50%     { opacity: 1;  transform: scale(1.05); }
+  }
+
+  /* ============ COVER ============ */
+  .cover-wrap {
+    display: flex; justify-content: center; margin-bottom: 12px; position: relative;
+    opacity: 0; animation: fadeUp 1s var(--easing) .25s forwards;
+  }
+  .cover {
+    position: relative;
+    width: 66vw; max-width: 290px; aspect-ratio: 1/1;
+    border-radius: var(--radius); overflow: hidden;
+    border: 1px solid rgba(45,212,191,.22);
+    box-shadow:
+      0 22px 50px -12px rgba(0,0,0,.78),
+      0 0 70px -10px rgba(45,212,191,.35),
+      0 0 0 1px rgba(252,211,77,.08),
+      inset 0 0 0 1px rgba(255,255,255,.05);
+    transition: transform .8s var(--easing);
+  }
+  .cover.playing { animation: cover-breathe 5s ease-in-out infinite; }
+  @keyframes cover-breathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.022); }
+  }
+  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cover::after {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 25%, rgba(150,220,255,.08), transparent 55%),
+      linear-gradient(180deg, transparent 60%, rgba(7,16,31,.4));
+    pointer-events: none;
+  }
+  .cover-wrap::before {
+    content: ""; position: absolute;
+    width: 80vw; max-width: 350px; aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, rgba(45,212,191,.26), rgba(252,211,77,.10) 40%, transparent 70%);
+    filter: blur(50px);
+    z-index: -1;
+    animation: halo 8s ease-in-out infinite alternate;
+  }
+  @keyframes halo {
+    from { opacity: .55; transform: scale(.92); }
+    to   { opacity: .9;  transform: scale(1.08); }
+  }
+  .cover-crown {
+    position: absolute; top: -8px; left: calc(50% - 158px);
+    color: var(--gold);
+    filter: drop-shadow(0 0 10px rgba(252,211,77,.7));
+    width: 30px; height: 30px;
+    transform: rotate(-14deg);
+    z-index: 4;
+  }
+  @media (max-width: 520px) {
+    .cover-crown { left: calc(50% - 36vw); width: 26px; height: 26px; }
+  }
+
+  /* ============ TITLE ============ */
+  .title-block {
+    text-align: center; margin-bottom: 12px;
+    opacity: 0; animation: fadeUp .9s var(--easing) .45s forwards;
+  }
+  .title-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 12px; letter-spacing: .32em; text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: -2px;
+  }
+  .song-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(52px, 13vw, 78px);
+    letter-spacing: .08em;
+    line-height: .95;
+    color: var(--ink);
+    position: relative;
+    display: inline-block;
+    text-transform: uppercase;
+    text-shadow: 0 0 40px rgba(45,212,191,.25);
+  }
+  .title-mini-crown {
+    position: absolute; top: -22px; left: 50%;
+    transform: translateX(-50%);
+    width: 20px; height: 20px;
+    color: var(--gold);
+    filter: drop-shadow(0 0 8px rgba(252,211,77,.7));
+  }
+  .title-subtitle {
+    font-family: 'Caveat', cursive; font-weight: 600;
+    font-size: clamp(18px, 4.5vw, 22px);
+    color: var(--teal-bright);
+    margin-top: 8px;
+    letter-spacing: .02em;
+    text-shadow: 0 0 18px rgba(45,212,191,.3);
+  }
+  .title-subtitle .plus { color: var(--gold); margin: 0 2px; }
+
+  /* ============ PLAYER ============ */
+  .player {
+    display: flex; flex-direction: column; gap: 12px;
+    margin-bottom: 14px;
+    opacity: 0; animation: fadeUp .9s var(--easing) .65s forwards;
+  }
+  .progress-row {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-variant-numeric: tabular-nums;
+    font-size: 11px; letter-spacing: .08em; color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .progress {
+    flex: 1; height: 3px; background: rgba(255,255,255,.06);
+    border-radius: 3px; position: relative; cursor: pointer;
+  }
+  .progress-fill {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+    background: linear-gradient(90deg, var(--teal-deep), var(--teal), var(--teal-bright), var(--gold));
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(45,212,191,.6);
+    transition: width .12s linear;
+  }
+  .progress-fill::after {
+    content: ""; position: absolute; right: -5px; top: 50%;
+    transform: translateY(-50%);
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 10px rgba(252,211,77,.85), 0 0 20px rgba(45,212,191,.45);
+    opacity: 0; transition: opacity .2s;
+  }
+  .progress:hover .progress-fill::after,
+  .progress.dragging .progress-fill::after { opacity: 1; }
+
+  .controls { display: flex; align-items: center; justify-content: center; gap: 22px; }
+  .ctrl-btn {
+    background: none; border: none; color: var(--ink); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .2s var(--easing), color .2s;
+    padding: 8px;
+  }
+  .ctrl-btn:hover { color: var(--teal-bright); }
+  .ctrl-btn:active { transform: scale(.92); }
+  .ctrl-btn svg { width: 22px; height: 22px; }
+  .play-btn {
+    width: 62px; height: 62px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal-bright), var(--teal), var(--teal-deep));
+    border: 1px solid rgba(94,234,212,.5);
+    color: var(--bg-deep);
+    box-shadow:
+      0 8px 24px -4px rgba(45,212,191,.55),
+      0 0 32px -8px rgba(45,212,191,.6),
+      inset 0 1px 0 rgba(255,255,255,.35);
+    transition: transform .25s var(--easing), box-shadow .25s;
+  }
+  .play-btn:hover {
+    transform: scale(1.04);
+    box-shadow:
+      0 10px 28px -4px rgba(45,212,191,.7),
+      0 0 40px -8px rgba(94,234,212,.75),
+      inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .play-btn:active { transform: scale(.96); }
+  .play-btn svg { width: 24px; height: 24px; color: #042f2e; }
+
+  /* ============ LYRICS ============ */
+  .lyrics-frame {
+    flex: 1; min-height: 0; position: relative;
+    border-radius: var(--radius); overflow: hidden;
+    background: linear-gradient(180deg, rgba(24,38,64,.5), rgba(14,26,46,.4));
+    border: 1px solid rgba(45,212,191,.08);
+    box-shadow: inset 0 0 50px rgba(0,0,0,.4);
+    opacity: 0; animation: fadeUp .9s var(--easing) .85s forwards;
+  }
+  .lyrics-frame::before, .lyrics-frame::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 70px;
+    z-index: 3; pointer-events: none;
+  }
+  .lyrics-frame::before { top: 0;    background: linear-gradient(180deg, rgba(14,26,46,.98), transparent); }
+  .lyrics-frame::after  { bottom: 0; background: linear-gradient(0deg,   rgba(14,26,46,.98), transparent); }
+
+  /* padding-top/bottom set dynamically in JS so the active line truly centers
+     (CSS percentage padding resolves against width, not height, which broke centering on tall containers) */
+  .lyrics {
+    height: 100%; overflow-y: auto;
+    padding: 0 20px;
+    scroll-behavior: smooth;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .lyrics::-webkit-scrollbar { display: none; }
+
+  .lyric-line {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 500;
+    font-size: clamp(15px, 4.1vw, 18px);
+    line-height: 1.55; color: var(--ink-faint);
+    text-align: center;
+    margin: 13px 0; padding: 2px 4px;
+    transition: color .45s var(--easing),
+                transform .45s var(--easing),
+                filter .45s,
+                text-shadow .45s;
+    will-change: opacity, transform, color; cursor: pointer;
+  }
+  .lyric-line.verse-start { margin-top: 30px; position: relative; }
+  .lyric-line.verse-start::before {
+    content: "♛";
+    display: block;
+    color: var(--gold);
+    opacity: .45;
+    font-size: 11px;
+    margin-bottom: 8px;
+    letter-spacing: .2em;
+  }
+  .lyric-line.spoken {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--teal-bright);
+    opacity: .55;
+  }
+  .lyric-line.adlib {
+    font-size: clamp(12px, 3.2vw, 14px);
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(94,234,212,.4);
+    margin: 10px 0;
+    letter-spacing: .02em;
+  }
+  .lyric-line.past { color: rgba(240,244,250,.20); transform: scale(.96); }
+  .lyric-line.future { color: rgba(240,244,250,.26); transform: scale(.97); }
+  .lyric-line.spoken.past, .lyric-line.spoken.future { color: rgba(94,234,212,.18); }
+  .lyric-line.active {
+    color: var(--ink);
+    font-weight: 700;
+    transform: scale(1.025);
+    text-shadow:
+      0 0 22px rgba(45,212,191,.45),
+      0 0 50px rgba(94,234,212,.25);
+    filter: brightness(1.18);
+    opacity: 1;
+  }
+  .lyric-line.spoken.active {
+    color: var(--teal-bright);
+    text-shadow:
+      0 0 22px rgba(45,212,191,.5),
+      0 0 50px rgba(94,234,212,.3);
+  }
+  .lyric-line.adlib.active {
+    color: var(--cyan);
+    font-weight: 500;
+    text-shadow:
+      0 0 18px rgba(103,232,249,.5),
+      0 0 40px rgba(45,212,191,.25);
+  }
+  .lyric-line.active::after {
+    content: "";
+    display: block;
+    width: 30px; height: 1px;
+    margin: 12px auto 0;
+    background: linear-gradient(90deg, transparent, var(--teal), transparent);
+    opacity: .9; animation: shimmer 2.2s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0%, 100% { opacity: .4; transform: scaleX(.7); }
+    50%      { opacity: 1;   transform: scaleX(1.3); }
+  }
+
+  /* ============ ANIMATIONS ============ */
+  @keyframes fadeUp   { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 420px) {
+    .stage { padding: max(env(safe-area-inset-top),12px) 16px max(env(safe-area-inset-bottom),12px); }
+    .cover { width: 60vw; }
+    .cover-wrap { margin-bottom: 10px; }
+    .title-block { margin-bottom: 10px; }
+    .song-title { font-size: clamp(42px, 12vw, 60px); }
+    .title-mini-crown { width: 16px; height: 16px; top: -18px; }
+    .player { gap: 10px; margin-bottom: 10px; }
+    .play-btn { width: 56px; height: 56px; }
+    .lyric-line { margin: 11px 0; }
+  }
+  @media (max-height: 740px) {
+    .cover { width: 48vw; max-width: 200px; }
+    .song-title { font-size: clamp(34px, 9vw, 48px); }
+    .play-btn { width: 52px; height: 52px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ambient, .grain, .cover.playing, .cover-wrap::before,
+    .lyric-line.active::after, .top-dot, .star {
+      animation: none !important;
+    }
+    .lyrics { scroll-behavior: auto; }
+    .star { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ambient"></div>
+<div class="grain"></div>
+<div class="stars">
+  <span class="star"></span>
+  <span class="star gold twinkle"></span>
+  <span class="star"></span>
+  <span class="star cyan"></span>
+  <span class="star twinkle"></span>
+  <span class="star gold"></span>
+  <span class="star"></span>
+  <span class="star cyan twinkle"></span>
+</div>
+
+<main class="stage">
+
+  <div class="top-bar">
+    <svg class="crown-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 18h18l-1.5-9-4 3L12 6l-3.5 6-4-3L3 18zm0 2v1h18v-1H3z"/>
+    </svg>
+    <span class="top-tag">For my <b>lil legends</b></span>
+    <span class="top-dot"></span>
+  </div>
+
+  <div class="cover-wrap">
+    <svg class="cover-crown" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 18h18l-1.5-9-4 3L12 6l-3.5 6-4-3L3 18zm0 2v1h18v-1H3z"/>
+    </svg>
+    <div class="cover" id="cover">
+      <img src="images/covPhoto.png" alt="It's me Ado cover" />
+    </div>
+  </div>
+
+  <div class="title-block">
+    <p class="title-label">It's me</p>
+    <h1 class="song-title">
+      <svg class="title-mini-crown" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      </svg>
+      Ado
+    </h1>
+    <p class="title-subtitle">for Georgy <span class="plus">+</span> Rita</p>
+  </div>
+
+  <div class="player">
+    <div class="progress-row">
+      <span id="timeNow">0:00</span>
+      <div class="progress" id="progress">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span id="timeTotal">--:--</span>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" id="backBtn" aria-label="Back 10 seconds">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 3-6.7" />
+          <polyline points="3 4 3 10 9 10" />
+          <text x="12" y="15" font-size="7" fill="currentColor" stroke="none" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-weight="700">10</text>
+        </svg>
+      </button>
+      <button class="ctrl-btn play-btn" id="playBtn" aria-label="Play / Pause">
+        <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </button>
+      <button class="ctrl-btn" id="fwdBtn" aria-label="Forward 10 seconds">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-3-6.7" />
+          <polyline points="21 4 21 10 15 10" />
+          <text x="12" y="15" font-size="7" fill="currentColor" stroke="none" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-weight="700">10</text>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <section class="lyrics-frame">
+    <div class="lyrics" id="lyrics" aria-live="polite"></div>
+  </section>
+
+</main>
+
+<audio id="audio" src="sounds/uncleSong.mp3" preload="metadata"></audio>
+
+<script>
+  /* ===== LYRICS — synced timings ===== */
+  const LYRICS = [
+    { t: 3.31,   text: "Ayo, it's me Ado... this song is dedicated for my two favorite people in the world...", verse: true, spoken: true },
+    { t: 10.03,  text: "Peace... Kanzeh... Amiis... hahahah", spoken: true },
+    { t: 18.95,  text: "El Crizaaaa.", spoken: true },
+    { t: 22.15,  text: "Qatar to my heart, that's a long-long flight (yeah),", verse: true },
+    { t: 24.58,  text: "But I see y'all in my dreams every single night," },
+    { t: 27.65,  text: "Georgy, Rita.. Are the reason I write," },
+    { t: 30.32,  text: "Uncle missin' y'all, but the love stay tight (yeah, yeah)." },
+    { t: 33.58,  text: "Miles can't move us, no, the blood don't bend,", verse: true },
+    { t: 35.94,  text: "Time zones change but the love don't end," },
+    { t: 38.42,  text: "From the uncle to the kids, this a song, not a trend," },
+    { t: 41.15,  text: "This for Georgy, this for Rita till the very end." },
+    { t: 45.30,  text: "Lil man Georgy got the brain of a chess piece (yeah),", verse: true },
+    { t: 47.90,  text: "Footwork dirty, leave 'em frozen on the West Street (skrrt)," },
+    { t: 50.64,  text: "Ball at his feet and the goal in his vision," },
+    { t: 53.49,  text: "Drops the shoulder, splits the keeper, that's precision." },
+    { t: 56.34,  text: "Fortnite W's, he be droppin' the squad (gang),", verse: true },
+    { t: 58.95,  text: "Rocket League goals like he talkin' to God," },
+    { t: 61.58,  text: "Boost up the rocket, hit it clean off the wall," },
+    { t: 64.53,  text: "Lil bro a problem on a virtual ball." },
+    { t: 67.37,  text: "Fit so clean when he steppin' to the function,", verse: true },
+    { t: 70.19,  text: "Nike Airs on him, that's a fashion eruption," },
+    { t: 72.94,  text: "Swag in his DNA, ain't no introduction," },
+    { t: 75.79,  text: "That's my nephew, man, he built for production. (yeah)" },
+    { t: 78.19,  text: "Qatar to my heart, that's a long-long flight (yeah),", verse: true },
+    { t: 80.20,  text: "But I see y'all in my dreams every single night," },
+    { t: 83.08,  text: "Georgy, Rita.. Are the reason I write," },
+    { t: 85.93,  text: "Uncle missin' y'all, but the love stay tight (yeah, yeah)." },
+    { t: 89.01,  text: "Miles can't move us, no, the blood don't bend,", verse: true },
+    { t: 91.57,  text: "Time zones change but the love don't end," },
+    { t: 94.16,  text: "From the uncle to the kids, this a song, not a trend," },
+    { t: 96.98,  text: "This for Georgy, this for Rita till the very end." },
+    { t: 100.91, text: "Rita got a heart like the softest summer rain (yeah),", verse: true },
+    { t: 103.45, text: "Feel everything deep that's a beautiful pain," },
+    { t: 105.98, text: "She a little version of her mama, same frame," },
+    { t: 109.15, text: "Lipgloss poppin' and she ownin' her name." },
+    { t: 111.89, text: "Smart as a whip, got the mind of a queen (yeah),", verse: true },
+    { t: 114.67, text: "iPad in her hand, building worlds on the screen," },
+    { t: 117.63, text: "Barbies in formation like an A-list team," },
+    { t: 120.19, text: "Lil princess directin' every scene." },
+    { t: 122.78, text: "And them bracelets she makes? Man, them things art,", verse: true },
+    { t: 124.97, text: "Every bead a heartbeat, she be puttin' in heart," },
+    { t: 127.98, text: "Made me one in pink and I ain't take it apart," },
+    { t: 130.75, text: "Wear it on my wrist 'cause my godchild a star. (yeah)" },
+    { t: 133.87, text: "And I know I ain't there every morning, every night,", verse: true },
+    { t: 135.54, text: "And I miss every birthday, every smile, every fight," },
+    { t: 139.59, text: "But the second that I see y'all, man, the world get right," },
+    { t: 142.48, text: "'Cause y'all the only proof that the future gon' be bright (yeah)." },
+    { t: 145.24, text: "(Oh-oh, oh-oh...)", adlib: true },
+    { t: 147.37, text: "Georgy, when you score, I be screamin' from afar,", verse: true },
+    { t: 148.70, text: "Rita, when you smile, you the brightest little star," },
+    { t: 150.83, text: "I done seen the whole world but ain't nothin' on par," },
+    { t: 153.71, text: "With the love that I got for y'all wherever y'all are." },
+    { t: 156.84, text: "(Wherever y'all are... wherever y'all are...)", adlib: true },
+    { t: 157.77, text: "Qatar got my treasures, but the heart got the key,", verse: true },
+    { t: 160.32, text: "Ain't no map, ain't no plane, ain't no ocean, ain't no sea," },
+    { t: 162.00, text: "Gon' keep me from y'all that's a promise from me." },
+    { t: 167.21, text: "Uncle gotta say it 'cause the love deserve a sound (yeah),", verse: true },
+    { t: 170.01, text: "Y'all my anchor when the whole world spinnin' round," },
+    { t: 172.42, text: "Got y'all faces in my phone, in my chain, in my crown," },
+    { t: 175.86, text: "Y'all the realest little legends in the town." },
+    { t: 178.28, text: "Georgy, keep that hunger when you steppin' on the pitch,", verse: true },
+    { t: 180.78, text: "Rita, never dim that light you a whole damn switch," },
+    { t: 183.55, text: "Y'all gon' run this earth, that ain't even a wish," },
+    { t: 186.30, text: "That's a prophecy, lil ones, uncle don't miss." },
+    { t: 189.15, text: "And when life get heavy and the road get long,", verse: true },
+    { t: 191.98, text: "Put this in your headphones, lemme be your song," },
+    { t: 194.69, text: "Y'all ain't ever walkin' solo, y'all ain't ever walkin' wrong," },
+    { t: 197.50, text: "'Cause the uncle in your corner, and the bond stay strong. (yeah)" },
+    { t: 200.71, text: "Qatar to my heart, that's a long-long flight (yeah),", verse: true },
+    { t: 203.05, text: "But I see y'all in my dreams every single night," },
+    { t: 206.15, text: "Georgy, Rita.. Are the reason I write," },
+    { t: 208.92, text: "Uncle missin' y'all, but the love stay tight (yeah, yeah)." },
+    { t: 211.75, text: "Miles can't move us, no, the blood don't bend,", verse: true },
+    { t: 214.35, text: "Time zones change but the love don't end," },
+    { t: 217.07, text: "From the uncle to the kids, this a song, not a trend," },
+    { t: 219.74, text: "This for Georgy, this for Rita till the very end." },
+    { t: 227.89, text: "Yeah... Georgy, Rita... uncle love y'all.", verse: true, spoken: true },
+    { t: 234.47, text: "I'm in your corner, and the bond stay strong.", spoken: true },
+    { t: 237.08, text: "King Ado's out...", spoken: true },
+  ];
+
+  /* ===== ELEMENTS ===== */
+  const audio        = document.getElementById('audio');
+  const lyricsEl     = document.getElementById('lyrics');
+  const playBtn      = document.getElementById('playBtn');
+  const playIcon     = document.getElementById('playIcon');
+  const backBtn      = document.getElementById('backBtn');
+  const fwdBtn       = document.getElementById('fwdBtn');
+  const cover        = document.getElementById('cover');
+  const progress     = document.getElementById('progress');
+  const progressFill = document.getElementById('progressFill');
+  const timeNowEl    = document.getElementById('timeNow');
+  const timeTotalEl  = document.getElementById('timeTotal');
+
+  /* ===== BUILD LYRIC LINES ===== */
+  const lineNodes = LYRICS.map((line, i) => {
+    const el = document.createElement('div');
+    let cls = 'lyric-line future';
+    if (line.verse)  cls += ' verse-start';
+    if (line.adlib)  cls += ' adlib';
+    if (line.spoken) cls += ' spoken';
+    el.className = cls;
+    el.textContent = line.text;
+    el.dataset.index = i;
+    el.addEventListener('click', () => {
+      audio.currentTime = line.t;
+      if (audio.paused) audio.play();
+    });
+    lyricsEl.appendChild(el);
+    return el;
+  });
+
+  /* ===== LYRICS PADDING =====
+     CSS percentage padding resolves against width, not height. On tall containers,
+     this leaves not enough room above/below for first/last lines to scroll to center.
+     Set padding-top/bottom to half the container's actual pixel height so every
+     line can land dead center. Recompute on resize / orientation change. */
+  function applyLyricsPadding() {
+    const h = lyricsEl.clientHeight;
+    if (h > 0) {
+      const pad = Math.round(h / 2) + 'px';
+      lyricsEl.style.paddingTop = pad;
+      lyricsEl.style.paddingBottom = pad;
+    }
+  }
+
+  /* ===== PLAYBACK ===== */
+  const ICON_PLAY  = '<path d="M8 5v14l11-7z"/>';
+  const ICON_PAUSE = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
+
+  function togglePlay() {
+    if (audio.paused) audio.play();
+    else audio.pause();
+  }
+  playBtn.addEventListener('click', togglePlay);
+  audio.addEventListener('play',  () => { playIcon.innerHTML = ICON_PAUSE; cover.classList.add('playing'); });
+  audio.addEventListener('pause', () => { playIcon.innerHTML = ICON_PLAY;  cover.classList.remove('playing'); });
+  audio.addEventListener('ended', () => { playIcon.innerHTML = ICON_PLAY;  cover.classList.remove('playing'); });
+
+  backBtn.addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
+  fwdBtn .addEventListener('click', () => { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
+
+  function fmt(s) {
+    if (!isFinite(s) || s < 0) s = 0;
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return m + ':' + sec;
+  }
+  audio.addEventListener('loadedmetadata', () => { timeTotalEl.textContent = fmt(audio.duration); });
+
+  /* ===== PROGRESS / SCRUB ===== */
+  function seekFromEvent(e) {
+    const rect = progress.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    if (audio.duration) audio.currentTime = pct * audio.duration;
+  }
+  let dragging = false;
+  progress.addEventListener('mousedown',  e => { dragging = true; progress.classList.add('dragging'); seekFromEvent(e); });
+  window.addEventListener('mousemove',    e => { if (dragging) seekFromEvent(e); });
+  window.addEventListener('mouseup',      () => { dragging = false; progress.classList.remove('dragging'); });
+  progress.addEventListener('touchstart', e => { dragging = true; progress.classList.add('dragging'); seekFromEvent(e); }, {passive:true});
+  progress.addEventListener('touchmove',  e => { if (dragging) seekFromEvent(e); }, {passive:true});
+  progress.addEventListener('touchend',   () => { dragging = false; progress.classList.remove('dragging'); });
+
+  /* ===== KARAOKE SYNC ===== */
+  let activeIdx = -1;
+
+  function findActiveIndex(t) {
+    let idx = -1;
+    for (let i = 0; i < LYRICS.length; i++) {
+      if (t >= LYRICS[i].t) idx = i;
+      else break;
+    }
+    return idx;
+  }
+
+  function scrollLineToCenter(node, instant) {
+    const frameRect = lyricsEl.getBoundingClientRect();
+    const targetRect = node.getBoundingClientRect();
+    const offset = (targetRect.top - frameRect.top)
+                 - (lyricsEl.clientHeight / 2)
+                 + (node.clientHeight / 2);
+    const top = lyricsEl.scrollTop + offset;
+    if (instant) {
+      lyricsEl.scrollTop = top;
+    } else {
+      lyricsEl.scrollTo({ top, behavior: 'smooth' });
+    }
+  }
+
+  function updateActive(t) {
+    const idx = findActiveIndex(t);
+    if (idx === activeIdx) return;
+    activeIdx = idx;
+    lineNodes.forEach((node, i) => {
+      node.classList.remove('active', 'past', 'future');
+      if      (i < idx)   node.classList.add('past');
+      else if (i === idx) node.classList.add('active');
+      else                node.classList.add('future');
+    });
+    if (idx >= 0) scrollLineToCenter(lineNodes[idx]);
+  }
+
+  audio.addEventListener('timeupdate', () => {
+    const t = audio.currentTime;
+    timeNowEl.textContent = fmt(t);
+    const pct = audio.duration ? (t / audio.duration) * 100 : 0;
+    progressFill.style.width = pct + '%';
+    updateActive(t);
+  });
+
+  /* ===== KEYBOARD ===== */
+  document.addEventListener('keydown', (e) => {
+    if (e.target.matches('input, textarea')) return;
+    if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
+    else if (e.code === 'ArrowLeft')  { audio.currentTime = Math.max(0, audio.currentTime - 5); }
+    else if (e.code === 'ArrowRight') { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5); }
+  });
+
+  /* ===== INIT ===== */
+  // Apply padding after layout settles, then re-apply on resize/orientation change.
+  requestAnimationFrame(() => {
+    applyLyricsPadding();
+    updateActive(0);
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      applyLyricsPadding();
+      if (activeIdx >= 0) scrollLineToCenter(lineNodes[activeIdx], true);
+    }, 80);
+  });
+</script>
+
+</body>
+</html>
