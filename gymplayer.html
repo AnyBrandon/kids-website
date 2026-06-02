@@ -810,7 +810,7 @@ function buildShuffleOrder() {
 }
 
 function getDisplayName(filename) {
-  return filename.replace(/\.mp3$/i, '').replace(/[_-]/g, ' ').replace(/\s+/g, ' ').trim();
+  return filename;
 }
 
 function renderPlaylist() {
@@ -1082,34 +1082,22 @@ if ('mediaSession' in navigator) {
   navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
 }
 
+const GYM_SONGS = [
+  { file: 'BUILT_FOR_THIS.mp3',   title: 'Beast Leash King'      },
+  { file: 'City in Flames.mp3',   title: 'City in Flames'        },
+  { file: 'GOD_MODE.mp3',         title: 'GOD MODE'              },
+  { file: 'NO_LIMIT.mp3',         title: 'No Limit Mode'         },
+  { file: 'NO_PERMISSION.mp3',    title: 'NO PERMISSION START'   },
+  { file: 'OVERLOAD.mp3',         title: 'DELETE OVERLOAD'       },
+  { file: 'TOXIC_PRESSURE.mp3',   title: 'Pressure Weight'       },
+];
+
+GYM_SONGS.forEach(s => {
+  tracks.push({ name: s.title, file: null, url: 'gymSongs/' + s.file, size: 0 });
+});
+
+buildShuffleOrder();
 renderPlaylist();
-
-async function tryLoadGymSongsFolder() {
-  try {
-    const resp = await fetch('gymSongs/');
-    if (!resp.ok) return;
-    const html = await resp.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const links = Array.from(doc.querySelectorAll('a[href]'))
-      .map(a => a.getAttribute('href'))
-      .filter(h => h && h.match(/\.mp3$/i) && !h.startsWith('http') && !h.startsWith('/'));
-
-    if (links.length === 0) return;
-
-    links.forEach(href => {
-      const name = decodeURIComponent(href.split('/').pop());
-      if (tracks.some(t => t.name === name)) return;
-      tracks.push({ name, file: null, url: 'gymSongs/' + href, size: 0 });
-    });
-
-    buildShuffleOrder();
-    renderPlaylist();
-    showToast(`Loaded ${links.length} track${links.length > 1 ? 's' : ''} from gymSongs/`);
-  } catch(e) {}
-}
-
-tryLoadGymSongsFolder();
 </script>
 </body>
 </html>
