@@ -913,7 +913,18 @@ function loadAndPlay(index) {
 
   if ('mediaSession' in navigator) {
     navigator.mediaSession.metadata = new MediaMetadata({ title: name, album: 'GYM PLAYER' });
+    navigator.mediaSession.playbackState = 'playing';
   }
+  audio.addEventListener('loadedmetadata', function onMeta() {
+    if ('mediaSession' in navigator && isFinite(audio.duration)) {
+      navigator.mediaSession.setPositionState({
+        duration: audio.duration,
+        playbackRate: 1,
+        position: 0
+      });
+    }
+    audio.removeEventListener('loadedmetadata', onMeta);
+  });
 }
 
 function scrollToActive() {
@@ -963,13 +974,21 @@ btnNext.addEventListener('click', nextTrack);
 btnShuffle.addEventListener('click', () => {
   isShuffle = !isShuffle;
   btnShuffle.classList.toggle('active', isShuffle);
-  if (isShuffle) buildShuffleOrder();
+  if (isShuffle) {
+    isRepeat = false;
+    btnRepeat.classList.remove('active');
+    buildShuffleOrder();
+  }
   showToast(isShuffle ? 'Shuffle on' : 'Shuffle off');
 });
 
 btnRepeat.addEventListener('click', () => {
   isRepeat = !isRepeat;
   btnRepeat.classList.toggle('active', isRepeat);
+  if (isRepeat) {
+    isShuffle = false;
+    btnShuffle.classList.remove('active');
+  }
   showToast(isRepeat ? 'Repeat on' : 'Repeat off');
 });
 
@@ -995,7 +1014,7 @@ audio.addEventListener('loadedmetadata', () => {
 audio.addEventListener('ended', () => {
   if (isRepeat) {
     audio.currentTime = 0;
-    audio.play();
+    audio.play().catch(() => {});
   } else if (tracks.length > 1) {
     nextTrack();
   } else {
@@ -1078,8 +1097,13 @@ function preloadDurations() {
 if ('mediaSession' in navigator) {
   navigator.mediaSession.setActionHandler('play', () => { audio.play(); });
   navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); });
-  navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
-  navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+  navigator.mediaSession.setActionHandler('previoustrack', () => { prevTrack(); });
+  navigator.mediaSession.setActionHandler('nexttrack', () => { nextTrack(); });
+  navigator.mediaSession.setActionHandler('seekto', details => {
+    if (details.seekTime !== undefined && isFinite(audio.duration)) {
+      audio.currentTime = details.seekTime;
+    }
+  });
 }
 
 const GYM_SONGS = [
