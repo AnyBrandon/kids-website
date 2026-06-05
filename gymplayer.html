@@ -1011,7 +1011,7 @@ audio.addEventListener('loadedmetadata', () => {
   }
 });
 
-audio.addEventListener('ended', () => {
+function handleTrackEnd() {
   if (isRepeat) {
     audio.currentTime = 0;
     audio.play().catch(() => {});
@@ -1022,7 +1022,37 @@ audio.addEventListener('ended', () => {
     progressFill.style.width = '0%';
     timeCur.textContent = '0:00';
   }
-});
+}
+
+// Primary: ended event (works when screen is on)
+audio.addEventListener('ended', handleTrackEnd);
+
+// Fallback watchdog: polls every second — works on locked screens
+// where 'ended' may not fire reliably
+let watchdogHandled = false;
+setInterval(() => {
+  if (!isPlaying) return;
+  if (!isFinite(audio.duration) || audio.duration === 0) return;
+  if (audio.ended || (!audio.paused && audio.currentTime >= audio.duration - 0.3)) {
+    if (!watchdogHandled) {
+      watchdogHandled = true;
+      handleTrackEnd();
+    }
+  } else {
+    watchdogHandled = false;
+  }
+
+  // Keep media session position in sync (helps lock screen controls)
+  if ('mediaSession' in navigator && isFinite(audio.duration) && isPlaying) {
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: audio.duration,
+        playbackRate: audio.playbackRate,
+        position: Math.min(audio.currentTime, audio.duration)
+      });
+    } catch(e) {}
+  }
+}, 1000);
 
 function seekFromEvent(e) {
   const rect = progressTrack.getBoundingClientRect();
