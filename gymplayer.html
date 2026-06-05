@@ -889,7 +889,8 @@ function loadAndPlay(index) {
   const t = tracks[index];
   const url = t.url || URL.createObjectURL(t.file);
   if (!t.url && t.file) t.url = url;
-
+  
+  watchdogHandled = false; 
   audio.src = url;
   audio.load();
   audio.volume = volumeSlider.value / 100;
