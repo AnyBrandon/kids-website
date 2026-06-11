@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARK</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap');
+
+    :root {
+      --bg:        #080810;
+      --surface:   #0f0f1a;
+      --border:    #1e1e35;
+      --ark:       #7c6af7;
+      --ark-glow:  #7c6af788;
+      --ark-dim:   #3d3578;
+      --text:      #e8e6ff;
+      --muted:     #6b6888;
+      --success:   #4ade80;
+      --warn:      #facc15;
+      --danger:    #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── ambient background pulse ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 40% at 50% 0%, #7c6af718 0%, transparent 70%);
+      pointer-events: none;
+      animation: ambientPulse 6s ease-in-out infinite;
+    }
+    @keyframes ambientPulse {
+      0%, 100% { opacity: 0.6; }
+      50%       { opacity: 1;   }
+    }
+
+    /* ── layout ── */
+    .shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      padding: 2rem 1.25rem;
+    }
+
+    /* ── ARK wordmark ── */
+    .wordmark {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .wordmark-letters {
+      font-size: clamp(5rem, 22vw, 9rem);
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      line-height: 1;
+      color: transparent;
+      background: linear-gradient(135deg, #a89cf7 0%, #7c6af7 40%, #4c3fb8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 0 40px var(--ark-glow));
+      animation: glowBreathe 4s ease-in-out infinite;
+    }
+    @keyframes glowBreathe {
+      0%, 100% { filter: drop-shadow(0 0 30px var(--ark-glow)); }
+      50%       { filter: drop-shadow(0 0 60px #7c6af7bb); }
+    }
+    .wordmark-sub {
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ── status card ── */
+    .card {
+      width: 100%;
+      max-width: 380px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .status-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 99px;
+      letter-spacing: 0.05em;
+    }
+    .badge-pending  { background: #1e1e35; color: var(--muted); }
+    .badge-ok       { background: #14291e; color: var(--success); border: 1px solid #2a5c3a; }
+    .badge-warn     { background: #2a2210; color: var(--warn);    border: 1px solid #5c4a10; }
+    .badge-error    { background: #2a1010; color: var(--danger);  border: 1px solid #5c2020; }
+
+    /* ── divider ── */
+    .divider { border: none; border-top: 1px solid var(--border); }
+
+    /* ── next notifications list ── */
+    .notif-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .notif-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .notif-list li .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--ark-dim);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .notif-list li.sent .dot     { background: var(--success); }
+    .notif-list li.next .dot     { background: var(--ark); box-shadow: 0 0 6px var(--ark); }
+    .notif-list li.sent .time    { text-decoration: line-through; opacity: 0.45; }
+    .notif-list li .time         { color: var(--text); font-weight: 600; min-width: 52px; }
+
+    /* ── CTA button ── */
+    .btn-start {
+      width: 100%;
+      padding: 0.9rem;
+      border-radius: 12px;
+      border: none;
+      background: var(--ark);
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+    .btn-start:active { transform: scale(0.97); }
+    .btn-start:hover  { background: #9080ff; box-shadow: 0 0 20px var(--ark-glow); }
+    .btn-start:disabled { background: var(--ark-dim); cursor: default; box-shadow: none; }
+
+    .footer-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.6;
+      max-width: 340px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="wordmark">
+    <div class="wordmark-letters">ARK</div>
+    <div class="wordmark-sub">Daily Signal</div>
+  </div>
+
+  <div class="card">
+
+    <div class="status-row">
+      <span class="status-label">Notifications</span>
+      <span class="badge badge-pending" id="badgePermission">—</span>
+    </div>
+
+    <div class="status-row">
+      <span class="status-label">Service Worker</span>
+      <span class="badge badge-pending" id="badgeSW">—</span>
+    </div>
+
+    <div class="status-row">
+      <span class="status-label">Today's schedule</span>
+      <span class="badge badge-pending" id="badgeSchedule">—</span>
+    </div>
+
+    <hr class="divider" />
+
+    <ul class="notif-list" id="notifList">
+      <li style="color:var(--muted);font-size:0.8rem">Start to generate today's schedule.</li>
+    </ul>
+
+    <hr class="divider" />
+
+    <button class="btn-start" id="btnStart" onclick="startARK()">Activate ARK</button>
+
+  </div>
+
+  <p class="footer-note">
+    Keep this tab open in Chrome.<br>
+    10 random notifications will fire daily between 09:00 and 23:00 Paris time.
+  </p>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+//  INLINE SERVICE WORKER (as a Blob URL)
+// ─────────────────────────────────────────────
+const SW_CODE = `
+const CACHE = 'ark-v1';
+
+// Listen for scheduled alarm messages from the page
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SCHEDULE_NOTIFICATIONS') {
+    const times = event.data.times; // array of ms timestamps
+    scheduleAll(times);
+  }
+});
+
+function scheduleAll(times) {
+  const now = Date.now();
+  times.forEach((ts, i) => {
+    const delay = ts - now;
+    if (delay > 0) {
+      setTimeout(() => {
+        self.registration.showNotification('ARK', {
+          body: 'ARK',
+          icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%237c6af7%22/><text y=%22.9em%22 font-size=%2270%22 x=%2210%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22bold%22>A</text></svg>',
+          badge: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%237c6af7%22/></svg>',
+          silent: false,
+          requireInteraction: false,
+          tag: 'ark-' + i,
+          renotify: true
+        });
+      }, delay);
+    }
+  });
+}
+
+// Keep the SW alive with a periodic ping response
+self.addEventListener('fetch', () => {});
+`;
+
+// ─────────────────────────────────────────────
+//  PARIS TIME HELPERS
+// ─────────────────────────────────────────────
+
+function getParisDateParts(date = new Date()) {
+  // Format in Paris timezone to get local hour/min/sec/date
+  const fmt = new Intl.DateTimeFormat('fr-FR', {
+    timeZone: 'Europe/Paris',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
+  });
+  const parts = {};
+  fmt.formatToParts(date).forEach(p => { parts[p.type] = parseInt(p.value, 10); });
+  return parts; // { year, month, day, hour, minute, second }
+}
+
+function parisHourNow() {
+  return getParisDateParts().hour;
+}
+
+// Returns a UTC timestamp for HH:MM:SS today in Paris time
+function parisTodayAt(h, m, s = 0) {
+  const p = getParisDateParts();
+  // Build ISO string as if it were Paris local, then find UTC offset
+  // We probe by creating a date in UTC and checking what Paris sees
+  // Use a reference point: midnight UTC and shift
+  const probe = new Date(Date.UTC(p.year, p.month - 1, p.day, h, m, s));
+  // Adjust for the fact that probe is in UTC but we need Paris local h:m:s to match
+  const probeParisHour = getParisDateParts(probe).hour;
+  const offsetHours = h - probeParisHour;
+  return new Date(probe.getTime() - offsetHours * 3600000).getTime();
+}
+
+function generateRandomTimes(n = 10) {
+  const START_H = 9;
+  const END_H   = 23;
+  const startMs = parisTodayAt(START_H, 0, 0);
+  const endMs   = parisTodayAt(END_H,   0, 0);
+  const span    = endMs - startMs;
+
+  const times = new Set();
+  while (times.size < n) {
+    // random offset, keep at least 1 min between
+    const r = Math.floor(Math.random() * span);
+    // round to nearest minute
+    const rounded = Math.round(r / 60000) * 60000;
+    times.add(startMs + rounded);
+  }
+  return [...times].sort((a, b) => a - b);
+}
+
+function formatParisTime(ms) {
+  return new Intl.DateTimeFormat('fr-FR', {
+    timeZone: 'Europe/Paris',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).format(new Date(ms));
+}
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let swReg = null;
+let scheduledTimes = [];
+let statusInterval = null;
+let midnightTimer   = null;
+
+// ─────────────────────────────────────────────
+//  UI HELPERS
+// ─────────────────────────────────────────────
+function setBadge(id, text, cls) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'badge badge-' + cls;
+}
+
+function renderList(times) {
+  const list = document.getElementById('notifList');
+  const now  = Date.now();
+  list.innerHTML = '';
+
+  let nextMarked = false;
+  times.forEach((ts, i) => {
+    const li    = document.createElement('li');
+    const isSent = ts <= now;
+    const isNext = !isSent && !nextMarked;
+    if (isNext) nextMarked = true;
+
+    li.className = isSent ? 'sent' : (isNext ? 'next' : '');
+
+    const dot  = document.createElement('span');
+    dot.className = 'dot';
+
+    const time = document.createElement('span');
+    time.className = 'time';
+    time.textContent = formatParisTime(ts);
+
+    const label = document.createElement('span');
+    label.textContent = isSent ? 'sent' : (isNext ? '← next' : '');
+
+    li.append(dot, time, label);
+    list.appendChild(li);
+  });
+}
+
+function updateListStatuses() {
+  if (scheduledTimes.length) renderList(scheduledTimes);
+}
+
+// ─────────────────────────────────────────────
+//  CORE FLOW
+// ─────────────────────────────────────────────
+async function startARK() {
+  const btn = document.getElementById('btnStart');
+  btn.disabled = true;
+  btn.textContent = 'Activating…';
+
+  // 1. Notification permission
+  let perm = Notification.permission;
+  if (perm === 'default') {
+    perm = await Notification.requestPermission();
+  }
+  if (perm !== 'granted') {
+    setBadge('badgePermission', 'Denied', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Retry';
+    return;
+  }
+  setBadge('badgePermission', 'Granted', 'ok');
+
+  // 2. Register Service Worker from Blob
+  try {
+    const blob = new Blob([SW_CODE], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    swReg = await navigator.serviceWorker.register(swUrl, { scope: './' });
+    await navigator.serviceWorker.ready;
+    setBadge('badgeSW', 'Active', 'ok');
+  } catch (e) {
+    setBadge('badgeSW', 'Error', 'error');
+    console.error('SW error', e);
+    btn.disabled = false;
+    btn.textContent = 'Retry';
+    return;
+  }
+
+  // 3. Schedule today
+  scheduleToday();
+
+  // 4. Live status refresh every 30s
+  if (statusInterval) clearInterval(statusInterval);
+  statusInterval = setInterval(updateListStatuses, 30000);
+
+  btn.textContent = '✓ ARK is active';
+  setBadge('badgeSchedule', 'Loaded', 'ok');
+
+  // 5. Auto-reschedule at midnight Paris time
+  scheduleMidnightReset();
+}
+
+function scheduleToday() {
+  scheduledTimes = generateRandomTimes(10);
+  renderList(scheduledTimes);
+  setBadge('badgeSchedule', '10 / today', 'ok');
+
+  // Send to Service Worker
+  const sw = swReg.active || swReg.installing || swReg.waiting;
+  if (sw) {
+    sw.postMessage({ type: 'SCHEDULE_NOTIFICATIONS', times: scheduledTimes });
+  } else {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.active.postMessage({ type: 'SCHEDULE_NOTIFICATIONS', times: scheduledTimes });
+    });
+  }
+}
+
+function scheduleMidnightReset() {
+  if (midnightTimer) clearTimeout(midnightTimer);
+  // Find ms until midnight Paris time + 5s buffer
+  const now        = Date.now();
+  const nextMidnight = parisTodayAt(0, 0, 5) + 86400000; // tomorrow's 00:00:05
+  const msUntil    = nextMidnight - now;
+  midnightTimer    = setTimeout(() => {
+    scheduleToday();
+    scheduleMidnightReset(); // chain for the next day
+  }, msUntil);
+}
+
+// ─────────────────────────────────────────────
+//  INIT CHECK
+// ─────────────────────────────────────────────
+(function init() {
+  if (!('Notification' in window)) {
+    setBadge('badgePermission', 'Not supported', 'error');
+    document.getElementById('btnStart').disabled = true;
+    return;
+  }
+  if (!('serviceWorker' in navigator)) {
+    setBadge('badgeSW', 'Not supported', 'error');
+    document.getElementById('btnStart').disabled = true;
+    return;
+  }
+
+  // Show current permission state without prompting
+  const perm = Notification.permission;
+  if (perm === 'granted') setBadge('badgePermission', 'Granted', 'ok');
+  else if (perm === 'denied') {
+    setBadge('badgePermission', 'Denied — reset in Chrome', 'error');
+    document.getElementById('btnStart').disabled = true;
+  } else {
+    setBadge('badgePermission', 'Tap to allow', 'warn');
+  }
+})();
+</script>
+</body>
+</html>
