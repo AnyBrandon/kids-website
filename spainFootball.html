@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>España · Mundial 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a090d;
+    --ink-2:#17111a;
+    --red:#c60b1e;
+    --red-glow:#ff2d3c;
+    --gold:#ffb627;
+    --gold-2:#f4d35e;
+    --cream:#f5efdd;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100dvh;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(198,11,30,0.35), transparent 55%),
+      radial-gradient(120% 80% at 50% 115%, rgba(255,182,39,0.14), transparent 55%),
+      var(--ink);
+    color:var(--cream);
+    font-family:'Barlow', sans-serif;
+    overflow-x:hidden;
+    display:flex;
+    justify-content:center;
+  }
+
+  /* ambient diagonal stripe sweep */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:-20%;
+    background:repeating-linear-gradient(
+      115deg,
+      rgba(255,182,39,0.05) 0px,
+      rgba(255,182,39,0.05) 2px,
+      transparent 2px,
+      transparent 90px
+    );
+    animation: stripeDrift 22s linear infinite;
+    pointer-events:none;
+    z-index:0;
+  }
+  @keyframes stripeDrift{
+    0%{ transform: translate3d(0,0,0); }
+    100%{ transform: translate3d(-160px,-90px,0); }
+  }
+
+  .grain{
+    position:fixed; inset:0; z-index:1; pointer-events:none; opacity:0.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .app{
+    position:relative;
+    z-index:2;
+    width:100%;
+    max-width:480px;
+    min-height:100dvh;
+    padding: calc(18px + var(--safe-top)) 18px calc(16px + var(--safe-bottom));
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  header.topbar{ text-align:center; }
+  .eyebrow{
+    display:inline-block;
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:600;
+    font-size:12px;
+    letter-spacing:0.32em;
+    color:var(--gold-2);
+    text-transform:uppercase;
+    opacity:0.9;
+  }
+  .team-name{
+    margin:2px 0 0;
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    font-size:clamp(40px, 13vw, 58px);
+    line-height:0.92;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    background:linear-gradient(180deg, var(--cream) 0%, var(--cream) 55%, var(--gold-2) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    text-shadow:0 0 40px rgba(255,182,39,0.15);
+  }
+
+  main.stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    min-height:0;
+  }
+
+  .photo-frame{
+    position:relative;
+    flex:1;
+    min-height:0;
+    border-radius:22px;
+    padding:3px;
+    background:linear-gradient(155deg, var(--gold) 0%, var(--red) 45%, var(--red-glow) 65%, var(--gold-2) 100%);
+    box-shadow:
+      0 25px 60px -18px rgba(198,11,30,0.55),
+      0 8px 30px -10px rgba(0,0,0,0.6);
+    transition: box-shadow .6s ease;
+  }
+  .photo-frame.celebrate{
+    animation: frameGlow 1.6s ease-in-out infinite;
+  }
+  @keyframes frameGlow{
+    0%,100%{ box-shadow: 0 25px 60px -18px rgba(198,11,30,0.55), 0 8px 30px -10px rgba(0,0,0,0.6), 0 0 0px rgba(255,182,39,0); }
+    50%{ box-shadow: 0 25px 70px -14px rgba(255,182,39,0.55), 0 8px 34px -8px rgba(0,0,0,0.6), 0 0 55px rgba(255,182,39,0.35); }
+  }
+
+  .photo-inner{
+    position:relative;
+    width:100%;
+    height:100%;
+    border-radius:19px;
+    overflow:hidden;
+    background:var(--ink-2);
+  }
+
+  #heroImage{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 20%;
+    display:block;
+    filter:saturate(1.08) contrast(1.04);
+    transform:scale(1.001);
+    transition: filter .5s ease;
+  }
+  #heroImage.punch{
+    animation: punchZoom .55s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes punchZoom{
+    0%{ transform:scale(1.12) rotate(-0.3deg); filter:brightness(1.5) saturate(1.3); }
+    55%{ transform:scale(0.985) rotate(0.15deg); }
+    100%{ transform:scale(1) rotate(0deg); filter:saturate(1.08) contrast(1.04); }
+  }
+
+  .vignette{
+    position:absolute; inset:0;
+    background:
+      linear-gradient(180deg, rgba(10,9,13,0.55) 0%, rgba(10,9,13,0) 22%, rgba(10,9,13,0) 62%, rgba(10,9,13,0.85) 100%),
+      radial-gradient(120% 70% at 50% 50%, transparent 55%, rgba(0,0,0,0.35) 100%);
+    pointer-events:none;
+  }
+
+  .corner-tag{
+    position:absolute;
+    top:12px; right:12px;
+    font-family:'Anton', sans-serif;
+    font-size:13px;
+    letter-spacing:0.08em;
+    color:var(--ink);
+    background:linear-gradient(135deg, var(--gold-2), var(--gold));
+    padding:6px 10px;
+    border-radius:999px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.35);
+    z-index:3;
+  }
+
+  .player-tag{
+    position:absolute;
+    left:14px; bottom:14px;
+    z-index:3;
+    font-family:'Barlow Condensed', sans-serif;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    opacity:0;
+    transform:translateY(10px);
+    transition: opacity .5s ease .25s, transform .5s ease .25s;
+  }
+  .player-tag.show{ opacity:1; transform:translateY(0); }
+  .player-tag .name{
+    display:block;
+    font-family:'Anton', sans-serif;
+    font-size:19px;
+    color:var(--cream);
+  }
+  .player-tag .role{
+    font-size:12px;
+    font-weight:600;
+    color:var(--gold-2);
+  }
+
+  /* VAMOS button */
+  .vamos-wrap{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:4;
+    pointer-events:none;
+  }
+  .ring{
+    position:absolute;
+    width:96px; height:96px;
+    border-radius:50%;
+    border:2px solid rgba(255,182,39,0.55);
+    animation: pulseRing 2.6s ease-out infinite;
+  }
+  .ring.delay{ animation-delay:1.3s; }
+  @keyframes pulseRing{
+    0%{ transform:scale(0.72); opacity:0.9; }
+    75%{ transform:scale(1.55); opacity:0; }
+    100%{ transform:scale(1.55); opacity:0; }
+  }
+
+  .vamos-btn{
+    position:relative;
+    pointer-events:auto;
+    width:104px; height:104px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(circle at 35% 30%, var(--red-glow), var(--red) 55%, #7a0512 100%);
+    box-shadow:
+      0 10px 26px -6px rgba(198,11,30,0.7),
+      inset 0 2px 3px rgba(255,255,255,0.35),
+      inset 0 -6px 10px rgba(0,0,0,0.35);
+    transform:translateZ(0);
+    transition: transform .15s ease;
+  }
+  .vamos-btn:active{ transform:scale(0.92); }
+  .vamos-btn:focus-visible{ outline:3px solid var(--gold-2); outline-offset:4px; }
+  .vamos-btn .label{
+    font-family:'Anton', sans-serif;
+    font-size:19px;
+    letter-spacing:0.04em;
+    color:var(--cream);
+    text-shadow:0 2px 4px rgba(0,0,0,0.4);
+  }
+  .vamos-btn.kicked{ animation: kickPop .5s ease; }
+  @keyframes kickPop{
+    0%{ transform:scale(1); }
+    35%{ transform:scale(0.82) rotate(-6deg); }
+    65%{ transform:scale(1.12) rotate(4deg); }
+    100%{ transform:scale(1) rotate(0deg); }
+  }
+
+  .caption{
+    text-align:center;
+    margin:0;
+    font-size:13.5px;
+    letter-spacing:0.02em;
+    color:rgba(245,239,221,0.75);
+    min-height:18px;
+  }
+
+  footer.motto-strip{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    font-family:'Barlow Condensed', sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.22em;
+    color:var(--gold-2);
+    text-transform:uppercase;
+    padding-top:2px;
+  }
+  footer.motto-strip .dot{ color:var(--red-glow); font-size:10px; }
+
+  .flash{
+    position:fixed; inset:0; z-index:50;
+    background:radial-gradient(circle at 50% 50%, #fff, var(--gold-2) 60%, transparent 100%);
+    opacity:0; pointer-events:none;
+  }
+  .flash.on{ animation: flashPop .5s ease-out; }
+  @keyframes flashPop{
+    0%{ opacity:0; }
+    12%{ opacity:0.85; }
+    100%{ opacity:0; }
+  }
+
+  #confettiCanvas{
+    position:fixed; inset:0; z-index:40; pointer-events:none;
+  }
+
+  @media (max-height: 700px){
+    .team-name{ font-size:clamp(32px, 11vw, 44px); }
+    .vamos-btn{ width:88px; height:88px; }
+    .ring{ width:82px; height:82px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    body::before, .ring, .photo-frame.celebrate, .vamos-btn.kicked, #heroImage.punch, .flash.on{
+      animation:none !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="grain"></div>
+
+  <div class="app">
+    <header class="topbar">
+      <span class="eyebrow">Copa Mundial · 2026</span>
+      <h1 class="team-name">España</h1>
+    </header>
+
+    <main class="stage">
+      <div class="photo-frame" id="photoFrame">
+        <div class="photo-inner">
+          <img id="heroImage" src="images/spain/spanishSquad.png" alt="Selección Española">
+          <div class="vignette"></div>
+          <span class="corner-tag">'26</span>
+          <div class="player-tag" id="playerTag">
+            <span class="name">Pedro Porro</span>
+            <span class="role">Lateral · La Roja</span>
+          </div>
+          <div class="vamos-wrap">
+            <span class="ring"></span>
+            <span class="ring delay"></span>
+            <button class="vamos-btn" id="vamosBtn" aria-label="Vamos España">
+              <span class="label">VAMOS</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="caption" id="caption">Toca el botón y siente a La Roja</p>
+    </main>
+
+    <footer class="motto-strip">
+      <span>La Furia Roja</span>
+      <span class="dot">●</span>
+      <span>Unidos por la Roja</span>
+    </footer>
+  </div>
+
+  <canvas id="confettiCanvas"></canvas>
+  <div class="flash" id="flash"></div>
+  <audio id="goalAudio" src="sounds/pedroporro.mp3" preload="auto"></audio>
+
+<script>
+(function(){
+  const btn = document.getElementById('vamosBtn');
+  const img = document.getElementById('heroImage');
+  const frame = document.getElementById('photoFrame');
+  const flash = document.getElementById('flash');
+  const audio = document.getElementById('goalAudio');
+  const caption = document.getElementById('caption');
+  const playerTag = document.getElementById('playerTag');
+  const canvas = document.getElementById('confettiCanvas');
+  const ctx = canvas.getContext('2d');
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resizeCanvas(){
+    canvas.width = window.innerWidth * devicePixelRatio;
+    canvas.height = window.innerHeight * devicePixelRatio;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  const colors = ['#c60b1e','#ff2d3c','#ffb627','#f4d35e','#f5efdd'];
+
+  function burstConfetti(originX, originY){
+    if (reduceMotion) return;
+    const count = 90;
+    const particles = [];
+    for(let i=0;i<count;i++){
+      const angle = Math.random()*Math.PI*2;
+      const speed = 3 + Math.random()*7;
+      particles.push({
+        x:originX, y:originY,
+        vx: Math.cos(angle)*speed,
+        vy: Math.sin(angle)*speed - 2,
+        size: 4 + Math.random()*5,
+        color: colors[Math.floor(Math.random()*colors.length)],
+        rot: Math.random()*Math.PI,
+        vrot: (Math.random()-0.5)*0.3,
+        life: 0,
+        maxLife: 70 + Math.random()*40,
+        shape: Math.random() > 0.5 ? 'rect' : 'circle'
+      });
+    }
+
+    let frameCount = 0;
+    function tick(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      let alive = false;
+      particles.forEach(p=>{
+        if(p.life > p.maxLife) return;
+        alive = true;
+        p.life++;
+        p.vy += 0.18;
+        p.vx *= 0.995;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vrot;
+        const fade = 1 - (p.life/p.maxLife);
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = Math.max(fade,0);
+        ctx.fillStyle = p.color;
+        if(p.shape === 'rect'){
+          ctx.fillRect(-p.size/2,-p.size/3,p.size,p.size*0.66);
+        } else {
+          ctx.beginPath();
+          ctx.arc(0,0,p.size/2,0,Math.PI*2);
+          ctx.fill();
+        }
+        ctx.restore();
+      });
+      frameCount++;
+      if(alive && frameCount < 200){
+        requestAnimationFrame(tick);
+      } else {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  let celebrated = false;
+
+  btn.addEventListener('click', function(){
+    const rect = btn.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+
+    btn.classList.remove('kicked');
+    void btn.offsetWidth;
+    btn.classList.add('kicked');
+
+    if(!reduceMotion){
+      flash.classList.remove('on');
+      void flash.offsetWidth;
+      flash.classList.add('on');
+    }
+
+    burstConfetti(cx, cy);
+
+    if(!celebrated){
+      celebrated = true;
+      setTimeout(()=>{
+        img.src = 'images/spain/pedrop.png';
+        img.alt = 'Pedro Porro celebrando';
+        img.classList.remove('punch');
+        void img.offsetWidth;
+        img.classList.add('punch');
+        frame.classList.add('celebrate');
+        playerTag.classList.add('show');
+        caption.textContent = '¡Vamos España! 🇪🇸';
+      }, reduceMotion ? 0 : 140);
+    }
+
+    audio.currentTime = 0;
+    audio.play().catch(()=>{ /* autoplay restrictions - user gesture already present, safe to ignore */ });
+  });
+})();
+</script>
+</body>
+</html>
