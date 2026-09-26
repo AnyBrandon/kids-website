@@ -343,11 +343,15 @@ h1,h2,h3{font-family:'Baloo 2',cursive;font-weight:800;line-height:1.1;}
 .fin-card .val{font-family:'Baloo 2';font-weight:800;font-size:22px;margin-top:2px;}
 .fin-card.rev .val{color:#3aa76d;} .fin-card.exp .val{color:#c0392b;}
 .fin-card.bal .val{color:var(--pink-deep);} .fin-card.net .val{color:var(--lilac);}
+/* Phase 9: tax owed card — prominent, full width */
+.fin-card.tax-owed{background:linear-gradient(135deg,#fff4e0,#ffe6c4);}
+.fin-card.tax-owed .val{color:#c0392b;font-size:30px;}
 .txn-list, .rev-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:8px;}
 .txn{
   display:flex;justify-content:space-between;align-items:center;gap:10px;
   background:#fff;border-radius:12px;padding:10px 12px;box-shadow:var(--shadow-sm);font-size:13px;font-weight:700;
 }
+.txn.txn-penalty{background:#fff2f2;border:1px solid #ffc9c9;}   /* Phase 9: penalty rows stand out */
 .txn .txn-lbl{color:var(--ink);flex:1;font-weight:600;}
 .txn .amt.pos{color:#3aa76d;} .txn .amt.neg{color:#c0392b;}
 .txn .txn-ico{font-size:18px;}
@@ -550,6 +554,10 @@ h1,h2,h3{font-family:'Baloo 2',cursive;font-weight:800;line-height:1.1;}
 /* assign-to-employee row on service screen */
 .assign-row{background:#f3e9ff;border-radius:12px;padding:10px 12px;margin:8px 0;}
 .assign-hint{font-size:12.5px;font-weight:700;color:#6a4a9a;display:block;margin-bottom:8px;}
+/* Phase 9b: sleepy/resting staff state — soft, friendly, not punishing */
+.assign-row.resting{background:linear-gradient(135deg,#eef1ff,#e6e0ff);}
+.emp-tired{font-size:13px;font-weight:700;color:#5a5a8a;background:#fff;border-radius:10px;
+  padding:8px 11px;margin-bottom:6px;box-shadow:var(--shadow-sm);}
 
 /* ---------- 13. Phase 8: HUD menu, challenges, events, confetti ---------- */
 .menu-btn{font-size:18px;}
@@ -833,6 +841,25 @@ const START_FAME = 20;          // fame 0–100, stubbed starting value
 const HISTORY_CAP = 30;   // Phase 2: cap transaction & review lists
 const UPKEEP_EVERY = 5;   // Phase 2: upkeep tick every N clients served
 
+// --- Phase 9: Tax system (tunable) ---
+// Tax accrues on income earned FROM NOW ON (never retroactive). It is a separate
+// ledger, NOT deducted from the payment the player receives at the time.
+const TAX_RATE_PLAYER = 0.05;   // 5% of the agreed price when the player does it
+const TAX_RATE_EMPLOYEE = 0.07; // 7% when staff do it (intentionally HIGHER than player)
+const TAX_PENALTY_THRESHOLD = 100;           // each upward crossing of this triggers a penalty
+const TAX_PENALTY_AMOUNTS = [100,150,250,350];// 1st..4th; 5th+ uses TAX_PENALTY_MAX
+const TAX_PENALTY_MAX = 500;                  // 5th crossing and every one after
+// Fame lost per penalty tier (1st..4th, then 5th+). Noticeable but not devastating,
+// scaling up with later/bigger penalties.
+const TAX_PENALTY_FAME = [2,3,4,5];           // 1st..4th
+const TAX_PENALTY_FAME_MAX = 6;               // 5th+
+const TAX_REMINDER_EVERY = 6;   // occasionally remind about unpaid tax every N clients
+const TAX_LOG_CAP = 30;         // cap the tax/penalty/payment log length
+
+// --- Phase 9b: employee fatigue ---
+const EMP_MAX_STREAK = 3;   // consecutive staff assignments before they get tired
+const EMP_REST_CLIENTS = 3; // how many clients they must rest (player does these manually)
+
 // Task 4: gentle fame decay. A visit below FAME_DECAY_SAT_THRESHOLD is an "idle"
 // (non-standout) slot. Fame drifts down by FAME_DECAY_PER_IDLE per idle client,
 // scaled up by tier so it only bites at higher tiers (multiplier = fameTier).
@@ -874,6 +901,13 @@ const state = {
   chalCycleClients: 0,    // clients counted toward the current session-challenge cycle
   achievements: {},       // id -> true when unlocked
   lifetimeProfit: 0,      // revenue - expenses tracked cumulatively for milestones
+  // --- Phase 9: taxes (income earned from now on only; never retroactive) ---
+  unpaidTax: 0,           // running Total Unpaid Tax
+  taxCrossings: 0,        // how many times unpaidTax has crossed €200 upward (drives penalty tier)
+  taxLog: [],             // [{kind:'tax'|'penalty'|'payment', label, amount, at}] newest first, capped
+  // --- Phase 9b: employee fatigue/rest (shared, studio-wide) ---
+  empStreak: 0,           // consecutive clients assigned to staff (resets on a manual completion)
+  empRest: 0,             // remaining clients staff must rest (must be done manually)
 };
 
 function save(){
@@ -890,6 +924,9 @@ function save(){
       // Phase 8
       challenges: state.challenges, achievements: state.achievements,
       chalCycleClients: state.chalCycleClients, lifetimeProfit: state.lifetimeProfit,
+      // Phase 9: taxes + employee fatigue
+      unpaidTax: state.unpaidTax, taxCrossings: state.taxCrossings, taxLog: state.taxLog,
+      empStreak: state.empStreak, empRest: state.empRest,
     }));
   }catch(e){/* storage may be blocked */}
 }
@@ -925,6 +962,15 @@ function load(){
     state.chalCycleClients = num(d.chalCycleClients, 0);
     state.lifetimeProfit = num(d.lifetimeProfit, state.revenue - state.expenses);
     initChallenges(d.challenges);
+    // Phase 9: taxes — old saves default to zero owed, zero crossings, empty log.
+    // Crucially, existing balance/revenue is NEVER retroactively taxed; tax only
+    // ever accrues going forward from applyTax() calls after this load.
+    state.unpaidTax = num(d.unpaidTax, 0);
+    state.taxCrossings = num(d.taxCrossings, 0);
+    state.taxLog = Array.isArray(d.taxLog) ? d.taxLog.slice(0,TAX_LOG_CAP) : [];
+    // Phase 9b: employee fatigue — default to fresh (0 streak, no rest) for old saves.
+    state.empStreak = num(d.empStreak, 0);
+    state.empRest = num(d.empRest, 0);
   }catch(e){/* ignore corrupt save */ state.fameTier = tierIndexForFame(state.fame); initEquipment(); initChallenges(); }
 }
 function num(v,f){return typeof v==='number' && !isNaN(v) ? v : f;}
@@ -1035,6 +1081,30 @@ function hireEmployee(role){
 function fireEmployee(id){
   const idx=state.employees.findIndex(e=>e.id===id);
   if(idx>-1){ const e=state.employees[idx]; state.employees.splice(idx,1); toast(`${e.name} let go (no severance).`); save(); }
+}
+
+/* ---------- Phase 9b: shared employee fatigue / rest cycle ---------- */
+// Are staff currently able to take a client? (hired, and not resting)
+function employeesAvailable(){ return state.employees.length>0 && state.empRest<=0; }
+// Called once per resolved client (from applyOutcome) to advance the fatigue cycle.
+function updateEmployeeFatigue(byEmployee){
+  if(byEmployee){
+    // consecutive staff assignment
+    state.empStreak++;
+    if(state.empStreak >= EMP_MAX_STREAK){
+      state.empStreak = 0;
+      state.empRest = EMP_REST_CLIENTS;            // staff now rest for N clients
+      toast(`😴 Your staff are tired! You'll do the next ${EMP_REST_CLIENTS} clients yourself.`);
+    }
+  } else {
+    // a manual completion resets the assignment streak…
+    state.empStreak = 0;
+    // …and counts down any active rest period
+    if(state.empRest>0){
+      state.empRest--;
+      if(state.empRest===0) toast(`☕ Your staff are rested and ready to help again!`);
+    }
+  }
 }
 // Map an employee's average relevant skill to a quality tier for auto-service.
 function employeeAutoQuality(emp, services){
@@ -1430,8 +1500,13 @@ function makeClient(){
     cls,                    // 'normal' | 'vip' | 'celeb'
     clsDef,                 // class modifiers
   };
-  c.complexity = hairComplexity(c);   // Phase 2 pricing input
   c.request = makeRequest(persoName);  // pass personality for flavoured openers/closers
+  // Regression guard: ensure any cut-type request has cuttable hair above the
+  // guideline. Runs AFTER services are chosen and BEFORE pricing/complexity so
+  // the (possibly bumped) starting length is reflected everywhere. See
+  // validateCutRequest() — request logic MUST call this.
+  validateCutRequest(c);
+  c.complexity = hairComplexity(c);   // Phase 2 pricing input
   c.budget = computeBudget(c);
   return c;
 }
@@ -1724,6 +1799,64 @@ function addTransaction(type, label, amount){
   if(amount >= 0) state.revenue += amount; else state.expenses += -amount;
 }
 
+/* ============================================================
+   PHASE 9: TAX SYSTEM
+   Separate ledger — tax is NEVER deducted from the payment the player
+   receives; it accrues into state.unpaidTax and is paid off later.
+   Only accrues on income earned from now on (called from applyOutcome).
+   ============================================================ */
+function addTaxLog(kind, label, amount){
+  state.taxLog.unshift({kind, label, amount, at:Date.now(), client:state.clientsServed+1});
+  if(state.taxLog.length > TAX_LOG_CAP) state.taxLog.length = TAX_LOG_CAP;
+}
+// Accrue tax for one completed paid service. `byEmployee` picks the 3% vs 5% rate.
+// `pay` is the FULL agreed price for the client (not per sub-service).
+function applyTax(pay, byEmployee, clientName){
+  if(!(pay>0)) return;
+  const rate = byEmployee ? TAX_RATE_EMPLOYEE : TAX_RATE_PLAYER;
+  const amt = Math.round(pay * rate);
+  if(amt<=0) return;
+  const before = state.unpaidTax;
+  state.unpaidTax += amt;
+  addTaxLog('tax', `${clientName||'Client'} · ${byEmployee?'staff 7%':'you 5%'}`, amt);
+  checkTaxCrossing(before, state.unpaidTax);
+}
+// Escalating penalty: each UPWARD crossing of the €200 threshold triggers one
+// penalty (never repeatedly while sitting above it). Penalties escalate and never
+// reset — the crossing counter only ever increases.
+function checkTaxCrossing(before, after){
+  if(before < TAX_PENALTY_THRESHOLD && after >= TAX_PENALTY_THRESHOLD){
+    const occ = state.taxCrossings;                 // 0-based index of THIS crossing
+    const penalty = occ < TAX_PENALTY_AMOUNTS.length ? TAX_PENALTY_AMOUNTS[occ] : TAX_PENALTY_MAX;
+    const fameLoss = occ < TAX_PENALTY_FAME.length ? TAX_PENALTY_FAME[occ] : TAX_PENALTY_FAME_MAX;
+    state.taxCrossings++;
+    state.unpaidTax += penalty;                     // penalty is added to unpaid tax
+    state.fame = clamp(state.fame - fameLoss, 0, 100);
+    addTaxLog('penalty', `Late-tax penalty #${state.taxCrossings} (−${fameLoss}★ fame)`, penalty);
+    toast(`🧾 Oops! You forgot to pay your taxes in time. A €${penalty} penalty was added.`, 'event');
+    refreshFameTier(state.fameTier);                // in case fame drop changed tier
+  }
+}
+// Pay off the FULL unpaid tax from balance. No partial payment; never goes negative
+// from this action (button is disabled when balance < unpaidTax).
+function payTaxes(){
+  const owed = Math.round(state.unpaidTax);
+  if(owed<=0 || state.balance < owed) return false;
+  state.balance -= owed;
+  state.unpaidTax = 0;                              // cleared; crossing counter is NOT reset
+  addTransaction('expense', `🧾 Taxes paid`, -owed);
+  addTaxLog('payment', `Taxes paid in full`, -owed);
+  toast(`🧾 Taxes paid: −€${owed}. All caught up! ✨`, 'reward');
+  save();
+  return true;
+}
+// Occasional friendly reminder while tax is owed (called after a client resolves).
+function maybeTaxReminder(){
+  if(state.unpaidTax>0 && state.clientsServed>0 && state.clientsServed % TAX_REMINDER_EVERY === 0){
+    toast(`🧾 Don't forget to visit the Tax tab and pay what you owe!`);
+  }
+}
+
 // Periodic upkeep: rent + electricity + restock + Phase 7 wages. Called after a client is resolved.
 function maybeUpkeep(){
   if(state.clientsServed>0 && state.clientsServed % UPKEEP_EVERY === 0){
@@ -1766,7 +1899,7 @@ function refreshFameTier(prevTier){
   }
 }
 
-function applyOutcome(sat){
+function applyOutcome(sat, byEmployee){
   const prevTier = state.fameTier;
   const clsDef = client.clsDef || CLIENT_CLASSES.normal;
 
@@ -1822,9 +1955,15 @@ function applyOutcome(sat){
 
   refreshFameTier(prevTier);
   const upkeep = maybeUpkeep();
+  // Phase 9: accrue tax on THIS payment (5% player / 7% employee). Separate ledger,
+  // NOT deducted from `pay` above — the player already received the full payment.
+  applyTax(pay, byEmployee===true, client.name);
+  // Phase 9b: update the shared employee fatigue/rest cycle for this completion.
+  updateEmployeeFatigue(byEmployee===true);
   // Phase 8: challenge / achievement progress from this served client
   trackChallenges({served:1, earned: pay+tip, stars: review.stars, sat: sat.overall});
   checkAchievements();
+  maybeTaxReminder();   // Phase 9: occasional friendly nudge if tax is owed
   save();
   return {tip, earned: pay + tip, fameDelta: fameDeltaShown, review, upkeep};
 }
@@ -1903,22 +2042,30 @@ function closeDrawer(){
   // service screen on drawer close so block state is re-checked against current
   // equipment/stock (no-op on other screens — guarded by #svcBtns presence).
   renderServiceScreenIfActive();
+  // Guide bug fix: fire any one-time "after guide close" chain (e.g. first-launch
+  // Tax intro) exactly once, regardless of how the guide was dismissed (button,
+  // backdrop, or Escape). Cleared immediately so it never double-fires.
+  if(_guideOnClose){ const cb=_guideOnClose; _guideOnClose=null; cb(); }
 }
 
 function money(n){ return (n<0?'−€':'+€') + Math.abs(Math.round(n)); }
 const TXN_ICON = {payment:'💇‍♀️', tip:'💝', expense:'🧾', vip:'👑'};
 
-function openFinances(){
+let _finTab = 'overview';   // 'overview' | 'tax'
+function openFinances(tab){
+  if(tab) _finTab = tab;
   const net = state.revenue - state.expenses;
+  const owed = Math.round(state.unpaidTax);
+  const canPay = owed>0 && state.balance >= owed;
+
   const rows = state.transactions.length ? state.transactions.map(t=>`
     <li class="txn">
       <span class="txn-ico">${TXN_ICON[t.type]||'💠'}</span>
       <span class="txn-lbl">${t.label}</span>
       <span class="amt ${t.amount>=0?'pos':'neg'}">${money(t.amount)}</span>
     </li>`).join('') : `<div class="empty">No transactions yet.</div>`;
-  openDrawer(`
-    <button class="close" aria-label="Close">✕</button>
-    <h2>🧾 Finances</h2>
+
+  const overview = `
     <div class="fin-summary">
       <div class="fin-card bal"><div class="lbl">Balance</div><div class="val">€${state.balance}</div></div>
       <div class="fin-card net"><div class="lbl">Net profit</div><div class="val">€${net}</div></div>
@@ -1927,8 +2074,64 @@ function openFinances(){
     </div>
     <div class="section-title">Recent transactions</div>
     <ul class="txn-list">${rows}</ul>
-    <div class="muted" style="font-size:12px;margin-top:12px">Upkeep (rent, power, restock) is charged every ${UPKEEP_EVERY} clients.</div>
+    <div class="muted" style="font-size:12px;margin-top:12px">Upkeep (rent, power, restock) is charged every ${UPKEEP_EVERY} clients.</div>`;
+
+  // --- Phase 9: Tax tab ---
+  const TAXICON = {tax:'🧾', penalty:'⚠️', payment:'✅'};
+  const taxRows = state.taxLog.length ? state.taxLog.map(t=>`
+    <li class="txn ${t.kind==='penalty'?'txn-penalty':''}">
+      <span class="txn-ico">${TAXICON[t.kind]||'💠'}</span>
+      <span class="txn-lbl">${t.label}</span>
+      <span class="amt ${t.amount>=0?'neg':'pos'}">${t.amount>=0?'+€'+Math.abs(t.amount):'−€'+Math.abs(t.amount)}</span>
+    </li>`).join('') : `<div class="empty">No tax yet — it starts building as you earn.</div>`;
+  const taxTab = `
+    <div class="fin-card tax-owed"><div class="lbl">Total Unpaid Tax</div><div class="val">€${owed}</div></div>
+    <div class="btn-row" style="margin:12px 0">
+      <button class="btn ${canPay?'mint':''}" id="payTaxBtn" style="width:100%" ${canPay?'':'disabled'}>💳 Pay Taxes · €${owed}</button>
+    </div>
+    ${owed>0 && !canPay ? `<div class="equip-warn">Not enough money to pay €${owed} right now — earn a bit more first.</div>` : ''}
+    <div class="muted" style="font-size:12px;margin-bottom:8px">You pay <b>5%</b> tax on services you do yourself, <b>7%</b> when an employee does them. Let it climb past €${TAX_PENALTY_THRESHOLD} and you'll get a penalty (and a little fame hit) — so pay it off regularly!</div>
+    <div class="section-title">Tax log</div>
+    <ul class="txn-list">${taxRows}</ul>`;
+
+  openDrawer(`
+    <button class="close" aria-label="Close">✕</button>
+    <h2>🧾 Finances</h2>
+    <div class="chal-tabs">
+      <button class="chal-tab ${_finTab==='overview'?'active':''}" data-fin="overview">Overview</button>
+      <button class="chal-tab ${_finTab==='tax'?'active':''}" data-fin="tax">Tax${owed>0?` · €${owed}`:''}</button>
+    </div>
+    ${_finTab==='tax' ? taxTab : overview}
   `);
+  $('#drawer').querySelectorAll('.chal-tab').forEach(t=>t.onclick=()=>{ _finTab=t.dataset.fin; openFinances(); });
+  const pay=$('#payTaxBtn'); if(pay) pay.onclick=()=>{ if(payTaxes()){ syncHUDBalance(); syncTaxIndicators(); openFinances('tax'); } };
+}
+
+/* ---------- Phase 9: one-time tax introduction popup (kid-friendly) ---------- */
+function showTaxIntro(){
+  const ov=$('#overlay'), dr=$('#drawer');
+  dr.classList.add('as-modal'); ov.classList.add('modal-center');
+  dr.innerHTML = `
+    <div class="guide-card">
+      <button class="close" id="taxIntroClose" aria-label="Close">✕</button>
+      <div class="guide-ico">🧾</div>
+      <h2 class="guide-title">New: Taxes!</h2>
+      <p class="guide-text" style="text-align:left">
+        Starting now, your salon pays a little <b>tax</b> on the money it earns. 💰<br><br>
+        • Money you already saved is <b>safe</b> — only new earnings are taxed.<br>
+        • Doing a service yourself costs a small tax (5%). Letting an <b>employee</b> do it costs less (3%).<br>
+        • Your taxes pile up in the new <b>Tax tab</b> inside 🧾 Finances — pay them off there anytime.<br>
+        • If unpaid taxes get too big, you'll get a <b>penalty</b> and lose a little fame — so pay them regularly! 😊
+      </p>
+      <div class="guide-nav">
+        <button class="btn mint" id="taxIntroOk" style="width:100%">Got it! 👍</button>
+      </div>
+    </div>`;
+  ov.classList.add('show'); ov.setAttribute('aria-hidden','false');
+  const close=()=>{ dr.classList.remove('as-modal'); ov.classList.remove('modal-center'); closeDrawer(); };
+  $('#taxIntroClose').onclick=close;
+  $('#taxIntroOk').onclick=close;
+  ov.onclick=(e)=>{ if(e.target===ov) close(); };
 }
 
 function openReviews(){
@@ -2307,8 +2510,12 @@ const GUIDE_PAGES = [
   {ico:()=>icon('ploufi-avatar','💇‍♀️'), title:"You're Ready!",  text:"That's it! Have fun running your salon, boss!", last:true},
 ];
 let _guidePage = 0;
-function openGuide(){
+// onClose (optional): runs once when the guide is dismissed (Skip / Done / backdrop /
+// Escape). Used to chain the first-launch Tax intro immediately after the guide.
+let _guideOnClose = null;
+function openGuide(onClose){
   _guidePage = 0;
+  _guideOnClose = (typeof onClose==='function') ? onClose : null;
   renderGuide();
 }
 function renderGuide(){
@@ -2334,6 +2541,8 @@ function renderGuide(){
     </div>`;
   ov.classList.add('show'); ov.setAttribute('aria-hidden','false');
 
+  // closeDrawer() clears modal styling AND fires any pending _guideOnClose (the
+  // first-launch Tax intro chain), so all dismiss paths (button/backdrop/Escape) work.
   const finish=()=>{ dr.classList.remove('as-modal'); ov.classList.remove('modal-center'); closeDrawer(); };
   const go=(d)=>{ _guidePage=clamp(_guidePage+d,0,n-1); renderGuide(); };
   $('#guideSkip').onclick=finish;
@@ -2425,6 +2634,25 @@ function renderServiceScreenIfActive(){
 // Update just the balance chip without a full re-render (drawer stays open).
 function syncHUDBalance(){
   const b=$('#balVal'); if(b){ b.textContent='€'+state.balance; b.classList.remove('flash'); void b.offsetWidth; b.classList.add('flash'); }
+}
+// Refresh the tax indicators (☰ menu dot + "Finances · tax €X" label) in place,
+// without a full HUD re-render, so paying/accruing tax updates them immediately.
+// Works both directions: clears when paid off, reappears when new tax accrues.
+function syncTaxIndicators(){
+  const owed = taxOwed();
+  // ☰ menu button red dot — driven by broken equipment OR unpaid tax
+  const menuBtn = $('#btnMenu');
+  if(menuBtn) menuBtn.classList.toggle('has-broken', anyBroken() || owed);
+  // Finances menu item: dot class + "· tax €X" suffix
+  const finItem = $('.hud-menu-item[data-drawer="finances"]');
+  if(finItem){
+    finItem.classList.toggle('has-broken', owed);
+    // rebuild the label text after the icon (keep the icon <span>/<img> intact)
+    const ico = finItem.querySelector('.menu-ico');
+    finItem.textContent = '';                       // clear text + icon
+    if(ico) finItem.appendChild(ico);               // re-attach the preserved icon
+    finItem.insertAdjacentText('beforeend', ' Finances' + (owed ? ` · tax €${Math.round(state.unpaidTax)}` : ''));
+  }
 }
 /* ---------- I. UI rendering ---------- */
 const app = () => $('#app');
@@ -2530,11 +2758,11 @@ function renderHUD(){
       <div class="chip rating" title="Average rating"><span class="ico">⭐</span><span>${starTxt}</span></div>
       <div class="chip count" title="Clients served"><span class="ico">${icon('clients-logo','👥')}</span><span>${state.clientsServed}</span></div>
       <!-- Phase 8: all drawer toggles consolidated into one menu button (no awkward wrapping on tablets) -->
-      <button class="chip iconbtn menu-btn ${anyBroken()?'has-broken':''}" id="btnMenu" title="Menu" aria-label="Open menu" aria-haspopup="true">☰</button>
+      <button class="chip iconbtn menu-btn ${(anyBroken()||taxOwed())?'has-broken':''}" id="btnMenu" title="Menu" aria-label="Open menu" aria-haspopup="true">☰</button>
     </div>
   </div>
   <div class="hud-menu" id="hudMenu" aria-hidden="true">
-    <button class="hud-menu-item" data-drawer="finances"><span class="menu-ico">${icon('finance-logo','🧾')}</span> Finances</button>
+    <button class="hud-menu-item ${taxOwed()?'has-broken':''}" data-drawer="finances"><span class="menu-ico">${icon('finance-logo','🧾')}</span> Finances${taxOwed()?` · tax €${Math.round(state.unpaidTax)}`:''}</button>
     <button class="hud-menu-item" data-drawer="reviews"><span class="menu-ico">${icon('reviews-logo','💬')}</span> Reviews</button>
     <button class="hud-menu-item ${anyBroken()?'has-broken':''}" data-drawer="equip"><span class="menu-ico">${icon('equipment-logo','🔧')}</span> Equipment</button>
     <button class="hud-menu-item" data-drawer="salon">🏪 Salon · Lvl ${state.salonLevel}</button>
@@ -2545,6 +2773,8 @@ function renderHUD(){
 }
 // Phase 3: any owned equipment currently broken? (drives HUD warning dot)
 function anyBroken(){ return state.equip && Object.values(state.equip).some(e=>e.owned && e.broken); }
+// Phase 9: is any tax currently owed? (drives the Finances HUD indicator dot)
+function taxOwed(){ return state.unpaidTax > 0; }
 // Phase 8: wire the consolidated HUD menu.
 const DRAWER_OPENERS = {finances:openFinances, reviews:openReviews, equip:openEquipment, salon:openSalon, staff:openStaff, challenges:openChallenges, guide:openGuide};
 function wireHUD(){
@@ -2783,17 +3013,28 @@ function renderServiceScreen(){
   // Phase 7: optional "assign to employee" — only before any service is started
   const started = session.doneServices.length>0 || (session.skipped&&session.skipped.length>0);
   if(state.employees.length && !started){
-    const ar=$('#assignRow'); ar.className='assign-row';
-    ar.innerHTML = `<span class="assign-hint">💡 Do it yourself, or let staff handle this client:</span>`;
-    const row=document.createElement('div'); row.className='btn-row';
-    state.employees.forEach(e=>{
-      const def=EMPLOYEE_ROLES[e.role];
-      const b=document.createElement('button'); b.className='btn small secondary';
-      b.innerHTML=`${def.icon} Assign to ${e.name}`;
-      b.onclick=()=>assignToEmployee(e);
-      row.appendChild(b);
-    });
-    ar.appendChild(row);
+    const ar=$('#assignRow');
+    if(state.empRest>0){
+      // Phase 9b: staff are resting — friendly tired state, no assign buttons.
+      ar.className='assign-row resting';
+      const n = state.empRest;
+      ar.innerHTML = state.employees.map(e=>{
+        const def=EMPLOYEE_ROLES[e.role];
+        return `<div class="emp-tired">😴 ${def.icon} ${e.name} is tired and resting — back in ${n} client${n>1?'s':''}!</div>`;
+      }).join('') + `<span class="assign-hint" style="margin-top:6px">Do this one yourself to help them rest. 💪</span>`;
+    } else {
+      ar.className='assign-row';
+      ar.innerHTML = `<span class="assign-hint">💡 Do it yourself, or let staff handle this client:</span>`;
+      const row=document.createElement('div'); row.className='btn-row';
+      state.employees.forEach(e=>{
+        const def=EMPLOYEE_ROLES[e.role];
+        const b=document.createElement('button'); b.className='btn small secondary';
+        b.innerHTML=`${def.icon} Assign to ${e.name}`;
+        b.onclick=()=>assignToEmployee(e);
+        row.appendChild(b);
+      });
+      ar.appendChild(row);
+    }
   }
 
   // tab switching
@@ -2868,7 +3109,9 @@ function renderServiceScreen(){
   if(remaining.length===0){
     const fin = document.createElement('button');
     fin.className='btn mint'; fin.textContent='✅ Finish & show result';
-    fin.onclick=finishClient;
+    // Bug fix: wrap so the click Event isn't passed as `byEmployee` (a truthy value
+    // that made every MANUAL finish log at the employee tax rate). Manual = player 5%.
+    fin.onclick=()=>finishClient(false);
     $('#actArea').appendChild(fin);
   }
 }
@@ -2904,6 +3147,8 @@ function resolveServiceAuto(key, rawQ, extra){
   return true;
 }
 function assignToEmployee(emp){
+  // Phase 9b: defense-in-depth — staff can't be assigned while resting.
+  if(state.empRest>0){ toast('😴 Your staff are resting — do this one yourself!'); return; }
   const def=EMPLOYEE_ROLES[emp.role];
   const services=client.request.services;
 
@@ -2940,7 +3185,7 @@ function assignToEmployee(emp){
   session.elapsed = Math.round((Date.now()-session.startTime)/1000);
   toast(`${def.icon} ${emp.name} handled ${client.name}.${skippedCount?` (${skippedCount} service${skippedCount>1?'s':''} skipped — missing equipment)`:''}`);
   save();
-  finishClient();
+  finishClient(true);   // Phase 9: employee did it → 7% tax rate
 }
 // Minimal visible model change for auto-served services (keeps after-look consistent).
 function autoVisualEffect(key, q, model){
@@ -3053,6 +3298,77 @@ const SCALP_Y = HEAD_TOP + 6;
 
 // Map hair length trait → base strand length in px.
 const LEN_PX = {'very short':60,'short':95,'medium':140,'long':195,'very long':240};
+
+/* ============================================================
+   CUT VALIDITY GUARANTEE (regression guard)
+   A cut mini-game only makes sense when the client's STARTING hair
+   is meaningfully LONGER than the cut's target guideline — otherwise
+   there's no hair above the line to trim. This constraint lived in
+   the old fixed-template request system and was dropped when the
+   fragment/grammar generator replaced it. It now lives here as a
+   single reusable function, validateCutRequest(), that request
+   generation MUST call. If you ever change how requests/services are
+   generated, keep calling validateCutRequest() so this can't regress.
+   ============================================================ */
+const CUT_SERVICE_KEYS = ['short','long','trim','layers'];
+// Required px of cuttable hair above the guideline. Fixed-target cuts (short/long)
+// need the full margin because their guideline is a fixed px and can otherwise sit
+// below short hair (the reported bug). Relative cuts (trim/layers) scale their
+// guideline to the client's own length so they always leave hair above the line —
+// they only need a small band, so they don't force everyone to have long hair.
+const MIN_CUT_MARGIN_PX = 34;         // for fixed-target cuts (short/long)
+const MIN_CUT_MARGIN_REL_PX = 8;      // for relative cuts (trim/layers)
+
+// Pure: the target guideline length (px) a cut service implies, given a client's
+// base starting length and whether they're keeping length. Used by BOTH the live
+// cut mini-game (cutTargetFor) and the pre-generation validator, so they agree.
+function cutTargetPx(key, baseLen, keepLength){
+  if(key==='short')  return LEN_PX['short'];      // fixed short guideline
+  if(key==='long')   return LEN_PX['long'];       // fixed long guideline
+  if(key==='layers') return baseLen*0.82;         // relative to own length
+  // trim / default: relative to own length
+  return keepLength ? baseLen*0.9 : baseLen*0.75;
+}
+// Given the requested cut services + keepLength, return the minimum starting length
+// (px) the client must have so EVERY requested cut has ≥ MIN_CUT_MARGIN_PX of hair
+// above its guideline. Non-cut requests → 0 (no constraint).
+function minStartLenForCuts(cutKeys, keepLength){
+  let need = 0;
+  for(const k of cutKeys){
+    if(k==='short' || k==='long'){
+      // fixed guideline → need starting length at least guideline + full margin
+      need = Math.max(need, cutTargetPx(k, 0, keepLength) + MIN_CUT_MARGIN_PX);
+    } else {
+      // relative guideline (trim/layers): target = f*base, so cuttable band = (1-f)*base
+      // must be ≥ small relative margin → base ≥ margin / (1-f).
+      const f = k==='layers' ? 0.82 : (keepLength ? 0.9 : 0.75);
+      need = Math.max(need, MIN_CUT_MARGIN_REL_PX / (1 - f));
+    }
+  }
+  return need;
+}
+// HARD GUARANTEE: after a client's hair length and request are chosen, ensure any
+// cut-type service has valid cuttable hair. If not, RAISE the client's starting
+// length to the smallest bucket that satisfies every requested cut. Mutates c.hair
+// and returns the (possibly unchanged) client. Safe to call when no cut is requested.
+function validateCutRequest(c){
+  const services = (c.request && c.request.services) || [];
+  const cutKeys = services.filter(k=>CUT_SERVICE_KEYS.includes(k));
+  if(!cutKeys.length) return c;                    // no cut → nothing to enforce
+  const keepLength = !!(c.request && c.request.keepLength);
+  const need = minStartLenForCuts(cutKeys, keepLength);
+  const curLen = LEN_PX[c.hair.length] || 140;
+  if(curLen >= need) return c;                     // already valid
+  // Bump to the smallest HAIR.length bucket whose px length is long enough.
+  const order = HAIR.length;                       // 'very short' … 'very long'
+  for(const bucket of order){
+    if((LEN_PX[bucket]||0) >= need){ c.hair.length = bucket; break; }
+  }
+  // If even the longest bucket can't satisfy (shouldn't happen for our values),
+  // fall back to the longest available so there's still hair above the line.
+  if((LEN_PX[c.hair.length]||0) < need) c.hair.length = order[order.length-1];
+  return c;
+}
 
 // Pacing constants for wash/dry coverage fill (per drag-touch on a strand).
 // These are now PER-SECOND fill rates (see washAt/dryAt: fill = rate * dt), NOT
@@ -3444,12 +3760,10 @@ function finishAction(key, rawQ){
 // Target length (canvas px) inferred from the requested cut service + keepLength.
 function cutTargetFor(key){
   const base = getHairModel().traits.baseLen;
-  if(key==='short')  return LEN_PX['short'];
-  if(key==='long')   return LEN_PX['long'];
   if(key==='bangs')  return base;                 // handled as front-shorter; see eval
-  if(key==='layers') return base*0.82;            // graduated; eval rewards variance
-  // trim / default: keep most length, take a little off
-  return client.request.keepLength ? base*0.9 : base*0.75;
+  // trim/short/long/layers all delegate to the shared cutTargetPx() so the live
+  // guideline exactly matches what validateCutRequest() guaranteed at generation.
+  return cutTargetPx(key, base, client.request.keepLength);
 }
 function actCut(key){
   const area=$('#actArea'); area.innerHTML='';
@@ -4299,10 +4613,12 @@ function actTreatment(key){
   }
 }
 /* ---------- Screen: End-of-client summary ---------- */
-function finishClient(){
+function finishClient(byEmployee){
   session.elapsed = Math.round((Date.now()-session.startTime)/1000);
   const sat = calcSatisfaction();
-  const out = applyOutcome(sat);
+  // Only a STRICT `true` counts as employee-done — guards against a click Event or
+  // any other truthy object being passed in and mis-flagging a manual completion.
+  const out = applyOutcome(sat, byEmployee === true);   // Phase 9: employee vs player tax rate
   screenSummary(sat, out);
 }
 
@@ -4582,13 +4898,29 @@ function init(){
   preloadAssets();   // start loading PNG tool/equipment icons (emoji fallback until ready)
   load();
   nextClient();
+  // One-time tax intro: show it once, marking the flag the moment it's shown.
+  function maybeShowTaxIntro(){
+    try{
+      if(!localStorage.getItem('ploufi_seenTaxIntro')){
+        localStorage.setItem('ploufi_seenTaxIntro','1');
+        showTaxIntro();
+      }
+    }catch(e){/* storage blocked — skip */}
+  }
   // Guide: auto-show once on the very first launch, then never force it again.
+  let shownGuide = false;
   try{
     if(!localStorage.getItem('ploufi_seenGuide')){
       localStorage.setItem('ploufi_seenGuide','1');
-      openGuide();   // opens over the first screen; always reopenable via the ☰ menu
+      // Brand-new player: show the guide, and chain the Tax intro to run the instant
+      // the guide is closed (Skip / Done / backdrop / Escape) — no page reload needed.
+      openGuide(maybeShowTaxIntro);
+      shownGuide = true;
     }
   }catch(e){/* storage blocked — just skip the auto-show */}
+  // Existing player (guide already seen, or storage without a guide flag): show the
+  // Tax intro directly on this load, exactly as before.
+  if(!shownGuide) maybeShowTaxIntro();
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
 if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
