@@ -1,0 +1,2563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Classe 3D - Apprendre en s'amusant</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: #eaf4ff; }
+  #app { position: fixed; inset: 0; }
+
+  /* ---------- 3D canvas ---------- */
+  #scene { position: absolute; inset: 0; display: block; }
+
+  /* ---------- Generic overlay ---------- */
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 4vmin; z-index: 20;
+  }
+
+  /* ---------- Subject selection ---------- */
+  #menu {
+    background: linear-gradient(160deg, #7fb3ff 0%, #a99bff 55%, #ff9ecb 100%);
+    color: #fff;
+  }
+  #menu h1 {
+    font-size: clamp(28px, 6vw, 56px); margin-bottom: 0.4em; letter-spacing: 0.5px;
+    text-shadow: 0 3px 0 rgba(0,0,0,0.12);
+  }
+  #menu p.sub { font-size: clamp(14px, 2.4vw, 22px); margin-bottom: 1.4em; opacity: 0.95; }
+  .subject-grid {
+    display: grid; gap: 2.2vmin; width: min(1000px, 92vw);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .card {
+    position: relative; background: rgba(255,255,255,0.95); color: #33406b;
+    border-radius: 20px; padding: 5vmin 3vmin; cursor: pointer;
+    box-shadow: 0 10px 24px rgba(40,50,120,0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    min-height: 150px; justify-content: center; user-select: none;
+  }
+  .card .emoji { font-size: clamp(38px, 8vw, 64px); line-height: 1; }
+  .card .label { font-size: clamp(16px, 2.6vw, 24px); font-weight: 700; }
+  .card.enabled:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 16px 30px rgba(40,50,120,0.32); }
+  .card.enabled:active { transform: translateY(-2px) scale(0.99); }
+  .card.disabled { cursor: not-allowed; opacity: 0.55; filter: grayscale(0.7); }
+  .badge {
+    position: absolute; top: 10px; right: 10px; background: #ff6b8b; color: #fff;
+    font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 999px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  #menuEditName {
+    margin-top: 1.6em; background: rgba(255,255,255,0.9); color: #4f6bd0;
+    border: none; border-radius: 999px; cursor: pointer; font-family: inherit;
+    font-weight: 700; font-size: clamp(13px, 1.8vw, 16px); padding: 10px 18px;
+    min-height: 44px; box-shadow: 0 4px 12px rgba(40,50,120,0.18);
+  }
+  #menuEditName:active { transform: scale(0.97); }
+
+  /* About button (bottom-left corner of the menu) */
+  #menuAbout {
+    position: absolute; bottom: 18px; left: 18px; z-index: 22;
+    background: rgba(255,255,255,0.9); color: #4f6bd0; border: none;
+    border-radius: 999px; cursor: pointer; font-family: inherit; font-weight: 700;
+    font-size: clamp(13px, 1.8vw, 16px); padding: 10px 18px; min-height: 44px;
+    box-shadow: 0 4px 12px rgba(40,50,120,0.18);
+  }
+  #menuAbout:active { transform: scale(0.97); }
+
+  /* About / How to Play modal */
+  #aboutModal {
+    position: absolute; inset: 0; z-index: 60; display: none;
+    align-items: center; justify-content: center; padding: 4vmin;
+    background: rgba(28,35,64,0.55);
+  }
+  #aboutModal.on { display: flex; }
+  .about-panel {
+    position: relative; background: #ffffff; color: #33406b;
+    border-radius: 22px; padding: clamp(20px, 3vw, 34px);
+    width: min(680px, 94vw); max-height: 88vh; overflow-y: auto;
+    box-shadow: 0 18px 40px rgba(28,35,64,0.4); text-align: left;
+  }
+  .about-panel h2 {
+    font-size: clamp(22px, 3.6vw, 32px); color: #4f6bd0; margin-bottom: 0.6em;
+    text-align: center;
+  }
+  .about-section { margin-bottom: 1.1em; }
+  .about-section h3 {
+    font-size: clamp(16px, 2.4vw, 21px); color: #3a6fe0; margin-bottom: 0.35em;
+  }
+  .about-section p {
+    font-size: clamp(14px, 2vw, 17px); line-height: 1.55; color: #47506f;
+  }
+  .about-close {
+    position: absolute; top: 12px; right: 14px; border: none; cursor: pointer;
+    background: #eef2ff; color: #4f6bd0; width: 40px; height: 40px; border-radius: 50%;
+    font-size: 20px; font-weight: 800; line-height: 1;
+  }
+  .about-close:active { transform: scale(0.94); }
+
+  /* Start Class + Return button column */
+  .start-class-col { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  #btnReturnMenu.hidden { display: none; }
+
+  /* ---------- In-game UI ---------- */
+  #game-ui { position: absolute; inset: 0; pointer-events: none; z-index: 15; }
+  #game-ui.hidden { display: none; }
+
+  .hud-bottom {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    padding: 18px clamp(12px, 3vw, 32px) clamp(18px, 4vh, 34px);
+    pointer-events: none;
+  }
+  .btn {
+    pointer-events: auto; border: none; border-radius: 16px; cursor: pointer;
+    font-family: inherit; font-weight: 700; color: #fff;
+    font-size: clamp(16px, 2.6vw, 22px);
+    padding: 16px 30px; min-height: 56px; min-width: 200px;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+    transition: transform 0.12s ease, filter 0.12s ease;
+    touch-action: manipulation; user-select: none;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: linear-gradient(160deg, #4f9dff, #3a6fe0); }
+  .btn-hand { background: linear-gradient(160deg, #ffb14d, #ff8a3c); }
+  .btn-speak { background: linear-gradient(160deg, #ff6b8b, #e0466f); }
+  .btn-next { background: linear-gradient(160deg, #46c37b, #2f9e5f); }
+  .btn-speak.holding { filter: brightness(1.15); box-shadow: 0 0 0 6px rgba(255,107,139,0.35), 0 8px 18px rgba(0,0,0,0.22); }
+
+  /* Status / feedback */
+  .status-line {
+    pointer-events: none; font-size: clamp(14px, 2.2vw, 20px); font-weight: 600;
+    color: #33406b; background: rgba(255,255,255,0.9); padding: 8px 18px; border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12); min-height: 20px;
+    max-width: 90vw;
+  }
+
+  /* Listening mic indicator */
+  #listening {
+    display: none; align-items: center; gap: 10px; pointer-events: none;
+    background: rgba(255,255,255,0.95); color: #e0466f; font-weight: 700;
+    padding: 10px 20px; border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  #listening.on { display: flex; }
+  .mic-dot { width: 16px; height: 16px; border-radius: 50%; background: #ff3b5c; animation: pulse 1s infinite ease-in-out; }
+  @keyframes pulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.7); opacity: 0.4; } }
+
+  /* Feedback banner */
+  #feedback {
+    position: absolute; top: 12%; left: 50%; transform: translateX(-50%) scale(0.8);
+    display: none; flex-direction: column; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.97); border-radius: 24px; padding: 24px 36px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25); pointer-events: none;
+    z-index: 18; opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease;
+    max-width: 88vw;
+  }
+  #feedback.show { display: flex; opacity: 1; transform: translateX(-50%) scale(1); }
+  #feedback .icon { font-size: clamp(50px, 12vw, 90px); line-height: 1; }
+  #feedback .msg { font-size: clamp(18px, 3vw, 28px); font-weight: 800; color: #33406b; text-align: center; }
+  #feedback.correct .icon { color: #2f9e5f; }
+  #feedback.wrong .icon { color: #e0466f; }
+
+  /* Text fallback input */
+  #fallback { display: none; flex-direction: column; gap: 10px; align-items: center; pointer-events: auto; }
+  #fallback.on { display: flex; }
+  #fallback input {
+    font-family: inherit; font-size: clamp(16px, 2.6vw, 22px); padding: 14px 18px;
+    border-radius: 14px; border: 2px solid #b9c6ef; min-width: 220px; text-align: center;
+    min-height: 52px;
+  }
+  #fallback .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+  /* Player raised-hand avatar cue */
+  #player-cue {
+    position: absolute; bottom: 18px; left: 18px; pointer-events: none;
+    display: none; align-items: flex-end; gap: 8px;
+    background: rgba(255,255,255,0.92); border-radius: 18px; padding: 10px 16px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+  }
+  #player-cue.on { display: flex; }
+  #player-cue .who { font-weight: 700; color: #33406b; font-size: 14px; }
+  .hand-emoji { font-size: 30px; display: inline-block; transform-origin: bottom center; animation: wave 0.9s infinite ease-in-out; }
+  @keyframes wave { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }
+
+  /* Rotate device overlay */
+  #rotate {
+    display: none; background: #1c2340; color: #fff; z-index: 50;
+  }
+  #rotate .rot-emoji { font-size: 22vmin; animation: spin 2s infinite ease-in-out; }
+  @keyframes spin { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } }
+  #rotate p { font-size: clamp(18px, 4vw, 30px); margin-top: 2vh; font-weight: 700; }
+
+  /* Loading */
+  #loading { background: #eaf4ff; color: #4a5aa0; z-index: 40; }
+  #loading .spinner {
+    width: 60px; height: 60px; border: 6px solid #cfe0ff; border-top-color: #4f9dff;
+    border-radius: 50%; animation: rot 0.9s linear infinite; margin-bottom: 18px;
+  }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  .fade-out { animation: fadeOut 0.5s forwards; }
+  @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+
+  /* ---------- Language toggle ---------- */
+  .lang-toggle {
+    position: absolute; top: 14px; right: 14px; z-index: 30;
+    display: flex; background: rgba(255,255,255,0.92); border-radius: 999px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18); overflow: hidden; pointer-events: auto;
+  }
+  .lang-toggle button {
+    border: none; background: transparent; cursor: pointer; font-family: inherit;
+    font-weight: 800; font-size: 15px; color: #6a76a8; padding: 10px 16px;
+    min-width: 52px; min-height: 44px; transition: background 0.15s ease, color 0.15s ease;
+    touch-action: manipulation;
+  }
+  .lang-toggle button.active { background: linear-gradient(160deg, #4f9dff, #3a6fe0); color: #fff; }
+  #menu .lang-toggle { top: 16px; right: 16px; }
+
+  /* ---------- Name entry ---------- */
+  #nameEntry {
+    background: linear-gradient(160deg, #7fb3ff 0%, #a99bff 55%, #ff9ecb 100%);
+    color: #fff; z-index: 25;
+  }
+  #nameEntry h1 { font-size: clamp(26px, 5.5vw, 48px); margin-bottom: 0.6em; text-shadow: 0 3px 0 rgba(0,0,0,0.12); }
+  #nameEntry .name-card {
+    background: rgba(255,255,255,0.96); border-radius: 22px; padding: 6vmin 6vmin;
+    box-shadow: 0 14px 30px rgba(40,50,120,0.28); display: flex; flex-direction: column;
+    gap: 18px; align-items: center; width: min(460px, 90vw);
+  }
+  #nameEntry input {
+    font-family: inherit; font-size: clamp(18px, 3vw, 24px); padding: 14px 18px;
+    border-radius: 14px; border: 2px solid #b9c6ef; width: 100%; text-align: center;
+    min-height: 54px; color: #33406b;
+  }
+
+  /* ---------- Leaderboard rows (used by the session summary panels) ---------- */
+  .sb-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 5px;
+    padding: 6px 10px; border-radius: 8px; font-size: clamp(12px, 1.4vw, 15px);
+    color: #33406b; font-weight: 600;
+  }
+  .sb-row:nth-child(odd) { background: rgba(120,140,220,0.08); }
+  .sb-row.is-player { background: linear-gradient(160deg, #ffe9a8, #ffd977); font-weight: 800; box-shadow: inset 0 0 0 2px #f2b23c; }
+  .sb-row .sb-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 4px; }
+  .sb-row .sb-val { flex-shrink: 0; font-weight: 800; }
+
+  /* Question counter (above the whiteboard) */
+  #questionCounter {
+    position: absolute; top: -9999px; left: -9999px; z-index: 17; pointer-events: none;
+    transform: translate(-50%, -100%);
+    background: linear-gradient(160deg, #6a86e0, #4f6bd0); color: #fff;
+    font-weight: 800; font-size: clamp(14px, 1.9vw, 20px);
+    padding: 8px 20px; border-radius: 999px; white-space: nowrap;
+    box-shadow: 0 6px 16px rgba(40,50,120,0.28); display: none;
+  }
+  #questionCounter.on { display: block; }
+
+  /* Start Class (idle) */
+  #startClassWrap {
+    position: absolute; inset: 0; display: none; align-items: flex-start; justify-content: center;
+    padding-top: 4vh; z-index: 19; pointer-events: none;
+  }
+  #startClassWrap.on { display: flex; }
+  #startClassWrap .btn { pointer-events: auto; font-size: clamp(20px, 3.4vw, 30px); padding: 20px 44px; min-height: 68px; }
+
+  /* Speech bubbles */
+  .bubble {
+    position: absolute; z-index: 17; pointer-events: none;
+    transform: translate(-50%, -100%);
+    padding: 8px 14px; border-radius: 14px; font-weight: 800;
+    font-size: clamp(15px, 2vw, 22px); white-space: nowrap;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.22); display: none;
+  }
+  .bubble.on { display: block; }
+  .bubble::after {
+    content: ''; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%);
+    border-left: 8px solid transparent; border-right: 8px solid transparent;
+    border-top: 9px solid currentColor;
+  }
+  /* NPC bubble: white with blue text */
+  #npcBubble { background: #ffffff; color: #3a6fe0; border: 2px solid #cfe0ff; }
+  #npcBubble::after { color: #ffffff; }
+  /* Player bubble: distinct amber tag anchored near the whiteboard */
+  #playerBubble {
+    background: linear-gradient(160deg, #ffe9a8, #ffd977); color: #7a5a12;
+    border: 2px solid #f2b23c; font-size: clamp(13px, 1.7vw, 19px);
+  }
+  #playerBubble::after { color: #ffe9a8; }
+  #playerBubble .pb-label { font-weight: 700; opacity: 0.85; margin-right: 4px; }
+
+  /* NPC answering beat */
+  #npcTurn {
+    display: none; align-items: center; gap: 10px; pointer-events: none;
+    background: rgba(255,255,255,0.96); color: #4f6bd0; font-weight: 800;
+    padding: 10px 22px; border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: clamp(14px, 2.2vw, 20px);
+  }
+  #npcTurn.on { display: flex; }
+  #npcTurn .npc-dot { width: 14px; height: 14px; border-radius: 50%; background: #4f6bd0; animation: pulse 1s infinite ease-in-out; }
+
+  /* Countdown ring / number */
+  #countdown {
+    display: none; pointer-events: none; font-weight: 800; color: #e0466f;
+    font-size: clamp(16px, 2.4vw, 22px); background: rgba(255,255,255,0.92);
+    padding: 6px 16px; border-radius: 999px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  }
+  #countdown.on { display: inline-block; }
+
+  /* Session summary */
+  #summary {
+    display: none; background: rgba(28,35,64,0.92); color: #fff; z-index: 45;
+  }
+  #summary.on { display: flex; }
+  #summary h1 { font-size: clamp(24px, 5vw, 44px); margin-bottom: 0.5em; }
+  #summary .summary-cols { display: flex; gap: 3vmin; flex-wrap: wrap; justify-content: center; width: min(900px, 94vw); }
+  #summary .summary-panel {
+    background: rgba(255,255,255,0.96); color: #33406b; border-radius: 18px; padding: 16px;
+    flex: 1 1 260px; min-width: 240px; max-height: 52vh; overflow-y: auto;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+  }
+  #summary .summary-panel h2 { font-size: clamp(16px, 2.4vw, 22px); margin-bottom: 10px; color: #4f6bd0; }
+</style>
+</head>
+<body>
+<div id="app">
+  <canvas id="scene"></canvas>
+
+  <!-- Loading -->
+  <div id="loading" class="overlay">
+    <div class="spinner"></div>
+    <div id="loadingText">Loading the classroom...</div>
+  </div>
+
+  <!-- Name entry -->
+  <div id="nameEntry" class="overlay" style="display:none;">
+    <div class="lang-toggle" id="langToggleName">
+      <button data-lang="en">EN</button>
+      <button data-lang="fr">FR</button>
+    </div>
+    <h1 id="nameTitle">What's your name?</h1>
+    <div class="name-card">
+      <input id="nameInput" type="text" maxlength="16" placeholder="Your name" />
+      <button class="btn btn-primary" id="nameContinue">Continue</button>
+    </div>
+  </div>
+
+  <!-- Subject selection menu -->
+  <div id="menu" class="overlay" style="display:none;">
+    <div class="lang-toggle" id="langToggleMenu">
+      <button data-lang="en">EN</button>
+      <button data-lang="fr">FR</button>
+    </div>
+    <h1 id="menuTitle">🎒 My 3D Classroom</h1>
+    <p class="sub" id="menuSubtitle">Pick a subject to get started!</p>
+    <div class="subject-grid" id="subjectGrid"></div>
+    <button id="menuEditName" type="button"></button>
+    <button id="menuAbout" type="button">ℹ️ About</button>
+  </div>
+
+  <!-- About / How to Play modal -->
+  <div id="aboutModal">
+    <div class="about-panel">
+      <button class="about-close" id="aboutClose" type="button" aria-label="Close">✕</button>
+      <h2 id="aboutTitle">How to Play</h2>
+      <div class="about-section">
+        <h3 id="aboutAnswerTitle">How to answer</h3>
+        <p id="aboutAnswerBody"></p>
+      </div>
+      <div class="about-section">
+        <h3 id="aboutScoreTitle">How scoring works</h3>
+        <p id="aboutScoreBody"></p>
+      </div>
+      <div class="about-section">
+        <h3 id="aboutSessionTitle">Session structure</h3>
+        <p id="aboutSessionBody"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-game UI -->
+  <div id="game-ui" class="hidden">
+    <div class="lang-toggle" id="langToggleGame">
+      <button data-lang="en">EN</button>
+      <button data-lang="fr">FR</button>
+    </div>
+
+    <div id="player-cue">
+      <span class="hand-emoji">✋</span>
+      <span class="who" id="playerCueWho">You</span>
+    </div>
+
+    <!-- Question counter, above the whiteboard -->
+    <div id="questionCounter"></div>
+
+    <!-- Score & Trophy boards are rendered as 3D panels beside the whiteboard -->
+
+    <!-- Speech bubbles -->
+    <div id="npcBubble" class="bubble"></div>
+    <div id="playerBubble" class="bubble"></div>
+
+    <!-- Start Class (idle state before the session begins) -->
+    <div id="startClassWrap">
+      <div class="start-class-col">
+        <button class="btn btn-next" id="btnStartClass">🔔 Start Class</button>
+        <button class="btn btn-primary" id="btnReturnMenu">↩️ Back to Classes</button>
+      </div>
+    </div>
+
+    <div id="feedback">
+      <div class="icon"></div>
+      <div class="msg"></div>
+    </div>
+
+    <div class="hud-bottom">
+      <div id="npcTurn"><span class="npc-dot"></span><span id="npcTurnText"></span></div>
+      <div id="listening"><span class="mic-dot"></span><span id="listeningText">Listening...</span></div>
+      <span id="countdown">7</span>
+      <div class="status-line" id="status">Read the question on the board!</div>
+
+      <div id="fallback">
+        <input id="fallbackInput" type="text" inputmode="numeric" placeholder="Type your answer here" />
+        <div class="row">
+          <button class="btn btn-primary" id="fallbackSubmit">Submit</button>
+        </div>
+      </div>
+
+      <button class="btn btn-speak" id="btnSpeak">🎤 Hold to Answer</button>
+      <button class="btn btn-next" id="btnNext" style="display:none;">➡️ Next Question</button>
+    </div>
+  </div>
+
+  <!-- Session summary -->
+  <div id="summary" class="overlay">
+    <h1 id="summaryTitle">Session complete!</h1>
+    <div class="summary-cols">
+      <div class="summary-panel">
+        <h2 id="summaryScoreTitle">⭐ Scores</h2>
+        <div id="summaryScoreList"></div>
+      </div>
+      <div class="summary-panel">
+        <h2 id="summaryTrophyTitle">🏆 Trophies</h2>
+        <div id="summaryTrophyList"></div>
+      </div>
+    </div>
+    <button class="btn btn-next" id="btnNewSession" style="margin-top:3vh;">New Session</button>
+  </div>
+
+  <!-- Rotate prompt -->
+  <div id="rotate" class="overlay">
+    <div class="rot-emoji">📱</div>
+    <p id="rotateText">Please rotate your tablet</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+
+// ---------- DOM refs ----------
+const el = (id) => document.getElementById(id);
+const menuEl = el('menu');
+const loadingEl = el('loading');
+const gameUiEl = el('game-ui');
+const rotateEl = el('rotate');
+const statusEl = el('status');
+const feedbackEl = el('feedback');
+const listeningEl = el('listening');
+const playerCueEl = el('player-cue');
+const btnSpeak = el('btnSpeak');
+const btnNext = el('btnNext');
+const fallbackEl = el('fallback');
+const fallbackInput = el('fallbackInput');
+const fallbackSubmit = el('fallbackSubmit');
+const canvas = el('scene');
+const npcTurnEl = el('npcTurn');
+const npcTurnTextEl = el('npcTurnText');
+const npcBubbleEl = el('npcBubble');
+const playerBubbleEl = el('playerBubble');
+const questionCounterEl = el('questionCounter');
+const countdownEl = el('countdown');
+const nameEntryEl = el('nameEntry');
+const nameInput = el('nameInput');
+const summaryEl = el('summary');
+const startClassWrapEl = el('startClassWrap');
+const btnStartClass = el('btnStartClass');
+const btnReturnMenu = el('btnReturnMenu');
+const aboutModalEl = el('aboutModal');
+
+// ============================================================
+//  LOCALIZATION
+// ============================================================
+const STRINGS = {
+  en: {
+    htmlLang: 'en',
+    loading: 'Loading the classroom...',
+    menuTitle: '🎒 My 3D Classroom',
+    menuSubtitle: 'Pick a subject to get started!',
+    comingSoon: 'Coming soon',
+    rotate: 'Please rotate your tablet',
+    playerWho: 'You',
+    listening: 'Listening...',
+    holdToAnswer: '🎤 Hold to Answer',
+    nextQuestion: '➡️ Next Question',
+    submit: 'Submit',
+    fallbackPlaceholder: 'Type your answer here',
+    // status messages
+    statusReadBoard: 'Read the question on the board!',
+    statusSpeakNow: 'Speak now…',
+    statusNoUnderstand: "I didn't understand. Try again or type your answer.",
+    statusNoSpeech: "I didn't hear anything. Try again!",
+    statusMicDenied: '🎤 Mic blocked. Use the keyboard below.',
+    statusYouAnswered: 'You answered: ',
+    // board
+    boardSubject: '📘 Mathematics',
+    boardWelcome1: 'Welcome!',
+    boardWelcome2: 'Get ready...',
+    boardPrompt: 'What does it equal?',
+    boardReveal: 'The answer was ',
+    answerLabel: 'Answer: ',
+    // feedback
+    correct: ['Well done! 🎉', 'Excellent! 🌟', 'Great job! 👏', 'Perfect! 💯'],
+    wrong: ['Almost! The answer was ', "Not quite. It was ", 'Good try! The right answer: '],
+    subjects: {
+      math: 'Mathematics', physique: 'Physics', sciences: 'Science',
+      geographie: 'Geography', histoire: 'History', langues: 'Languages'
+    },
+    // name entry
+    nameTitle: "What's your name?",
+    namePlaceholder: 'Your name',
+    nameContinue: 'Continue',
+    editNameLabel: '✏️ Playing as: ',
+    // About / How to Play
+    aboutButton: 'ℹ️ About',
+    returnMenu: '↩️ Back to Classes',
+    aboutTitle: 'How to Play',
+    aboutAnswerTitle: 'How to answer',
+    aboutAnswerBody: 'When a question appears on the whiteboard, everyone races to answer! Press and HOLD the "Hold to Answer" button — this raises your hand and starts listening at the same time. Speak your answer clearly while holding, then release. If someone else raises their hand first, wait for the floor to reopen and try again. Once you are called on, you have 5 seconds to answer. If the game does not understand what you said, you can try again right away within the remaining time — it does not cost you your turn. But if you answer wrong or run out of time, you cannot answer again for that question.',
+    aboutScoreTitle: 'How scoring works',
+    aboutScoreBody: 'A correct answer earns 1 point. Answering correctly 5 times in a row earns a 3-point bonus on top! Reaching 20 points earns you a trophy and resets your points to 0 — trophies add up over time, so you can win more than one across the semester. The scoreboard (right of the whiteboard) shows everyone\'s current points, and the trophy board (left of the whiteboard) shows everyone\'s trophy count.',
+    aboutSessionTitle: 'Session structure',
+    aboutSessionBody: 'Each class session runs for 20 questions. When it ends, you will see a summary of the scores and trophies before returning to the subject menu.',
+    // boards
+    scoresTitle: '⭐ Scores',
+    trophiesTitle: '🏆 Trophies',
+    youTag: '(You)',
+    // turn-taking
+    npcAnswering: ' is answering…',
+    handAlreadyRaised: ' already raised their hand!',
+    floorBusy: 'Someone is already answering!',
+    npcCorrect: ' got it right! ✅',
+    npcWrong: ' missed it. ❌',
+    youSaid: 'You said:',
+    teacherReveals: 'The answer was ',
+    bonusStreak: 'Streak bonus! +3 🔥',
+    trophyEarned: ' earned a trophy! 🏆',
+    lockedOut: "You're out this round. Watch the others!",
+    // session
+    questionCounter: 'Question ',
+    sessionComplete: 'Session complete!',
+    newSession: 'New Session',
+    startClass: '🔔 Start Class',
+    classReady: 'Class is ready. Press Start when you are!'
+  },
+  fr: {
+    htmlLang: 'fr',
+    loading: 'Préparation de la classe...',
+    menuTitle: '🎒 Ma Classe 3D',
+    menuSubtitle: 'Choisis une matière pour commencer !',
+    comingSoon: 'Bientôt disponible',
+    rotate: 'Veuillez tourner votre tablette',
+    playerWho: 'Toi',
+    listening: "J'écoute...",
+    holdToAnswer: '🎤 Maintenir pour répondre',
+    nextQuestion: '➡️ Question suivante',
+    submit: 'Valider',
+    fallbackPlaceholder: 'Écris ta réponse ici',
+    statusReadBoard: 'Lis la question au tableau !',
+    statusSpeakNow: 'Parle maintenant…',
+    statusNoUnderstand: "Je n'ai pas compris. Réessaie ou écris ta réponse.",
+    statusNoSpeech: "Je n'ai rien entendu. Réessaie !",
+    statusMicDenied: '🎤 Micro refusé. Utilise le clavier ci-dessous.',
+    statusYouAnswered: 'Tu as répondu : ',
+    boardSubject: '📘 Mathématiques',
+    boardWelcome1: 'Bienvenue !',
+    boardWelcome2: 'Prépare-toi...',
+    boardPrompt: 'Combien ça fait ?',
+    boardReveal: 'La réponse était ',
+    answerLabel: 'Réponse : ',
+    correct: ['Bravo ! 🎉', 'Excellent ! 🌟', 'Super ! 👏', 'Parfait ! 💯'],
+    wrong: ['Presque ! La réponse était ', "Pas tout à fait. C'était ", 'Bon essai ! La bonne réponse : '],
+    subjects: {
+      math: 'Mathématiques', physique: 'Physique', sciences: 'Sciences',
+      geographie: 'Géographie', histoire: 'Histoire', langues: 'Langues'
+    },
+    nameTitle: 'Comment tu t\'appelles ?',
+    namePlaceholder: 'Ton prénom',
+    nameContinue: 'Continuer',
+    editNameLabel: '✏️ Tu joues en tant que : ',
+    // À propos / Comment jouer
+    aboutButton: 'ℹ️ Aide',
+    returnMenu: '↩️ Retour aux classes',
+    aboutTitle: 'Comment jouer',
+    aboutAnswerTitle: 'Comment répondre',
+    aboutAnswerBody: 'Quand une question apparaît au tableau, tout le monde se dépêche de répondre ! Appuie et MAINTIENS le bouton « Maintenir pour répondre » — cela lève ta main et démarre l\'écoute en même temps. Dis ta réponse clairement en maintenant le bouton, puis relâche. Si quelqu\'un lève la main avant toi, attends que la parole se libère et réessaie. Une fois que c\'est ton tour, tu as 5 secondes pour répondre. Si le jeu ne comprend pas ce que tu as dit, tu peux réessayer tout de suite pendant le temps restant — ça ne te coûte pas ton tour. Mais si tu te trompes ou que le temps est écoulé, tu ne peux plus répondre à cette question.',
+    aboutScoreTitle: 'Comment marchent les points',
+    aboutScoreBody: 'Une bonne réponse rapporte 1 point. Répondre correctement 5 fois de suite rapporte un bonus de 3 points en plus ! Atteindre 20 points te fait gagner un trophée et remet tes points à 0 — les trophées s\'accumulent au fil du temps, tu peux donc en gagner plusieurs durant le semestre. Le tableau des scores (à droite du tableau blanc) montre les points de chacun, et le tableau des trophées (à gauche) montre le nombre de trophées de chacun.',
+    aboutSessionTitle: 'Déroulement d\'une session',
+    aboutSessionBody: 'Chaque session de cours comporte 20 questions. À la fin, un récapitulatif des scores et des trophées s\'affiche avant de revenir au menu des matières.',
+    scoresTitle: '⭐ Scores',
+    trophiesTitle: '🏆 Trophées',
+    youTag: '(Toi)',
+    npcAnswering: ' répond…',
+    handAlreadyRaised: ' a levé la main avant toi !',
+    floorBusy: 'Quelqu\'un répond déjà !',
+    npcCorrect: ' a trouvé ! ✅',
+    npcWrong: ' s\'est trompé. ❌',
+    youSaid: 'Tu as dit :',
+    teacherReveals: 'La réponse était ',
+    bonusStreak: 'Bonus de série ! +3 🔥',
+    trophyEarned: ' gagne un trophée ! 🏆',
+    lockedOut: 'Tu es éliminé ce tour. Observe les autres !',
+    questionCounter: 'Question ',
+    sessionComplete: 'Session terminée !',
+    newSession: 'Nouvelle session',
+    startClass: '🔔 Commencer le cours',
+    classReady: 'La classe est prête. Appuie sur Commencer !'
+  }
+};
+
+const LANG_KEY = 'classroom.lang';
+function loadLang() {
+  const stored = localStorage.getItem(LANG_KEY);
+  return (stored === 'fr' || stored === 'en') ? stored : 'en';
+}
+let currentLang = loadLang();
+function t(key) { return STRINGS[currentLang][key]; }
+
+// ============================================================
+//  PERSISTENCE: player name, NPC identities/skills, scores
+// ============================================================
+const NAME_KEY = 'classroom.playerName';
+const NPC_KEY = 'classroom.npcs';
+
+function lsGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+function lsSet(key, val) { try { localStorage.setItem(key, val); } catch (e) {} }
+
+function getPlayerName() { return lsGet(NAME_KEY) || ''; }
+function setPlayerName(name) { lsSet(NAME_KEY, name); }
+
+// 8 fixed classmates. Skill levels generated once, spread ~0.35–0.85.
+const NPC_NAMES = ['Emma', 'Lucas', 'Mia', 'Noah', 'Sofia', 'Ethan', 'Chloé', 'Liam'];
+
+function loadOrCreateNPCs() {
+  const raw = lsGet(NPC_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length === NPC_NAMES.length) return parsed;
+    } catch (e) {}
+  }
+  // Generate once: evenly spread base skills across 0.35–0.85, then jitter + shuffle.
+  const lo = 0.35, hi = 0.85;
+  const base = NPC_NAMES.map((_, i) => lo + (hi - lo) * (i / (NPC_NAMES.length - 1)));
+  // shuffle base so name<->skill pairing is random but the spread is preserved
+  for (let i = base.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [base[i], base[j]] = [base[j], base[i]];
+  }
+  const npcs = NPC_NAMES.map((name, i) => {
+    const jitter = (Math.random() - 0.5) * 0.06;
+    const skill = Math.min(0.9, Math.max(0.3, base[i] + jitter));
+    return { id: 'npc' + i, name: name, skill: Math.round(skill * 100) / 100 };
+  });
+  lsSet(NPC_KEY, JSON.stringify(npcs));
+  return npcs;
+}
+
+let NPCS = [];
+
+// Per-subject scores: { entityId: { points, currentStreak, trophyCount } }
+let currentSubject = 'math';
+function scoreKey(subject) { return 'classroom.' + subject + '.scores'; }
+
+let scores = {}; // in-memory map for current subject
+
+function defaultScore() { return { points: 0, currentStreak: 0, trophyCount: 0 }; }
+
+function loadScores(subject) {
+  const raw = lsGet(scoreKey(subject));
+  let data = {};
+  if (raw) { try { data = JSON.parse(raw) || {}; } catch (e) { data = {}; } }
+  // Ensure every entity (player + NPCs) has a record.
+  const ids = ['player'].concat(NPCS.map((n) => n.id));
+  ids.forEach((id) => { if (!data[id]) data[id] = defaultScore(); });
+  scores = data;
+  return scores;
+}
+
+function saveScores() { lsSet(scoreKey(currentSubject), JSON.stringify(scores)); }
+
+// Apply a resolved answer to an entity's score. Returns event flags for UI.
+function applyResult(entityId, correct) {
+  const s = scores[entityId] || (scores[entityId] = defaultScore());
+  const evt = { bonus: false, trophy: false };
+  if (correct) {
+    s.points += 1;
+    s.currentStreak += 1;
+    if (s.currentStreak % 5 === 0) { s.points += 3; evt.bonus = true; }
+    if (s.points >= 20) { s.trophyCount += 1; s.points = 0; s.currentStreak = 0; evt.trophy = true; }
+  } else {
+    s.currentStreak = 0;
+  }
+  saveScores();
+  return evt;
+}
+
+// Display name for any entity id.
+function entityName(id) {
+  if (id === 'player') return getPlayerName() || t('playerWho');
+  const n = NPCS.find((x) => x.id === id);
+  return n ? n.name : id;
+}
+
+// ---------- Subjects ----------
+const SUBJECTS = [
+  { id: 'math', emoji: '🔢', enabled: true },
+  { id: 'geographie', emoji: '🌍', enabled: true },
+  { id: 'physique', emoji: '⚛️', enabled: false },
+  { id: 'sciences', emoji: '🔬', enabled: false },
+  { id: 'histoire', emoji: '📜', enabled: false },
+  { id: 'langues', emoji: '💬', enabled: false },
+];
+
+function buildMenu() {
+  const grid = el('subjectGrid');
+  grid.innerHTML = '';
+  SUBJECTS.forEach((s) => {
+    const card = document.createElement('div');
+    card.className = 'card ' + (s.enabled ? 'enabled' : 'disabled');
+    card.innerHTML =
+      '<div class="emoji">' + s.emoji + '</div>' +
+      '<div class="label">' + t('subjects')[s.id] + '</div>' +
+      (s.enabled ? '' : '<span class="badge">' + t('comingSoon') + '</span>');
+    if (s.enabled) card.addEventListener('click', () => startSubject(s.id));
+    grid.appendChild(card);
+  });
+}
+
+// Track current question text so we can re-localize the board prompt on toggle.
+let gameStarted = false;
+let currentQuestionText = null;
+
+function applyLanguage() {
+  document.documentElement.lang = t('htmlLang');
+  document.title = t('menuTitle').replace(/^[^\w]+/, '').trim() || 'Classroom';
+
+  el('loadingText').textContent = t('loading');
+  el('menuTitle').textContent = t('menuTitle');
+  el('menuSubtitle').textContent = t('menuSubtitle');
+  el('rotateText').textContent = t('rotate');
+  el('playerCueWho').textContent = getPlayerName() || t('playerWho');
+  el('listeningText').textContent = t('listening');
+  btnSpeak.textContent = t('holdToAnswer');
+  btnNext.textContent = t('nextQuestion');
+  fallbackSubmit.textContent = t('submit');
+  fallbackInput.placeholder = t('fallbackPlaceholder');
+
+  // Name entry
+  el('nameTitle').textContent = t('nameTitle');
+  nameInput.placeholder = t('namePlaceholder');
+  el('nameContinue').textContent = t('nameContinue');
+  el('menuEditName').textContent = t('editNameLabel') + (getPlayerName() || t('playerWho'));
+
+  // About / How to Play modal + buttons
+  el('menuAbout').textContent = t('aboutButton');
+  btnReturnMenu.textContent = t('returnMenu');
+  el('aboutTitle').textContent = t('aboutTitle');
+  el('aboutAnswerTitle').textContent = t('aboutAnswerTitle');
+  el('aboutAnswerBody').textContent = t('aboutAnswerBody');
+  el('aboutScoreTitle').textContent = t('aboutScoreTitle');
+  el('aboutScoreBody').textContent = t('aboutScoreBody');
+  el('aboutSessionTitle').textContent = t('aboutSessionTitle');
+  el('aboutSessionBody').textContent = t('aboutSessionBody');
+
+  // Summary
+  el('summaryTitle').textContent = t('sessionComplete');
+  el('summaryScoreTitle').textContent = t('scoresTitle');
+  el('summaryTrophyTitle').textContent = t('trophiesTitle');
+  el('btnNewSession').textContent = t('newSession');
+  btnStartClass.textContent = t('startClass');
+
+  // Re-render the 3D boards so titles / "(You)" tag reflect the new language.
+  if (scoreBoard3D && trophyBoard3D && NPCS.length) refreshBoards();
+  // Re-render the question counter text if it's showing
+  if (questionCounterEl.classList.contains('on')) {
+    questionCounterEl.textContent = t('questionCounter') + questionIndex + ' / ' + SESSION_LENGTH;
+  }
+
+  // Re-render subject cards in the new language
+  buildMenu();
+
+  // Update active state on both toggles
+  document.querySelectorAll('.lang-toggle button').forEach((b) => {
+    b.classList.toggle('active', b.dataset.lang === currentLang);
+  });
+
+  // Speech recognition locale follows the toggle
+  if (recognition) recognition.lang = currentLang === 'fr' ? 'fr-FR' : 'en-US';
+
+  // Re-render the whiteboard: current question if playing, else welcome.
+  if (whiteboardCtx) {
+    if (gameStarted && isGeography() && currentGeoQ) {
+      // Re-render the geography question (and revealed answer, if resolved) in the new language.
+      const qText = currentLang === 'fr' ? currentGeoQ.fr : currentGeoQ.en;
+      currentQuestionText = qText;
+      if (turn && turn.resolved) {
+        const ans = currentLang === 'fr' ? currentGeoQ.answerFr : currentGeoQ.answerEn;
+        drawGeoBoard(qText, t('answerLabel') + ans);
+      } else {
+        drawGeoBoard(qText, null);
+      }
+    } else if (gameStarted && currentQuestionText) {
+      drawBoard(currentQuestionText, t('boardPrompt'));
+    } else {
+      drawBoard(t('boardWelcome1'), t('boardWelcome2'));
+    }
+  }
+}
+
+function setLanguage(lang) {
+  if (lang !== 'en' && lang !== 'fr') return;
+  currentLang = lang;
+  try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  applyLanguage();
+}
+
+function wireLangToggles() {
+  document.querySelectorAll('.lang-toggle button').forEach((b) => {
+    b.addEventListener('click', () => setLanguage(b.dataset.lang));
+  });
+}
+
+// ============================================================
+//  THREE.JS CLASSROOM SCENE
+// ============================================================
+let renderer, scene, camera;
+let whiteboardCanvas, whiteboardCtx, whiteboardTexture;
+let whiteboardMesh, whiteboardFrameMesh, whiteboardSize = { w: 8, h: 4 };
+let teacher, students = [];
+let clock;
+
+function initScene() {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xbfe3ff);
+
+  camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
+  // Fixed at the player's desk, looking toward the board (board at -Z)
+  camera.position.set(0, 2.4, 7.5);
+  camera.lookAt(0, 2.2, -6);
+
+  // Lights
+  const ambient = new THREE.HemisphereLight(0xffffff, 0xbfcbe6, 0.9);
+  scene.add(ambient);
+  const dir = new THREE.DirectionalLight(0xfff2d6, 0.85);
+  dir.position.set(5, 10, 6);
+  dir.castShadow = true;
+  dir.shadow.mapSize.set(1024, 1024);
+  dir.shadow.camera.near = 1; dir.shadow.camera.far = 40;
+  dir.shadow.camera.left = -14; dir.shadow.camera.right = 14;
+  dir.shadow.camera.top = 14; dir.shadow.camera.bottom = -14;
+  scene.add(dir);
+
+  buildRoom();
+  buildWhiteboard();
+  buildSideBoards3D();
+  buildTeacher();
+  buildDesks();
+  preloadSounds();
+
+  clock = new THREE.Clock();
+  resize();
+  animate();
+}
+
+// ============================================================
+//  SOUND EFFECTS
+// ============================================================
+let sndCorrect = null, sndWrong = null;
+const SFX_VOLUME = 0.6;
+
+function preloadSounds() {
+  sndCorrect = new Audio('sounds/classRoomSounds/correct.wav');
+  sndWrong = new Audio('sounds/classRoomSounds/wrong.wav');
+  [sndCorrect, sndWrong].forEach((a) => {
+    a.preload = 'auto';
+    a.volume = SFX_VOLUME;
+    try { a.load(); } catch (e) {}
+  });
+}
+
+// Play one of the effect sounds, resetting any in-flight playback so sounds
+// never overlap or stack.
+function playSfx(correct) {
+  const a = correct ? sndCorrect : sndWrong;
+  if (!a) return;
+  // Stop/reset both clips before starting the new one.
+  [sndCorrect, sndWrong].forEach((s) => {
+    if (!s) return;
+    try { s.pause(); s.currentTime = 0; } catch (e) {}
+  });
+  try {
+    a.currentTime = 0;
+    const p = a.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  } catch (e) {}
+}
+
+function mat(color) { return new THREE.MeshLambertMaterial({ color: color }); }
+
+function buildRoom() {
+  const W = 16, D = 16, H = 6;
+  // Floor
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, D), mat(0xf3d9a8));
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = 0;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  // Back wall (behind player, +Z)
+  const backWall = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mat(0xd7ecff));
+  backWall.position.set(0, H / 2, D / 2);
+  backWall.rotation.y = Math.PI;
+  scene.add(backWall);
+
+  // Front wall (behind board, -Z)
+  const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(W, H), mat(0xcfe6ff));
+  frontWall.position.set(0, H / 2, -D / 2);
+  frontWall.receiveShadow = true;
+  scene.add(frontWall);
+
+  // Side walls
+  const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(D, H), mat(0xbfe0d4));
+  leftWall.position.set(-W / 2, H / 2, 0);
+  leftWall.rotation.y = Math.PI / 2;
+  scene.add(leftWall);
+
+  const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(D, H), mat(0xbfe0d4));
+  rightWall.position.set(W / 2, H / 2, 0);
+  rightWall.rotation.y = -Math.PI / 2;
+  scene.add(rightWall);
+
+  // A little rug for warmth
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(7, 5), mat(0xffc7d9));
+  rug.rotation.x = -Math.PI / 2;
+  rug.position.set(0, 0.01, 2);
+  scene.add(rug);
+}
+
+function buildWhiteboard() {
+  // Frame
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(8.4, 4.4, 0.25), mat(0x8a9bd0));
+  frame.position.set(0, 3, -7.7);
+  scene.add(frame);
+  whiteboardFrameMesh = frame;
+
+  // Dynamic canvas texture
+  whiteboardCanvas = document.createElement('canvas');
+  whiteboardCanvas.width = 1024;
+  whiteboardCanvas.height = 512;
+  whiteboardCtx = whiteboardCanvas.getContext('2d');
+  whiteboardTexture = new THREE.CanvasTexture(whiteboardCanvas);
+  whiteboardTexture.anisotropy = 4;
+
+  const boardMat = new THREE.MeshBasicMaterial({ map: whiteboardTexture });
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(whiteboardSize.w, whiteboardSize.h), boardMat);
+  board.position.set(0, 3, -7.56);
+  scene.add(board);
+  whiteboardMesh = board;
+
+  drawBoard(t('boardWelcome1'), t('boardWelcome2'));
+}
+
+// ---- 3D side boards (scores & trophies), mounted on the wall beside the board ----
+let scoreBoard3D = null, trophyBoard3D = null;
+
+function makeBoard3D(centerX) {
+  const W = 2.6, H = 3.4;   // panel size (world units)
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(W + 0.25, H + 0.25, 0.22), mat(0x8a9bd0));
+  frame.position.set(centerX, 3, -7.66);
+  scene.add(frame);
+
+  // High-resolution canvas (matches the ~2.6:3.4 panel aspect) so text stays crisp
+  // when the texture is mapped onto the panel. Drawing coords are in the 512x670
+  // "design space" and scaled up via SCALE.
+  const SCALE = 3;
+  const canvas = document.createElement('canvas');
+  canvas.width = 512 * SCALE; canvas.height = 670 * SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE); // draw in design-space units at high resolution
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.anisotropy = (renderer.capabilities && renderer.capabilities.getMaxAnisotropy)
+    ? renderer.capabilities.getMaxAnisotropy() : 8;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.generateMipmaps = true;
+  const panel = new THREE.Mesh(new THREE.PlaneGeometry(W, H), new THREE.MeshBasicMaterial({ map: tex }));
+  panel.position.set(centerX, 3, -7.54);
+  scene.add(panel);
+
+  // designW/H are the logical drawing dimensions (context is pre-scaled by SCALE).
+  return { canvas: canvas, ctx: ctx, texture: tex, designW: 512, designH: 670 };
+}
+
+function buildSideBoards3D() {
+  // Trophy board to the LEFT of the whiteboard, Score board to the RIGHT.
+  // Pulled inward so the panels sit on the back wall, clear of the side walls.
+  trophyBoard3D = makeBoard3D(-5.7);
+  scoreBoard3D = makeBoard3D(5.7);
+}
+
+// Draw a leaderboard panel onto its canvas texture.
+// rows: [{ id, name, valueText, isPlayer, isAnswering }]
+function drawBoardPanel(board3d, titleText, rows) {
+  const ctx = board3d.ctx;
+  const w = board3d.designW, h = board3d.designH;
+  // Clear the full actual canvas, then work in design-space coordinates.
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, board3d.canvas.width, board3d.canvas.height);
+  ctx.restore();
+
+  // Background
+  ctx.fillStyle = '#ffffff';
+  roundRect(ctx, 0, 0, w, h, 22); ctx.fill();
+
+  // Title bar
+  ctx.fillStyle = '#4f6bd0';
+  roundRect(ctx, 0, 0, w, 72, 22); ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 34px Segoe UI, Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(titleText, w / 2, 38);
+
+  // Rows
+  const top = 88, rowH = 52, padX = 18;
+  ctx.textBaseline = 'middle';
+  rows.forEach((r, i) => {
+    const y = top + i * rowH;
+    // Row background: player highlight, else zebra
+    if (r.isPlayer) {
+      ctx.fillStyle = '#ffe08a';
+      roundRect(ctx, 8, y, w - 16, rowH - 6, 10); ctx.fill();
+      ctx.strokeStyle = '#f2b23c'; ctx.lineWidth = 3;
+      roundRect(ctx, 8, y, w - 16, rowH - 6, 10); ctx.stroke();
+    } else if (i % 2 === 1) {
+      ctx.fillStyle = 'rgba(120,140,220,0.10)';
+      roundRect(ctx, 8, y, w - 16, rowH - 6, 10); ctx.fill();
+    }
+
+    const midY = y + (rowH - 6) / 2;
+    // Name (+ (You) tag)
+    ctx.textAlign = 'left';
+    ctx.fillStyle = r.isPlayer ? '#5a4410' : '#33406b';
+    ctx.font = (r.isPlayer ? 'bold ' : '600 ') + '26px Segoe UI, Arial';
+    let name = r.name;
+    if (r.isPlayer) name += '  ' + t('youTag');
+    ctx.fillText(clipText(ctx, name, w - padX - 120), padX, midY);
+
+    // Value (right-aligned)
+    ctx.textAlign = 'right';
+    ctx.fillStyle = r.isAnswering ? '#e0466f' : (r.isPlayer ? '#5a4410' : '#3a6fe0');
+    ctx.font = 'bold 28px Segoe UI, Arial';
+    ctx.fillText(r.valueText, w - padX, midY);
+  });
+
+  board3d.texture.needsUpdate = true;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function clipText(ctx, str, maxW) {
+  if (ctx.measureText(str).width <= maxW) return str;
+  let s = str;
+  while (s.length > 1 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
+  return s + '…';
+}
+
+// Subject label shown at the top of the whiteboard (localized, subject-aware).
+function boardSubjectLabel() {
+  if (isGeography()) return '🌍 ' + t('subjects').geographie;
+  return '📘 ' + t('subjects').math;
+}
+
+function drawBoard(line1, line2) {
+  const ctx = whiteboardCtx;
+  const w = whiteboardCanvas.width, h = whiteboardCanvas.height;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  // top marker tray accent
+  ctx.fillStyle = '#eaf1ff';
+  ctx.fillRect(0, 0, w, 70);
+  ctx.fillStyle = '#4f6bd0';
+  ctx.font = 'bold 40px Segoe UI, Arial';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(boardSubjectLabel(), 30, 38);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#1f2a55';
+  ctx.font = 'bold 120px Segoe UI, Arial';
+  ctx.fillText(line1, w / 2, h / 2 + 10);
+
+  if (line2) {
+    ctx.fillStyle = '#7a86b5';
+    ctx.font = '40px Segoe UI, Arial';
+    ctx.fillText(line2, w / 2, h - 60);
+  }
+  whiteboardTexture.needsUpdate = true;
+}
+
+// Word-wrap helper: split text into lines that fit maxW at the given font.
+function wrapLines(ctx, text, maxW, font) {
+  ctx.font = font;
+  const words = String(text).split(/\s+/);
+  const lines = [];
+  let line = '';
+  words.forEach((word) => {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxW && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
+}
+
+// Geography board: word-wrapped question, plus an optional revealed answer line.
+// answerText: null while asking; string ("Answer: Paris") on resolution.
+function drawGeoBoard(questionText, answerText) {
+  const ctx = whiteboardCtx;
+  const w = whiteboardCanvas.width, h = whiteboardCanvas.height;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  // top accent + subject label
+  ctx.fillStyle = '#eaf1ff';
+  ctx.fillRect(0, 0, w, 70);
+  ctx.fillStyle = '#4f6bd0';
+  ctx.font = 'bold 40px Segoe UI, Arial';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(boardSubjectLabel(), 30, 38);
+
+  const maxW = w - 120;
+  // Choose a question font size that keeps it to a few lines regardless of length.
+  let qFont = 'bold 72px Segoe UI, Arial';
+  let lines = wrapLines(ctx, questionText, maxW, qFont);
+  if (lines.length > 3) { qFont = 'bold 58px Segoe UI, Arial'; lines = wrapLines(ctx, questionText, maxW, qFont); }
+  if (lines.length > 4) { qFont = 'bold 46px Segoe UI, Arial'; lines = wrapLines(ctx, questionText, maxW, qFont); }
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#1f2a55';
+  ctx.font = qFont;
+  const lineH = parseInt(qFont.match(/(\d+)px/)[1], 10) * 1.25;
+  const blockH = lines.length * lineH;
+  // center the question block in the area between the header and the answer zone
+  const areaTop = 90, areaBottom = answerText ? h - 130 : h - 60;
+  let y = areaTop + (areaBottom - areaTop - blockH) / 2 + lineH / 2;
+  lines.forEach((ln) => { ctx.fillText(ln, w / 2, y); y += lineH; });
+
+  if (answerText) {
+    ctx.fillStyle = '#2f9e5f';
+    ctx.font = 'bold 56px Segoe UI, Arial';
+    ctx.fillText(answerText, w / 2, h - 70);
+  }
+  whiteboardTexture.needsUpdate = true;
+}
+
+// ---- Simple low-poly character builder ----
+// Returns { group, head, arm } so we can animate head bob & raise an arm.
+function makeCharacter(opts) {
+  const g = new THREE.Group();
+  const headColor = opts.head || 0xffdcb0;
+
+  // Legs
+  const legs = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.7, 0.42), mat(opts.legs || 0x3a4468));
+  legs.position.y = 0.35;
+  legs.castShadow = true;
+  g.add(legs);
+
+  // Body / torso
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.95, 0.5), mat(opts.body));
+  body.position.y = 1.15;
+  body.castShadow = true;
+  g.add(body);
+
+  // Head
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), mat(headColor));
+  head.position.y = 1.95;
+  head.castShadow = true;
+  g.add(head);
+
+  // Hair cap
+  const hair = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.2, 0.6), mat(opts.hair || 0x4a3222));
+  hair.position.y = 2.22;
+  g.add(hair);
+
+  // Arms
+  const armGeo = new THREE.BoxGeometry(0.18, 0.8, 0.18);
+  const leftArm = new THREE.Mesh(armGeo, mat(opts.body));
+  leftArm.position.set(-0.52, 1.2, 0);
+  leftArm.castShadow = true;
+  g.add(leftArm);
+
+  const rightArm = new THREE.Mesh(armGeo, mat(opts.body));
+  // pivot the raise-able arm from the shoulder
+  const armPivot = new THREE.Group();
+  armPivot.position.set(0.52, 1.55, 0);
+  rightArm.position.set(0, -0.4, 0);
+  rightArm.castShadow = true;
+  armPivot.add(rightArm);
+  g.add(armPivot);
+
+  return { group: g, head: head, arm: armPivot };
+}
+
+function buildTeacher() {
+  const t = makeCharacter({ body: 0xe8557f, legs: 0x3a3f66, hair: 0x2e2015, head: 0xffe0bd });
+  t.group.position.set(-3.2, 0, -6.4);
+  t.group.rotation.y = 0.35; // face slightly toward class
+  scene.add(t.group);
+  teacher = t;
+}
+
+function buildDesks() {
+  const rows = 3, cols = 3;
+  const startX = -3.2, gapX = 3.2;
+  const startZ = -2.5, gapZ = 2.6;
+  const studentColors = [
+    { body: 0x4f9dff, hair: 0x2e2015 },
+    { body: 0x46c37b, hair: 0x5a3a1a },
+    { body: 0xffb14d, hair: 0x222 },
+    { body: 0xb07cff, hair: 0x3a2a12 },
+    { body: 0xff7fa6, hair: 0x2b1c10 },
+    { body: 0x3ecfc0, hair: 0x4a3222 },
+    { body: 0xf2d24f, hair: 0x2e2015 },
+    { body: 0xff6b6b, hair: 0x24170c },
+  ];
+  // Player's reserved seat: front-center (row 0, col 1)
+  const playerSeat = { r: 0, c: 1 };
+  let colorIdx = 0;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = startX + c * gapX;
+      const z = startZ + r * gapZ;
+
+      // Desk
+      const desk = makeDesk();
+      desk.position.set(x, 0, z);
+      scene.add(desk);
+
+      const isPlayer = (r === playerSeat.r && c === playerSeat.c);
+      if (isPlayer) {
+        // No NPC in the player's seat; camera sits here.
+        continue;
+      }
+
+      const col = studentColors[colorIdx % studentColors.length];
+      const s = makeCharacter({ body: col.body, hair: col.hair, legs: 0x2f3556 });
+      // seated: lower the character behind the desk
+      s.group.position.set(x, -0.55, z + 0.45);
+      s.group.rotation.y = Math.PI; // face the board (-Z)
+      s.phase = Math.random() * Math.PI * 2;
+      // Link this seat to an NPC id and remember a world anchor above their head
+      // (for speech-bubble positioning).
+      if (NPCS[colorIdx]) {
+        s.npcId = NPCS[colorIdx].id;
+        s.bubbleAnchor = { x: x, y: 2.9, z: z + 0.45 };
+      }
+      colorIdx++;
+      scene.add(s.group);
+      students.push(s);
+    }
+  }
+}
+
+function makeDesk() {
+  const grp = new THREE.Group();
+  const top = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.12, 0.9), mat(0xd98c5f));
+  top.position.y = 1.0;
+  top.castShadow = true; top.receiveShadow = true;
+  grp.add(top);
+  const legGeo = new THREE.BoxGeometry(0.12, 1.0, 0.12);
+  const legMat = mat(0x9c6238);
+  const offsets = [[-0.7, -0.35], [0.7, -0.35], [-0.7, 0.35], [0.7, 0.35]];
+  offsets.forEach((o) => {
+    const leg = new THREE.Mesh(legGeo, legMat);
+    leg.position.set(o[0], 0.5, o[1]);
+    grp.add(leg);
+  });
+  return grp;
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+
+  // Teacher gentle breathing bob
+  if (teacher) {
+    teacher.group.position.y = Math.sin(t * 1.5) * 0.03;
+    teacher.head.rotation.z = Math.sin(t * 0.8) * 0.05;
+  }
+
+  // Students subtle head movement
+  students.forEach((s) => {
+    s.head.rotation.y = Math.sin(t * 0.9 + s.phase) * 0.18;
+    s.head.rotation.x = Math.sin(t * 0.6 + s.phase) * 0.05;
+  });
+
+  renderer.render(scene, camera);
+}
+
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  repositionBubbles();
+  positionQuestionCounter();
+}
+
+// Project a world point to screen pixels.
+function worldToScreen(x, y, z) {
+  const v = new THREE.Vector3(x, y, z);
+  v.project(camera);
+  return {
+    x: (v.x * 0.5 + 0.5) * window.innerWidth,
+    y: (-v.y * 0.5 + 0.5) * window.innerHeight
+  };
+}
+
+// Position the question counter just above the whiteboard's top edge.
+function positionQuestionCounter() {
+  if (!whiteboardMesh || !camera) return;
+  const halfH = whiteboardSize.h / 2;
+  const p = worldToScreen(whiteboardMesh.position.x, whiteboardMesh.position.y + halfH + 0.15, whiteboardMesh.position.z);
+  questionCounterEl.style.left = p.x + 'px';
+  questionCounterEl.style.top = Math.max(30, p.y - 10) + 'px';
+}
+
+// Show/update the counter text (e.g. "Question 13 / 20").
+function updateQuestionCounter() {
+  questionCounterEl.textContent = t('questionCounter') + questionIndex + ' / ' + SESSION_LENGTH;
+  questionCounterEl.classList.add('on');
+  positionQuestionCounter();
+}
+function hideQuestionCounter() { questionCounterEl.classList.remove('on'); }
+
+// ============================================================
+//  ORIENTATION / RESPONSIVE
+// ============================================================
+function checkOrientation() {
+  // On small (tablet/phone) screens in portrait, prompt to rotate.
+  const isPortrait = window.innerHeight > window.innerWidth;
+  const smallish = Math.min(window.innerWidth, window.innerHeight) < 900;
+  if (isPortrait && smallish) {
+    rotateEl.style.display = 'flex';
+  } else {
+    rotateEl.style.display = 'none';
+  }
+}
+
+window.addEventListener('resize', () => {
+  if (renderer) resize();
+  checkOrientation();
+});
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => { if (renderer) resize(); checkOrientation(); }, 200);
+});
+
+// ============================================================
+//  QUESTION LOGIC (subject-aware)
+// ============================================================
+let currentAnswer = null;   // math: numeric answer
+let equationPrefix = '';    // math: "a op b = "
+let currentGeoQ = null;     // geography: current question object
+
+// True when the active subject is Geography.
+function isGeography() { return currentSubject === 'geographie'; }
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function generateQuestion() {
+  if (isGeography()) { generateGeographyQuestion(); return; }
+  generateMathQuestion();
+}
+
+function generateMathQuestion() {
+  // Difficulty tuned for ages 9–12 (Grade 4–6): larger add/subtract operands,
+  // 2-digit × 1-digit multiplication, and whole-number division.
+  const ops = ['+', '-', '×', '÷'];
+  const op = ops[randInt(0, ops.length - 1)];
+  let a, b, ans;
+
+  if (op === '+') {
+    a = randInt(20, 500); b = randInt(20, 500); ans = a + b;
+    equationPrefix = a + ' + ' + b + ' = ';
+  } else if (op === '-') {
+    a = randInt(50, 900); b = randInt(10, a); ans = a - b; // never negative
+    equationPrefix = a + ' − ' + b + ' = ';
+  } else if (op === '×') {
+    a = randInt(11, 30); b = randInt(3, 12); ans = a * b; // 2-digit × 1–2 digit
+    equationPrefix = a + ' × ' + b + ' = ';
+  } else {
+    // Division with a whole-number result: build from divisor × quotient.
+    b = randInt(2, 12);           // divisor
+    ans = randInt(3, 20);         // quotient (the answer)
+    a = b * ans;                  // dividend
+    equationPrefix = a + ' ÷ ' + b + ' = ';
+  }
+
+  const text = equationPrefix + '?';
+  currentAnswer = ans;
+  currentQuestionText = text;
+  drawBoard(text, t('boardPrompt'));
+}
+
+function generateGeographyQuestion() {
+  currentGeoQ = drawGeoQuestion();
+  const text = currentLang === 'fr' ? currentGeoQ.fr : currentGeoQ.en;
+  currentQuestionText = text;
+  drawGeoBoard(text, null); // no answer yet
+}
+
+// ============================================================
+//  ANSWER NORMALIZATION (spoken words -> number, per language)
+// ============================================================
+const NUMBER_WORDS_FR = {
+  'zero': 0, 'zéro': 0, 'un': 1, 'une': 1, 'deux': 2, 'trois': 3, 'quatre': 4,
+  'cinq': 5, 'six': 6, 'sept': 7, 'huit': 8, 'neuf': 9, 'dix': 10, 'onze': 11,
+  'douze': 12, 'treize': 13, 'quatorze': 14, 'quinze': 15, 'seize': 16,
+  'dix-sept': 17, 'dixsept': 17, 'dix-huit': 18, 'dixhuit': 18, 'dix-neuf': 19, 'dixneuf': 19,
+  'vingt': 20, 'trente': 30, 'quarante': 40, 'cinquante': 50, 'soixante': 60,
+  'quatre-vingt': 80, 'quatre-vingts': 80, 'quatrevingt': 80, 'quatrevingts': 80, 'cent': 100, 'cents': 100
+};
+const NUMBER_WORDS_EN = {
+  'zero': 0, 'oh': 0, 'one': 1, 'two': 2, 'to': 2, 'too': 2, 'three': 3, 'four': 4, 'for': 4,
+  'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'ate': 8, 'nine': 9, 'ten': 10, 'eleven': 11,
+  'twelve': 12, 'thirteen': 13, 'fourteen': 14, 'fifteen': 15, 'sixteen': 16,
+  'seventeen': 17, 'eighteen': 18, 'nineteen': 19,
+  'twenty': 20, 'thirty': 30, 'forty': 40, 'fifty': 50, 'sixty': 60,
+  'seventy': 70, 'eighty': 80, 'ninety': 90, 'hundred': 100
+};
+const FILLER_FR = [
+  'la réponse est', 'la reponse est', "c'est", 'ça fait', 'ca fait', 'je pense que',
+  'je crois que', 'égal', 'egal', 'ça donne', 'ca donne', 'euh', 'alors', 'donc', 'peut-être', 'peut etre'
+];
+const FILLER_EN = [
+  'the answer is', 'the answer', 'i think', 'i think it is', "it's", 'it is', 'equals',
+  'that would be', 'that is', 'um', 'uh', 'so', 'maybe', 'the result is'
+];
+
+function parseNumberWords(s, dict) {
+  const tokens = s.replace(/[.,!?]/g, ' ').split(/[\s-]+/).filter(Boolean);
+  let total = 0, current = 0, found = false;
+  for (const tk of tokens) {
+    if (tk === 'et' || tk === 'and') continue;
+    if (dict.hasOwnProperty(tk)) {
+      found = true;
+      const val = dict[tk];
+      if (val === 100) {
+        current = (current === 0 ? 1 : current) * 100;
+      } else {
+        current += val;
+      }
+    }
+  }
+  total += current;
+  return found ? total : null;
+}
+
+function normalizeTranscript(raw) {
+  let s = (raw || '').toLowerCase().trim();
+  const filler = currentLang === 'fr' ? FILLER_FR : FILLER_EN;
+  filler.forEach((f) => { s = s.split(f).join(' '); });
+
+  // direct digits present?
+  const digitMatch = s.match(/-?\d+/);
+  if (digitMatch) return parseInt(digitMatch[0], 10);
+
+  // parse spoken number words for the active language
+  const dict = currentLang === 'fr' ? NUMBER_WORDS_FR : NUMBER_WORDS_EN;
+  return parseNumberWords(s, dict);
+}
+
+// ============================================================
+//  GEOGRAPHY QUESTION BANK
+// ============================================================
+const GEOGRAPHY_QUESTIONS = [
+  { id:'cap1', category:'capitals', en:'What is the capital of France?', fr:'Quelle est la capitale de la France ?', answerEn:'Paris', answerFr:'Paris', acceptedEn:['paris'], acceptedFr:['paris'] },
+  { id:'cap2', category:'capitals', en:'What is the capital of Italy?', fr:'Quelle est la capitale de l\'Italie ?', answerEn:'Rome', answerFr:'Rome', acceptedEn:['rome'], acceptedFr:['rome'] },
+  { id:'cap3', category:'capitals', en:'What is the capital of Spain?', fr:'Quelle est la capitale de l\'Espagne ?', answerEn:'Madrid', answerFr:'Madrid', acceptedEn:['madrid'], acceptedFr:['madrid'] },
+  { id:'cap4', category:'capitals', en:'What is the capital of Germany?', fr:'Quelle est la capitale de l\'Allemagne ?', answerEn:'Berlin', answerFr:'Berlin', acceptedEn:['berlin'], acceptedFr:['berlin'] },
+  { id:'cap5', category:'capitals', en:'What is the capital of the United Kingdom?', fr:'Quelle est la capitale du Royaume-Uni ?', answerEn:'London', answerFr:'Londres', acceptedEn:['london'], acceptedFr:['londres'] },
+  { id:'cap6', category:'capitals', en:'What is the capital of Portugal?', fr:'Quelle est la capitale du Portugal ?', answerEn:'Lisbon', answerFr:'Lisbonne', acceptedEn:['lisbon'], acceptedFr:['lisbonne'] },
+  { id:'cap7', category:'capitals', en:'What is the capital of Greece?', fr:'Quelle est la capitale de la Grèce ?', answerEn:'Athens', answerFr:'Athènes', acceptedEn:['athens'], acceptedFr:['athènes'] },
+  { id:'cap8', category:'capitals', en:'What is the capital of Russia?', fr:'Quelle est la capitale de la Russie ?', answerEn:'Moscow', answerFr:'Moscou', acceptedEn:['moscow'], acceptedFr:['moscou'] },
+  { id:'cap9', category:'capitals', en:'What is the capital of Sweden?', fr:'Quelle est la capitale de la Suède ?', answerEn:'Stockholm', answerFr:'Stockholm', acceptedEn:['stockholm'], acceptedFr:['stockholm'] },
+  { id:'cap10', category:'capitals', en:'What is the capital of Norway?', fr:'Quelle est la capitale de la Norvège ?', answerEn:'Oslo', answerFr:'Oslo', acceptedEn:['oslo'], acceptedFr:['oslo'] },
+  { id:'cap11', category:'capitals', en:'What is the capital of Finland?', fr:'Quelle est la capitale de la Finlande ?', answerEn:'Helsinki', answerFr:'Helsinki', acceptedEn:['helsinki'], acceptedFr:['helsinki'] },
+  { id:'cap12', category:'capitals', en:'What is the capital of Denmark?', fr:'Quelle est la capitale du Danemark ?', answerEn:'Copenhagen', answerFr:'Copenhague', acceptedEn:['copenhagen'], acceptedFr:['copenhague'] },
+  { id:'cap13', category:'capitals', en:'What is the capital of the Netherlands?', fr:'Quelle est la capitale des Pays-Bas ?', answerEn:'Amsterdam', answerFr:'Amsterdam', acceptedEn:['amsterdam'], acceptedFr:['amsterdam'] },
+  { id:'cap14', category:'capitals', en:'What is the capital of Belgium?', fr:'Quelle est la capitale de la Belgique ?', answerEn:'Brussels', answerFr:'Bruxelles', acceptedEn:['brussels'], acceptedFr:['bruxelles'] },
+  { id:'cap15', category:'capitals', en:'What is the capital of Switzerland?', fr:'Quelle est la capitale de la Suisse ?', answerEn:'Bern', answerFr:'Berne', acceptedEn:['bern'], acceptedFr:['berne'] },
+  { id:'cap16', category:'capitals', en:'What is the capital of Austria?', fr:'Quelle est la capitale de l\'Autriche ?', answerEn:'Vienna', answerFr:'Vienne', acceptedEn:['vienna'], acceptedFr:['vienne'] },
+  { id:'cap17', category:'capitals', en:'What is the capital of Poland?', fr:'Quelle est la capitale de la Pologne ?', answerEn:'Warsaw', answerFr:'Varsovie', acceptedEn:['warsaw'], acceptedFr:['varsovie'] },
+  { id:'cap18', category:'capitals', en:'What is the capital of the Czech Republic?', fr:'Quelle est la capitale de la République tchèque ?', answerEn:'Prague', answerFr:'Prague', acceptedEn:['prague'], acceptedFr:['prague'] },
+  { id:'cap19', category:'capitals', en:'What is the capital of Hungary?', fr:'Quelle est la capitale de la Hongrie ?', answerEn:'Budapest', answerFr:'Budapest', acceptedEn:['budapest'], acceptedFr:['budapest'] },
+  { id:'cap20', category:'capitals', en:'What is the capital of Romania?', fr:'Quelle est la capitale de la Roumanie ?', answerEn:'Bucharest', answerFr:'Bucarest', acceptedEn:['bucharest'], acceptedFr:['bucarest'] },
+  { id:'cap21', category:'capitals', en:'What is the capital of Bulgaria?', fr:'Quelle est la capitale de la Bulgarie ?', answerEn:'Sofia', answerFr:'Sofia', acceptedEn:['sofia'], acceptedFr:['sofia'] },
+  { id:'cap22', category:'capitals', en:'What is the capital of Ireland?', fr:'Quelle est la capitale de l\'Irlande ?', answerEn:'Dublin', answerFr:'Dublin', acceptedEn:['dublin'], acceptedFr:['dublin'] },
+  { id:'cap23', category:'capitals', en:'What is the capital of Iceland?', fr:'Quelle est la capitale de l\'Islande ?', answerEn:'Reykjavik', answerFr:'Reykjavik', acceptedEn:['reykjavik'], acceptedFr:['reykjavik'] },
+  { id:'cap24', category:'capitals', en:'What is the capital of Croatia?', fr:'Quelle est la capitale de la Croatie ?', answerEn:'Zagreb', answerFr:'Zagreb', acceptedEn:['zagreb'], acceptedFr:['zagreb'] },
+  { id:'cap25', category:'capitals', en:'What is the capital of Serbia?', fr:'Quelle est la capitale de la Serbie ?', answerEn:'Belgrade', answerFr:'Belgrade', acceptedEn:['belgrade'], acceptedFr:['belgrade'] },
+  { id:'cap26', category:'capitals', en:'What is the capital of Slovakia?', fr:'Quelle est la capitale de la Slovaquie ?', answerEn:'Bratislava', answerFr:'Bratislava', acceptedEn:['bratislava'], acceptedFr:['bratislava'] },
+  { id:'cap27', category:'capitals', en:'What is the capital of Slovenia?', fr:'Quelle est la capitale de la Slovénie ?', answerEn:'Ljubljana', answerFr:'Ljubljana', acceptedEn:['ljubljana'], acceptedFr:['ljubljana'] },
+  { id:'cap28', category:'capitals', en:'What is the capital of Ukraine?', fr:'Quelle est la capitale de l\'Ukraine ?', answerEn:'Kyiv', answerFr:'Kyiv', acceptedEn:['kyiv'], acceptedFr:['kyiv'] },
+  { id:'cap29', category:'capitals', en:'What is the capital of Belarus?', fr:'Quelle est la capitale de la Biélorussie ?', answerEn:'Minsk', answerFr:'Minsk', acceptedEn:['minsk'], acceptedFr:['minsk'] },
+  { id:'cap30', category:'capitals', en:'What is the capital of Lithuania?', fr:'Quelle est la capitale de la Lituanie ?', answerEn:'Vilnius', answerFr:'Vilnius', acceptedEn:['vilnius'], acceptedFr:['vilnius'] },
+  { id:'cap31', category:'capitals', en:'What is the capital of Latvia?', fr:'Quelle est la capitale de la Lettonie ?', answerEn:'Riga', answerFr:'Riga', acceptedEn:['riga'], acceptedFr:['riga'] },
+  { id:'cap32', category:'capitals', en:'What is the capital of Estonia?', fr:'Quelle est la capitale de l\'Estonie ?', answerEn:'Tallinn', answerFr:'Tallinn', acceptedEn:['tallinn'], acceptedFr:['tallinn'] },
+  { id:'cap33', category:'capitals', en:'What is the capital of Luxembourg?', fr:'Quelle est la capitale du Luxembourg ?', answerEn:'Luxembourg', answerFr:'Luxembourg', acceptedEn:['luxembourg'], acceptedFr:['luxembourg'] },
+  { id:'cap34', category:'capitals', en:'What is the capital of Malta?', fr:'Quelle est la capitale de Malte ?', answerEn:'Valletta', answerFr:'La Valette', acceptedEn:['valletta'], acceptedFr:['la valette'] },
+  { id:'cap35', category:'capitals', en:'What is the capital of Cyprus?', fr:'Quelle est la capitale de Chypre ?', answerEn:'Nicosia', answerFr:'Nicosie', acceptedEn:['nicosia'], acceptedFr:['nicosie'] },
+  { id:'cap36', category:'capitals', en:'What is the capital of Albania?', fr:'Quelle est la capitale de l\'Albanie ?', answerEn:'Tirana', answerFr:'Tirana', acceptedEn:['tirana'], acceptedFr:['tirana'] },
+  { id:'cap37', category:'capitals', en:'What is the capital of Montenegro?', fr:'Quelle est la capitale du Monténégro ?', answerEn:'Podgorica', answerFr:'Podgorica', acceptedEn:['podgorica'], acceptedFr:['podgorica'] },
+  { id:'cap38', category:'capitals', en:'What is the capital of North Macedonia?', fr:'Quelle est la capitale de la Macédoine du Nord ?', answerEn:'Skopje', answerFr:'Skopje', acceptedEn:['skopje'], acceptedFr:['skopje'] },
+  { id:'cap39', category:'capitals', en:'What is the capital of Bosnia and Herzegovina?', fr:'Quelle est la capitale de la Bosnie-Herzégovine ?', answerEn:'Sarajevo', answerFr:'Sarajevo', acceptedEn:['sarajevo'], acceptedFr:['sarajevo'] },
+  { id:'cap40', category:'capitals', en:'What is the capital of Moldova?', fr:'Quelle est la capitale de la Moldavie ?', answerEn:'Chisinau', answerFr:'Chisinau', acceptedEn:['chisinau'], acceptedFr:['chisinau'] },
+  { id:'cap41', category:'capitals', en:'What is the capital of China?', fr:'Quelle est la capitale de la Chine ?', answerEn:'Beijing', answerFr:'Pékin', acceptedEn:['beijing','peking'], acceptedFr:['pekin','pékin'] },
+  { id:'cap42', category:'capitals', en:'What is the capital of Japan?', fr:'Quelle est la capitale du Japon ?', answerEn:'Tokyo', answerFr:'Tokyo', acceptedEn:['tokyo'], acceptedFr:['tokyo'] },
+  { id:'cap43', category:'capitals', en:'What is the capital of India?', fr:'Quelle est la capitale de l\'Inde ?', answerEn:'New Delhi', answerFr:'New Delhi', acceptedEn:['new delhi','delhi'], acceptedFr:['new delhi','delhi'] },
+  { id:'cap44', category:'capitals', en:'What is the capital of South Korea?', fr:'Quelle est la capitale de la Corée du Sud ?', answerEn:'Seoul', answerFr:'Séoul', acceptedEn:['seoul'], acceptedFr:['séoul'] },
+  { id:'cap45', category:'capitals', en:'What is the capital of North Korea?', fr:'Quelle est la capitale de la Corée du Nord ?', answerEn:'Pyongyang', answerFr:'Pyongyang', acceptedEn:['pyongyang'], acceptedFr:['pyongyang'] },
+  { id:'cap46', category:'capitals', en:'What is the capital of Indonesia?', fr:'Quelle est la capitale de l\'Indonésie ?', answerEn:'Jakarta', answerFr:'Jakarta', acceptedEn:['jakarta'], acceptedFr:['jakarta'] },
+  { id:'cap47', category:'capitals', en:'What is the capital of Thailand?', fr:'Quelle est la capitale de la Thaïlande ?', answerEn:'Bangkok', answerFr:'Bangkok', acceptedEn:['bangkok'], acceptedFr:['bangkok'] },
+  { id:'cap48', category:'capitals', en:'What is the capital of Vietnam?', fr:'Quelle est la capitale du Vietnam ?', answerEn:'Hanoi', answerFr:'Hanoï', acceptedEn:['hanoi'], acceptedFr:['hanoï'] },
+  { id:'cap49', category:'capitals', en:'What is the capital of the Philippines?', fr:'Quelle est la capitale des Philippines ?', answerEn:'Manila', answerFr:'Manille', acceptedEn:['manila'], acceptedFr:['manille'] },
+  { id:'cap50', category:'capitals', en:'What is the capital of Malaysia?', fr:'Quelle est la capitale de la Malaisie ?', answerEn:'Kuala Lumpur', answerFr:'Kuala Lumpur', acceptedEn:['kuala lumpur'], acceptedFr:['kuala lumpur'] },
+  { id:'cap51', category:'capitals', en:'What is the capital of Singapore?', fr:'Quelle est la capitale de Singapour ?', answerEn:'Singapore', answerFr:'Singapour', acceptedEn:['singapore'], acceptedFr:['singapour'] },
+  { id:'cap52', category:'capitals', en:'What is the capital of Pakistan?', fr:'Quelle est la capitale du Pakistan ?', answerEn:'Islamabad', answerFr:'Islamabad', acceptedEn:['islamabad'], acceptedFr:['islamabad'] },
+  { id:'cap53', category:'capitals', en:'What is the capital of Bangladesh?', fr:'Quelle est la capitale du Bangladesh ?', answerEn:'Dhaka', answerFr:'Dacca', acceptedEn:['dhaka'], acceptedFr:['dacca'] },
+  { id:'cap54', category:'capitals', en:'What is the capital of Sri Lanka?', fr:'Quelle est la capitale du Sri Lanka ?', answerEn:'Colombo', answerFr:'Colombo', acceptedEn:['colombo'], acceptedFr:['colombo'] },
+  { id:'cap55', category:'capitals', en:'What is the capital of Nepal?', fr:'Quelle est la capitale du Népal ?', answerEn:'Kathmandu', answerFr:'Katmandou', acceptedEn:['kathmandu'], acceptedFr:['katmandou'] },
+  { id:'cap56', category:'capitals', en:'What is the capital of Myanmar?', fr:'Quelle est la capitale du Myanmar ?', answerEn:'Naypyidaw', answerFr:'Naypyidaw', acceptedEn:['naypyidaw'], acceptedFr:['naypyidaw'] },
+  { id:'cap57', category:'capitals', en:'What is the capital of Cambodia?', fr:'Quelle est la capitale du Cambodge ?', answerEn:'Phnom Penh', answerFr:'Phnom Penh', acceptedEn:['phnom penh'], acceptedFr:['phnom penh'] },
+  { id:'cap58', category:'capitals', en:'What is the capital of Laos?', fr:'Quelle est la capitale du Laos ?', answerEn:'Vientiane', answerFr:'Vientiane', acceptedEn:['vientiane'], acceptedFr:['vientiane'] },
+  { id:'cap59', category:'capitals', en:'What is the capital of Mongolia?', fr:'Quelle est la capitale de la Mongolie ?', answerEn:'Ulaanbaatar', answerFr:'Oulan-Bator', acceptedEn:['ulaanbaatar'], acceptedFr:['oulan-bator'] },
+  { id:'cap60', category:'capitals', en:'What is the capital of Kazakhstan?', fr:'Quelle est la capitale du Kazakhstan ?', answerEn:'Astana', answerFr:'Astana', acceptedEn:['astana'], acceptedFr:['astana'] },
+  { id:'cap61', category:'capitals', en:'What is the capital of Uzbekistan?', fr:'Quelle est la capitale de l\'Ouzbékistan ?', answerEn:'Tashkent', answerFr:'Tachkent', acceptedEn:['tashkent'], acceptedFr:['tachkent'] },
+  { id:'cap62', category:'capitals', en:'What is the capital of Afghanistan?', fr:'Quelle est la capitale de l\'Afghanistan ?', answerEn:'Kabul', answerFr:'Kaboul', acceptedEn:['kabul'], acceptedFr:['kaboul'] },
+  { id:'cap63', category:'capitals', en:'What is the capital of Iran?', fr:'Quelle est la capitale de l\'Iran ?', answerEn:'Tehran', answerFr:'Téhéran', acceptedEn:['tehran'], acceptedFr:['téhéran'] },
+  { id:'cap64', category:'capitals', en:'What is the capital of Iraq?', fr:'Quelle est la capitale de l\'Irak ?', answerEn:'Baghdad', answerFr:'Bagdad', acceptedEn:['baghdad'], acceptedFr:['bagdad'] },
+  { id:'cap65', category:'capitals', en:'What is the capital of Saudi Arabia?', fr:'Quelle est la capitale de l\'Arabie saoudite ?', answerEn:'Riyadh', answerFr:'Riyad', acceptedEn:['riyadh'], acceptedFr:['riyad'] },
+  { id:'cap66', category:'capitals', en:'What is the capital of the United Arab Emirates?', fr:'Quelle est la capitale des Émirats arabes unis ?', answerEn:'Abu Dhabi', answerFr:'Abou Dabi', acceptedEn:['abu dhabi'], acceptedFr:['abou dabi'] },
+  { id:'cap67', category:'capitals', en:'What is the capital of Jordan?', fr:'Quelle est la capitale de la Jordanie ?', answerEn:'Amman', answerFr:'Amman', acceptedEn:['amman'], acceptedFr:['amman'] },
+  { id:'cap68', category:'capitals', en:'What is the capital of Lebanon?', fr:'Quelle est la capitale du Liban ?', answerEn:'Beirut', answerFr:'Beyrouth', acceptedEn:['beirut'], acceptedFr:['beyrouth'] },
+  { id:'cap69', category:'capitals', en:'What is the capital of Syria?', fr:'Quelle est la capitale de la Syrie ?', answerEn:'Damascus', answerFr:'Damas', acceptedEn:['damascus'], acceptedFr:['damas'] },
+  { id:'cap70', category:'capitals', en:'What is the capital of Turkey?', fr:'Quelle est la capitale de la Turquie ?', answerEn:'Ankara', answerFr:'Ankara', acceptedEn:['ankara'], acceptedFr:['ankara'] },
+  { id:'cap71', category:'capitals', en:'What is the capital of Yemen?', fr:'Quelle est la capitale du Yémen ?', answerEn:'Sanaa', answerFr:'Sanaa', acceptedEn:['sanaa'], acceptedFr:['sanaa'] },
+  { id:'cap72', category:'capitals', en:'What is the capital of Oman?', fr:'Quelle est la capitale d\'Oman ?', answerEn:'Muscat', answerFr:'Mascate', acceptedEn:['muscat'], acceptedFr:['mascate'] },
+  { id:'cap73', category:'capitals', en:'What is the capital of Qatar?', fr:'Quelle est la capitale du Qatar ?', answerEn:'Doha', answerFr:'Doha', acceptedEn:['doha'], acceptedFr:['doha'] },
+  { id:'cap74', category:'capitals', en:'What is the capital of Kuwait?', fr:'Quelle est la capitale du Koweït ?', answerEn:'Kuwait City', answerFr:'Koweït', acceptedEn:['kuwait city','kuwait'], acceptedFr:['koweit','koweït','koweit city'] },
+  { id:'cap75', category:'capitals', en:'What is the capital of Bahrain?', fr:'Quelle est la capitale de Bahreïn ?', answerEn:'Manama', answerFr:'Manama', acceptedEn:['manama'], acceptedFr:['manama'] },
+  { id:'cap76', category:'capitals', en:'What is the capital of Georgia?', fr:'Quelle est la capitale de la Géorgie ?', answerEn:'Tbilisi', answerFr:'Tbilissi', acceptedEn:['tbilisi'], acceptedFr:['tbilissi'] },
+  { id:'cap77', category:'capitals', en:'What is the capital of Armenia?', fr:'Quelle est la capitale de l\'Arménie ?', answerEn:'Yerevan', answerFr:'Erevan', acceptedEn:['yerevan'], acceptedFr:['erevan'] },
+  { id:'cap78', category:'capitals', en:'What is the capital of Azerbaijan?', fr:'Quelle est la capitale de l\'Azerbaïdjan ?', answerEn:'Baku', answerFr:'Bakou', acceptedEn:['baku'], acceptedFr:['bakou'] },
+  { id:'cap79', category:'capitals', en:'What is the capital of Egypt?', fr:'Quelle est la capitale de l\'Égypte ?', answerEn:'Cairo', answerFr:'Le Caire', acceptedEn:['cairo'], acceptedFr:['le caire'] },
+  { id:'cap80', category:'capitals', en:'What is the capital of Morocco?', fr:'Quelle est la capitale du Maroc ?', answerEn:'Rabat', answerFr:'Rabat', acceptedEn:['rabat'], acceptedFr:['rabat'] },
+  { id:'cap81', category:'capitals', en:'What is the capital of Algeria?', fr:'Quelle est la capitale de l\'Algérie ?', answerEn:'Algiers', answerFr:'Alger', acceptedEn:['algiers'], acceptedFr:['alger'] },
+  { id:'cap82', category:'capitals', en:'What is the capital of Tunisia?', fr:'Quelle est la capitale de la Tunisie ?', answerEn:'Tunis', answerFr:'Tunis', acceptedEn:['tunis'], acceptedFr:['tunis'] },
+  { id:'cap83', category:'capitals', en:'What is the capital of Libya?', fr:'Quelle est la capitale de la Libye ?', answerEn:'Tripoli', answerFr:'Tripoli', acceptedEn:['tripoli'], acceptedFr:['tripoli'] },
+  { id:'cap84', category:'capitals', en:'What is the capital of Nigeria?', fr:'Quelle est la capitale du Nigeria ?', answerEn:'Abuja', answerFr:'Abuja', acceptedEn:['abuja'], acceptedFr:['abuja'] },
+  { id:'cap85', category:'capitals', en:'What is the capital of Ghana?', fr:'Quelle est la capitale du Ghana ?', answerEn:'Accra', answerFr:'Accra', acceptedEn:['accra'], acceptedFr:['accra'] },
+  { id:'cap86', category:'capitals', en:'What is the capital of Kenya?', fr:'Quelle est la capitale du Kenya ?', answerEn:'Nairobi', answerFr:'Nairobi', acceptedEn:['nairobi'], acceptedFr:['nairobi'] },
+  { id:'cap87', category:'capitals', en:'What is the capital of Ethiopia?', fr:'Quelle est la capitale de l\'Éthiopie ?', answerEn:'Addis Ababa', answerFr:'Addis-Abeba', acceptedEn:['addis ababa'], acceptedFr:['addis-abeba'] },
+  { id:'cap88', category:'capitals', en:'What is the capital of South Africa?', fr:'Quelle est la capitale de l\'Afrique du Sud ?', answerEn:'Pretoria', answerFr:'Pretoria', acceptedEn:['pretoria'], acceptedFr:['pretoria'] },
+  { id:'cap89', category:'capitals', en:'What is the capital of Tanzania?', fr:'Quelle est la capitale de la Tanzanie ?', answerEn:'Dodoma', answerFr:'Dodoma', acceptedEn:['dodoma'], acceptedFr:['dodoma'] },
+  { id:'cap90', category:'capitals', en:'What is the capital of Uganda?', fr:'Quelle est la capitale de l\'Ouganda ?', answerEn:'Kampala', answerFr:'Kampala', acceptedEn:['kampala'], acceptedFr:['kampala'] },
+  { id:'cap91', category:'capitals', en:'What is the capital of Senegal?', fr:'Quelle est la capitale du Sénégal ?', answerEn:'Dakar', answerFr:'Dakar', acceptedEn:['dakar'], acceptedFr:['dakar'] },
+  { id:'cap92', category:'capitals', en:'What is the capital of Ivory Coast?', fr:'Quelle est la capitale de la Côte d\'Ivoire ?', answerEn:'Yamoussoukro', answerFr:'Yamoussoukro', acceptedEn:['yamoussoukro'], acceptedFr:['yamoussoukro'] },
+  { id:'cap93', category:'capitals', en:'What is the capital of Cameroon?', fr:'Quelle est la capitale du Cameroun ?', answerEn:'Yaoundé', answerFr:'Yaoundé', acceptedEn:['yaoundé'], acceptedFr:['yaoundé'] },
+  { id:'cap94', category:'capitals', en:'What is the capital of Zimbabwe?', fr:'Quelle est la capitale du Zimbabwe ?', answerEn:'Harare', answerFr:'Harare', acceptedEn:['harare'], acceptedFr:['harare'] },
+  { id:'cap95', category:'capitals', en:'What is the capital of Zambia?', fr:'Quelle est la capitale de la Zambie ?', answerEn:'Lusaka', answerFr:'Lusaka', acceptedEn:['lusaka'], acceptedFr:['lusaka'] },
+  { id:'cap96', category:'capitals', en:'What is the capital of Mozambique?', fr:'Quelle est la capitale du Mozambique ?', answerEn:'Maputo', answerFr:'Maputo', acceptedEn:['maputo'], acceptedFr:['maputo'] },
+  { id:'cap97', category:'capitals', en:'What is the capital of Angola?', fr:'Quelle est la capitale de l\'Angola ?', answerEn:'Luanda', answerFr:'Luanda', acceptedEn:['luanda'], acceptedFr:['luanda'] },
+  { id:'cap98', category:'capitals', en:'What is the capital of Madagascar?', fr:'Quelle est la capitale de Madagascar ?', answerEn:'Antananarivo', answerFr:'Antananarivo', acceptedEn:['antananarivo'], acceptedFr:['antananarivo'] },
+  { id:'cap99', category:'capitals', en:'What is the capital of Sudan?', fr:'Quelle est la capitale du Soudan ?', answerEn:'Khartoum', answerFr:'Khartoum', acceptedEn:['khartoum'], acceptedFr:['khartoum'] },
+  { id:'cap100', category:'capitals', en:'What is the capital of Rwanda?', fr:'Quelle est la capitale du Rwanda ?', answerEn:'Kigali', answerFr:'Kigali', acceptedEn:['kigali'], acceptedFr:['kigali'] },
+  { id:'cap101', category:'capitals', en:'What is the capital of Botswana?', fr:'Quelle est la capitale du Botswana ?', answerEn:'Gaborone', answerFr:'Gaborone', acceptedEn:['gaborone'], acceptedFr:['gaborone'] },
+  { id:'cap102', category:'capitals', en:'What is the capital of Namibia?', fr:'Quelle est la capitale de la Namibie ?', answerEn:'Windhoek', answerFr:'Windhoek', acceptedEn:['windhoek'], acceptedFr:['windhoek'] },
+  { id:'cap103', category:'capitals', en:'What is the capital of Mali?', fr:'Quelle est la capitale du Mali ?', answerEn:'Bamako', answerFr:'Bamako', acceptedEn:['bamako'], acceptedFr:['bamako'] },
+  { id:'cap104', category:'capitals', en:'What is the capital of Niger?', fr:'Quelle est la capitale du Niger ?', answerEn:'Niamey', answerFr:'Niamey', acceptedEn:['niamey'], acceptedFr:['niamey'] },
+  { id:'cap105', category:'capitals', en:'What is the capital of Chad?', fr:'Quelle est la capitale du Tchad ?', answerEn:'N\'Djamena', answerFr:'N\'Djamena', acceptedEn:['n\'djamena'], acceptedFr:['n\'djamena'] },
+  { id:'cap106', category:'capitals', en:'What is the capital of Somalia?', fr:'Quelle est la capitale de la Somalie ?', answerEn:'Mogadishu', answerFr:'Mogadiscio', acceptedEn:['mogadishu'], acceptedFr:['mogadiscio'] },
+  { id:'cap107', category:'capitals', en:'What is the capital of the Democratic Republic of the Congo?', fr:'Quelle est la capitale de la République démocratique du Congo ?', answerEn:'Kinshasa', answerFr:'Kinshasa', acceptedEn:['kinshasa'], acceptedFr:['kinshasa'] },
+  { id:'cap108', category:'capitals', en:'What is the capital of the Republic of the Congo?', fr:'Quelle est la capitale de la République du Congo ?', answerEn:'Brazzaville', answerFr:'Brazzaville', acceptedEn:['brazzaville'], acceptedFr:['brazzaville'] },
+  { id:'cap109', category:'capitals', en:'What is the capital of the United States?', fr:'Quelle est la capitale des États-Unis ?', answerEn:'Washington D.C.', answerFr:'Washington', acceptedEn:['washington','washington dc','washington d.c.'], acceptedFr:['washington'] },
+  { id:'cap110', category:'capitals', en:'What is the capital of Canada?', fr:'Quelle est la capitale du Canada ?', answerEn:'Ottawa', answerFr:'Ottawa', acceptedEn:['ottawa'], acceptedFr:['ottawa'] },
+  { id:'cap111', category:'capitals', en:'What is the capital of Mexico?', fr:'Quelle est la capitale du Mexique ?', answerEn:'Mexico City', answerFr:'Mexico', acceptedEn:['mexico city','mexico'], acceptedFr:['mexico'] },
+  { id:'cap112', category:'capitals', en:'What is the capital of Brazil?', fr:'Quelle est la capitale du Brésil ?', answerEn:'Brasília', answerFr:'Brasilia', acceptedEn:['brasília'], acceptedFr:['brasilia'] },
+  { id:'cap113', category:'capitals', en:'What is the capital of Argentina?', fr:'Quelle est la capitale de l\'Argentine ?', answerEn:'Buenos Aires', answerFr:'Buenos Aires', acceptedEn:['buenos aires'], acceptedFr:['buenos aires'] },
+  { id:'cap114', category:'capitals', en:'What is the capital of Chile?', fr:'Quelle est la capitale du Chili ?', answerEn:'Santiago', answerFr:'Santiago', acceptedEn:['santiago'], acceptedFr:['santiago'] },
+  { id:'cap115', category:'capitals', en:'What is the capital of Peru?', fr:'Quelle est la capitale du Pérou ?', answerEn:'Lima', answerFr:'Lima', acceptedEn:['lima'], acceptedFr:['lima'] },
+  { id:'cap116', category:'capitals', en:'What is the capital of Colombia?', fr:'Quelle est la capitale de la Colombie ?', answerEn:'Bogotá', answerFr:'Bogota', acceptedEn:['bogotá'], acceptedFr:['bogota'] },
+  { id:'cap117', category:'capitals', en:'What is the capital of Venezuela?', fr:'Quelle est la capitale du Venezuela ?', answerEn:'Caracas', answerFr:'Caracas', acceptedEn:['caracas'], acceptedFr:['caracas'] },
+  { id:'cap118', category:'capitals', en:'What is the capital of Ecuador?', fr:'Quelle est la capitale de l\'Équateur ?', answerEn:'Quito', answerFr:'Quito', acceptedEn:['quito'], acceptedFr:['quito'] },
+  { id:'cap119', category:'capitals', en:'What is the capital of Bolivia?', fr:'Quelle est la capitale de la Bolivie ?', answerEn:'La Paz', answerFr:'La Paz', acceptedEn:['la paz'], acceptedFr:['la paz'] },
+  { id:'cap120', category:'capitals', en:'What is the capital of Paraguay?', fr:'Quelle est la capitale du Paraguay ?', answerEn:'Asunción', answerFr:'Asuncion', acceptedEn:['asunción'], acceptedFr:['asuncion'] },
+  { id:'cap121', category:'capitals', en:'What is the capital of Uruguay?', fr:'Quelle est la capitale de l\'Uruguay ?', answerEn:'Montevideo', answerFr:'Montevideo', acceptedEn:['montevideo'], acceptedFr:['montevideo'] },
+  { id:'cap122', category:'capitals', en:'What is the capital of Cuba?', fr:'Quelle est la capitale de Cuba ?', answerEn:'Havana', answerFr:'La Havane', acceptedEn:['havana'], acceptedFr:['la havane'] },
+  { id:'cap123', category:'capitals', en:'What is the capital of Jamaica?', fr:'Quelle est la capitale de la Jamaïque ?', answerEn:'Kingston', answerFr:'Kingston', acceptedEn:['kingston'], acceptedFr:['kingston'] },
+  { id:'cap124', category:'capitals', en:'What is the capital of Haiti?', fr:'Quelle est la capitale d\'Haïti ?', answerEn:'Port-au-Prince', answerFr:'Port-au-Prince', acceptedEn:['port-au-prince'], acceptedFr:['port-au-prince'] },
+  { id:'cap125', category:'capitals', en:'What is the capital of the Dominican Republic?', fr:'Quelle est la capitale de la République dominicaine ?', answerEn:'Santo Domingo', answerFr:'Saint-Domingue', acceptedEn:['santo domingo'], acceptedFr:['saint-domingue'] },
+  { id:'cap126', category:'capitals', en:'What is the capital of Panama?', fr:'Quelle est la capitale du Panama ?', answerEn:'Panama City', answerFr:'Panama', acceptedEn:['panama city'], acceptedFr:['panama'] },
+  { id:'cap127', category:'capitals', en:'What is the capital of Costa Rica?', fr:'Quelle est la capitale du Costa Rica ?', answerEn:'San José', answerFr:'San José', acceptedEn:['san josé'], acceptedFr:['san josé'] },
+  { id:'cap128', category:'capitals', en:'What is the capital of Guatemala?', fr:'Quelle est la capitale du Guatemala ?', answerEn:'Guatemala City', answerFr:'Guatemala', acceptedEn:['guatemala city'], acceptedFr:['guatemala'] },
+  { id:'cap129', category:'capitals', en:'What is the capital of Honduras?', fr:'Quelle est la capitale du Honduras ?', answerEn:'Tegucigalpa', answerFr:'Tegucigalpa', acceptedEn:['tegucigalpa'], acceptedFr:['tegucigalpa'] },
+  { id:'cap130', category:'capitals', en:'What is the capital of Nicaragua?', fr:'Quelle est la capitale du Nicaragua ?', answerEn:'Managua', answerFr:'Managua', acceptedEn:['managua'], acceptedFr:['managua'] },
+  { id:'cap131', category:'capitals', en:'What is the capital of El Salvador?', fr:'Quelle est la capitale du Salvador ?', answerEn:'San Salvador', answerFr:'San Salvador', acceptedEn:['san salvador'], acceptedFr:['san salvador'] },
+  { id:'cap132', category:'capitals', en:'What is the capital of Belize?', fr:'Quelle est la capitale du Belize ?', answerEn:'Belmopan', answerFr:'Belmopan', acceptedEn:['belmopan'], acceptedFr:['belmopan'] },
+  { id:'cap133', category:'capitals', en:'What is the capital of Australia?', fr:'Quelle est la capitale de l\'Australie ?', answerEn:'Canberra', answerFr:'Canberra', acceptedEn:['canberra'], acceptedFr:['canberra'] },
+  { id:'cap134', category:'capitals', en:'What is the capital of New Zealand?', fr:'Quelle est la capitale de la Nouvelle-Zélande ?', answerEn:'Wellington', answerFr:'Wellington', acceptedEn:['wellington'], acceptedFr:['wellington'] },
+  { id:'cap135', category:'capitals', en:'What is the capital of Fiji?', fr:'Quelle est la capitale des Fidji ?', answerEn:'Suva', answerFr:'Suva', acceptedEn:['suva'], acceptedFr:['suva'] },
+  { id:'cap136', category:'capitals', en:'What is the capital of Papua New Guinea?', fr:'Quelle est la capitale de la Papouasie-Nouvelle-Guinée ?', answerEn:'Port Moresby', answerFr:'Port Moresby', acceptedEn:['port moresby'], acceptedFr:['port moresby'] },
+  { id:'cont1', category:'continents', en:'Which continent is Egypt in?', fr:'Sur quel continent se trouve l\'Égypte ?', answerEn:'Africa', answerFr:'Afrique', acceptedEn:['africa'], acceptedFr:['afrique'] },
+  { id:'cont2', category:'continents', en:'Which continent is France in?', fr:'Sur quel continent se trouve la France ?', answerEn:'Europe', answerFr:'Europe', acceptedEn:['europe'], acceptedFr:['europe'] },
+  { id:'cont3', category:'continents', en:'Which continent is China in?', fr:'Sur quel continent se trouve la Chine ?', answerEn:'Asia', answerFr:'Asie', acceptedEn:['asia'], acceptedFr:['asie'] },
+  { id:'cont4', category:'continents', en:'Which continent is Brazil in?', fr:'Sur quel continent se trouve le Brésil ?', answerEn:'South America', answerFr:'Amérique du Sud', acceptedEn:['south america'], acceptedFr:['amérique du sud'] },
+  { id:'cont5', category:'continents', en:'Which continent is Canada in?', fr:'Sur quel continent se trouve le Canada ?', answerEn:'North America', answerFr:'Amérique du Nord', acceptedEn:['north america'], acceptedFr:['amérique du nord'] },
+  { id:'cont6', category:'continents', en:'Which continent is Kenya in?', fr:'Sur quel continent se trouve le Kenya ?', answerEn:'Africa', answerFr:'Afrique', acceptedEn:['africa'], acceptedFr:['afrique'] },
+  { id:'cont7', category:'continents', en:'Which continent is Japan in?', fr:'Sur quel continent se trouve le Japon ?', answerEn:'Asia', answerFr:'Asie', acceptedEn:['asia'], acceptedFr:['asie'] },
+  { id:'cont8', category:'continents', en:'Which continent is Germany in?', fr:'Sur quel continent se trouve l\'Allemagne ?', answerEn:'Europe', answerFr:'Europe', acceptedEn:['europe'], acceptedFr:['europe'] },
+  { id:'cont9', category:'continents', en:'Which continent is Argentina in?', fr:'Sur quel continent se trouve l\'Argentine ?', answerEn:'South America', answerFr:'Amérique du Sud', acceptedEn:['south america'], acceptedFr:['amérique du sud'] },
+  { id:'cont10', category:'continents', en:'Which continent is Mexico in?', fr:'Sur quel continent se trouve le Mexique ?', answerEn:'North America', answerFr:'Amérique du Nord', acceptedEn:['north america'], acceptedFr:['amérique du nord'] },
+  { id:'cont11', category:'continents', en:'Which continent is India in?', fr:'Sur quel continent se trouve l\'Inde ?', answerEn:'Asia', answerFr:'Asie', acceptedEn:['asia'], acceptedFr:['asie'] },
+  { id:'cont12', category:'continents', en:'Which continent is Nigeria in?', fr:'Sur quel continent se trouve le Nigeria ?', answerEn:'Africa', answerFr:'Afrique', acceptedEn:['africa'], acceptedFr:['afrique'] },
+  { id:'cont13', category:'continents', en:'Which continent is Italy in?', fr:'Sur quel continent se trouve l\'Italie ?', answerEn:'Europe', answerFr:'Europe', acceptedEn:['europe'], acceptedFr:['europe'] },
+  { id:'cont14', category:'continents', en:'Which continent is Peru in?', fr:'Sur quel continent se trouve le Pérou ?', answerEn:'South America', answerFr:'Amérique du Sud', acceptedEn:['south america'], acceptedFr:['amérique du sud'] },
+  { id:'cont15', category:'continents', en:'Which continent is Thailand in?', fr:'Sur quel continent se trouve la Thaïlande ?', answerEn:'Asia', answerFr:'Asie', acceptedEn:['asia'], acceptedFr:['asie'] },
+  { id:'cont16', category:'continents', en:'Which continent is Morocco in?', fr:'Sur quel continent se trouve le Maroc ?', answerEn:'Africa', answerFr:'Afrique', acceptedEn:['africa'], acceptedFr:['afrique'] },
+  { id:'cont17', category:'continents', en:'Which continent is Spain in?', fr:'Sur quel continent se trouve l\'Espagne ?', answerEn:'Europe', answerFr:'Europe', acceptedEn:['europe'], acceptedFr:['europe'] },
+  { id:'cont18', category:'continents', en:'Which continent is Chile in?', fr:'Sur quel continent se trouve le Chili ?', answerEn:'South America', answerFr:'Amérique du Sud', acceptedEn:['south america'], acceptedFr:['amérique du sud'] },
+  { id:'cont19', category:'continents', en:'Which continent is the United States in?', fr:'Sur quel continent se trouve les États-Unis ?', answerEn:'North America', answerFr:'Amérique du Nord', acceptedEn:['north america'], acceptedFr:['amérique du nord'] },
+  { id:'cont20', category:'continents', en:'Which continent is South Africa in?', fr:'Sur quel continent se trouve l\'Afrique du Sud ?', answerEn:'Africa', answerFr:'Afrique', acceptedEn:['africa'], acceptedFr:['afrique'] },
+  { id:'cont21', category:'continents', en:'Which continent is New Zealand in?', fr:'Sur quel continent se trouve la Nouvelle-Zélande ?', answerEn:'Oceania', answerFr:'Océanie', acceptedEn:['oceania'], acceptedFr:['océanie'] },
+  { id:'cont22', category:'continents', en:'Which continent is Vietnam in?', fr:'Sur quel continent se trouve le Vietnam ?', answerEn:'Asia', answerFr:'Asie', acceptedEn:['asia'], acceptedFr:['asie'] },
+  { id:'cont23', category:'continents', en:'Which continent is Ghana in?', fr:'Sur quel continent se trouve le Ghana ?', answerEn:'Africa', answerFr:'Afrique', acceptedEn:['africa'], acceptedFr:['afrique'] },
+  { id:'cont24', category:'continents', en:'How many continents are there?', fr:'Combien y a-t-il de continents ?', answerEn:'7', answerFr:'7', acceptedEn:['7','seven'], acceptedFr:['7','sept'] },
+  { id:'cont25', category:'continents', en:'Which is the largest continent?', fr:'Quel est le plus grand continent ?', answerEn:'Asia', answerFr:'Asie', acceptedEn:['asia'], acceptedFr:['asie'] },
+  { id:'cont26', category:'continents', en:'Which is the smallest continent?', fr:'Quel est le plus petit continent ?', answerEn:'Australia', answerFr:'Australie', acceptedEn:['australia','oceania'], acceptedFr:['australie','oceanie','océanie'] },
+  { id:'cont27', category:'continents', en:'Which continent is the coldest?', fr:'Quel est le continent le plus froid ?', answerEn:'Antarctica', answerFr:'Antarctique', acceptedEn:['antarctica'], acceptedFr:['antarctique'] },
+  { id:'cont28', category:'continents', en:'Which continent has no permanent population?', fr:'Quel continent n\'a aucune population permanente ?', answerEn:'Antarctica', answerFr:'Antarctique', acceptedEn:['antarctica'], acceptedFr:['antarctique'] },
+  { id:'cont29', category:'continents', en:'Which continent is the driest inhabited continent?', fr:'Quel est le continent habité le plus sec ?', answerEn:'Australia', answerFr:'Australie', acceptedEn:['australia'], acceptedFr:['australie'] },
+  { id:'cont30', category:'continents', en:'Which continent is Indonesia mostly part of?', fr:'L\'Indonésie fait principalement partie de quel continent ?', answerEn:'Asia', answerFr:'Asie', acceptedEn:['asia'], acceptedFr:['asie'] },
+  { id:'cont31', category:'continents', en:'Which two continents does Russia span?', fr:'Quels deux continents la Russie traverse-t-elle ?', answerEn:'Europe and Asia', answerFr:'Europe et Asie', acceptedEn:['europe and asia','europe','asia'], acceptedFr:['europe et asie','europe','asie'] },
+  { id:'oc1', category:'oceans', en:'Which is the largest ocean in the world?', fr:'Quel est le plus grand océan du monde ?', answerEn:'Pacific Ocean', answerFr:'Océan Pacifique', acceptedEn:['pacific','pacific ocean'], acceptedFr:['pacifique','ocean pacifique'] },
+  { id:'oc2', category:'oceans', en:'Which ocean is between America and Europe?', fr:'Quel océan se trouve entre l\'Amérique et l\'Europe ?', answerEn:'Atlantic Ocean', answerFr:'Océan Atlantique', acceptedEn:['atlantic','atlantic ocean'], acceptedFr:['atlantique','ocean atlantique'] },
+  { id:'oc3', category:'oceans', en:'Which ocean is next to India?', fr:'Quel océan se trouve près de l\'Inde ?', answerEn:'Indian Ocean', answerFr:'Océan Indien', acceptedEn:['indian','indian ocean'], acceptedFr:['indien','ocean indien'] },
+  { id:'oc4', category:'oceans', en:'Which ocean surrounds the North Pole?', fr:'Quel océan entoure le pôle Nord ?', answerEn:'Arctic Ocean', answerFr:'Océan Arctique', acceptedEn:['arctic','arctic ocean'], acceptedFr:['arctique','ocean arctique'] },
+  { id:'oc5', category:'oceans', en:'Which ocean surrounds Antarctica?', fr:'Quel océan entoure l\'Antarctique ?', answerEn:'Southern Ocean', answerFr:'Océan Austral', acceptedEn:['southern','southern ocean','antarctic ocean'], acceptedFr:['austral','ocean austral'] },
+  { id:'oc6', category:'oceans', en:'How many oceans are there on Earth?', fr:'Combien d\'océans y a-t-il sur Terre ?', answerEn:'5', answerFr:'5', acceptedEn:['5','five'], acceptedFr:['5','cinq'] },
+  { id:'oc7', category:'oceans', en:'Which sea is famous for making people float easily?', fr:'Quelle mer est célèbre car on y flotte facilement ?', answerEn:'Dead Sea', answerFr:'Mer Morte', acceptedEn:['dead sea'], acceptedFr:['mer morte'] },
+  { id:'oc8', category:'oceans', en:'Which sea is between Europe and Africa?', fr:'Quelle mer se trouve entre l\'Europe et l\'Afrique ?', answerEn:'Mediterranean Sea', answerFr:'Mer Méditerranée', acceptedEn:['mediterranean','mediterranean sea'], acceptedFr:['mediterranee','mer mediterranee'] },
+  { id:'oc9', category:'oceans', en:'Which sea is known for pirates in the Caribbean islands?', fr:'Quelle mer est connue pour les pirates des Caraïbes ?', answerEn:'Caribbean Sea', answerFr:'Mer des Caraïbes', acceptedEn:['caribbean','caribbean sea'], acceptedFr:['caraibes','mer des caraibes'] },
+  { id:'oc10', category:'oceans', en:'Which sea lies between Arabia and Africa?', fr:'Quelle mer se trouve entre l\'Arabie et l\'Afrique ?', answerEn:'Red Sea', answerFr:'Mer Rouge', acceptedEn:['red sea'], acceptedFr:['mer rouge'] },
+  { id:'oc11', category:'oceans', en:'Which sea lies between Europe and Turkey, north of it?', fr:'Quelle mer se trouve entre l\'Europe et la Turquie ?', answerEn:'Black Sea', answerFr:'Mer Noire', acceptedEn:['black sea'], acceptedFr:['mer noire'] },
+  { id:'oc12', category:'oceans', en:'Which sea is near Vietnam and the Philippines?', fr:'Quelle mer se trouve près du Vietnam et des Philippines ?', answerEn:'South China Sea', answerFr:'Mer de Chine méridionale', acceptedEn:['south china sea'], acceptedFr:['mer de chine meridionale','mer de chine du sud'] },
+  { id:'oc13', category:'oceans', en:'Which is the smallest of the world\'s five oceans?', fr:'Quel est le plus petit des cinq océans du monde ?', answerEn:'Arctic Ocean', answerFr:'Océan Arctique', acceptedEn:['arctic','arctic ocean'], acceptedFr:['arctique','ocean arctique'] },
+  { id:'oc14', category:'oceans', en:'Which body of water separates the UK and France?', fr:'Quel bras de mer sépare le Royaume-Uni et la France ?', answerEn:'English Channel', answerFr:'Manche', acceptedEn:['english channel','the channel'], acceptedFr:['manche','la manche'] },
+  { id:'oc15', category:'oceans', en:'Which narrow strait separates Europe and Africa at its closest point?', fr:'Quel détroit sépare l\'Europe et l\'Afrique à son point le plus étroit ?', answerEn:'Strait of Gibraltar', answerFr:'Détroit de Gibraltar', acceptedEn:['strait of gibraltar','gibraltar'], acceptedFr:['detroit de gibraltar','gibraltar'] },
+  { id:'oc16', category:'oceans', en:'Which sea is famous for the Great Barrier Reef nearby?', fr:'Quelle mer est célèbre pour la Grande Barrière de corail proche ?', answerEn:'Coral Sea', answerFr:'Mer de Corail', acceptedEn:['coral sea'], acceptedFr:['mer de corail'] },
+  { id:'oc17', category:'oceans', en:'Which gulf lies between Arabia and Iran?', fr:'Quel golfe se trouve entre l\'Arabie et l\'Iran ?', answerEn:'Persian Gulf', answerFr:'Golfe Persique', acceptedEn:['persian gulf','the gulf'], acceptedFr:['golfe persique'] },
+  { id:'oc18', category:'oceans', en:'Which bay lies east of India?', fr:'Quelle baie se trouve à l\'est de l\'Inde ?', answerEn:'Bay of Bengal', answerFr:'Golfe du Bengale', acceptedEn:['bay of bengal'], acceptedFr:['golfe du bengale'] },
+  { id:'oc19', category:'oceans', en:'Which sea lies north of Europe, near Scandinavia?', fr:'Quelle mer se trouve au nord de l\'Europe, près de la Scandinavie ?', answerEn:'North Sea', answerFr:'Mer du Nord', acceptedEn:['north sea'], acceptedFr:['mer du nord'] },
+  { id:'oc20', category:'oceans', en:'Which gulf lies between Mexico and the United States?', fr:'Quel golfe se trouve entre le Mexique et les États-Unis ?', answerEn:'Gulf of Mexico', answerFr:'Golfe du Mexique', acceptedEn:['gulf of mexico'], acceptedFr:['golfe du mexique'] },
+  { id:'oc21', category:'oceans', en:'Which sea lies between Scandinavia and Northern Europe?', fr:'Quelle mer se trouve entre la Scandinavie et le nord de l\'Europe ?', answerEn:'Baltic Sea', answerFr:'Mer Baltique', acceptedEn:['baltic sea','the baltic'], acceptedFr:['mer baltique','la baltique'] },
+  { id:'lm1', category:'landmarks', en:'In which country is the Eiffel Tower?', fr:'Dans quel pays se trouve la tour Eiffel ?', answerEn:'France', answerFr:'France', acceptedEn:['france'], acceptedFr:['france'] },
+  { id:'lm2', category:'landmarks', en:'In which country is the Great Wall?', fr:'Dans quel pays se trouve la Grande Muraille ?', answerEn:'China', answerFr:'Chine', acceptedEn:['china'], acceptedFr:['chine'] },
+  { id:'lm3', category:'landmarks', en:'In which country is the Pyramids of Giza?', fr:'Dans quel pays se trouve les pyramides de Gizeh ?', answerEn:'Egypt', answerFr:'Égypte', acceptedEn:['egypt'], acceptedFr:['égypte'] },
+  { id:'lm4', category:'landmarks', en:'In which country is the Statue of Liberty?', fr:'Dans quel pays se trouve la Statue de la Liberté ?', answerEn:'United States', answerFr:'États-Unis', acceptedEn:['united states'], acceptedFr:['états-unis'] },
+  { id:'lm5', category:'landmarks', en:'In which country is the Colosseum?', fr:'Dans quel pays se trouve le Colisée ?', answerEn:'Italy', answerFr:'Italie', acceptedEn:['italy'], acceptedFr:['italie'] },
+  { id:'lm6', category:'landmarks', en:'In which country is the Taj Mahal?', fr:'Dans quel pays se trouve le Taj Mahal ?', answerEn:'India', answerFr:'Inde', acceptedEn:['india'], acceptedFr:['inde'] },
+  { id:'lm7', category:'landmarks', en:'In which country is Christ the Redeemer statue?', fr:'Dans quel pays se trouve la statue du Christ Rédempteur ?', answerEn:'Brazil', answerFr:'Brésil', acceptedEn:['brazil'], acceptedFr:['brésil'] },
+  { id:'lm8', category:'landmarks', en:'In which country is Big Ben?', fr:'Dans quel pays se trouve Big Ben ?', answerEn:'United Kingdom', answerFr:'Royaume-Uni', acceptedEn:['united kingdom'], acceptedFr:['royaume-uni'] },
+  { id:'lm9', category:'landmarks', en:'In which country is Machu Picchu?', fr:'Dans quel pays se trouve le Machu Picchu ?', answerEn:'Peru', answerFr:'Pérou', acceptedEn:['peru'], acceptedFr:['pérou'] },
+  { id:'lm10', category:'landmarks', en:'In which country is the Sydney Opera House?', fr:'Dans quel pays se trouve l\'Opéra de Sydney ?', answerEn:'Australia', answerFr:'Australie', acceptedEn:['australia'], acceptedFr:['australie'] },
+  { id:'lm11', category:'landmarks', en:'In which country is Mount Rushmore?', fr:'Dans quel pays se trouve le mont Rushmore ?', answerEn:'United States', answerFr:'États-Unis', acceptedEn:['united states'], acceptedFr:['états-unis'] },
+  { id:'lm12', category:'landmarks', en:'In which country is the Leaning Tower of Pisa?', fr:'Dans quel pays se trouve la tour de Pise ?', answerEn:'Italy', answerFr:'Italie', acceptedEn:['italy'], acceptedFr:['italie'] },
+  { id:'lm13', category:'landmarks', en:'In which country is the Acropolis?', fr:'Dans quel pays se trouve l\'Acropole ?', answerEn:'Greece', answerFr:'Grèce', acceptedEn:['greece'], acceptedFr:['grèce'] },
+  { id:'lm14', category:'landmarks', en:'In which country is Stonehenge?', fr:'Dans quel pays se trouve Stonehenge ?', answerEn:'United Kingdom', answerFr:'Royaume-Uni', acceptedEn:['united kingdom'], acceptedFr:['royaume-uni'] },
+  { id:'lm15', category:'landmarks', en:'In which country is Petra?', fr:'Dans quel pays se trouve Pétra ?', answerEn:'Jordan', answerFr:'Jordanie', acceptedEn:['jordan'], acceptedFr:['jordanie'] },
+  { id:'lm16', category:'landmarks', en:'In which country is Angkor Wat?', fr:'Dans quel pays se trouve Angkor Vat ?', answerEn:'Cambodia', answerFr:'Cambodge', acceptedEn:['cambodia'], acceptedFr:['cambodge'] },
+  { id:'lm17', category:'landmarks', en:'In which country is Neuschwanstein Castle?', fr:'Dans quel pays se trouve le château de Neuschwanstein ?', answerEn:'Germany', answerFr:'Allemagne', acceptedEn:['germany'], acceptedFr:['allemagne'] },
+  { id:'lm18', category:'landmarks', en:'In which country is the Burj Khalifa?', fr:'Dans quel pays se trouve le Burj Khalifa ?', answerEn:'United Arab Emirates', answerFr:'Émirats arabes unis', acceptedEn:['united arab emirates'], acceptedFr:['émirats arabes unis'] },
+  { id:'lm19', category:'landmarks', en:'In which country is the Golden Gate Bridge?', fr:'Dans quel pays se trouve le Golden Gate Bridge ?', answerEn:'United States', answerFr:'États-Unis', acceptedEn:['united states'], acceptedFr:['états-unis'] },
+  { id:'lm20', category:'landmarks', en:'In which country is the CN Tower?', fr:'Dans quel pays se trouve la tour CN ?', answerEn:'Canada', answerFr:'Canada', acceptedEn:['canada'], acceptedFr:['canada'] },
+  { id:'lm21', category:'landmarks', en:'In which country is the Kremlin?', fr:'Dans quel pays se trouve le Kremlin ?', answerEn:'Russia', answerFr:'Russie', acceptedEn:['russia'], acceptedFr:['russie'] },
+  { id:'lm22', category:'landmarks', en:'In which country is the Alhambra?', fr:'Dans quel pays se trouve l\'Alhambra ?', answerEn:'Spain', answerFr:'Espagne', acceptedEn:['spain'], acceptedFr:['espagne'] },
+  { id:'lm23', category:'landmarks', en:'In which country is Chichén Itzá?', fr:'Dans quel pays se trouve Chichén Itzá ?', answerEn:'Mexico', answerFr:'Mexique', acceptedEn:['mexico'], acceptedFr:['mexique'] },
+  { id:'lm24', category:'landmarks', en:'In which country is Table Mountain?', fr:'Dans quel pays se trouve la montagne de la Table ?', answerEn:'South Africa', answerFr:'Afrique du Sud', acceptedEn:['south africa'], acceptedFr:['afrique du sud'] },
+  { id:'lm25', category:'landmarks', en:'In which country is Mount Fuji?', fr:'Dans quel pays se trouve le mont Fuji ?', answerEn:'Japan', answerFr:'Japon', acceptedEn:['japan'], acceptedFr:['japon'] },
+  { id:'lm26', category:'landmarks', en:'In which country is the Sagrada Família?', fr:'Dans quel pays se trouve la Sagrada Família ?', answerEn:'Spain', answerFr:'Espagne', acceptedEn:['spain'], acceptedFr:['espagne'] },
+  { id:'lm27', category:'landmarks', en:'In which country is the Brandenburg Gate?', fr:'Dans quel pays se trouve la porte de Brandebourg ?', answerEn:'Germany', answerFr:'Allemagne', acceptedEn:['germany'], acceptedFr:['allemagne'] },
+  { id:'lm28', category:'landmarks', en:'In which country is the Forbidden City?', fr:'Dans quel pays se trouve la Cité interdite ?', answerEn:'China', answerFr:'Chine', acceptedEn:['china'], acceptedFr:['chine'] },
+  { id:'lm29', category:'landmarks', en:'In which country is the Blue Mosque?', fr:'Dans quel pays se trouve la Mosquée bleue ?', answerEn:'Turkey', answerFr:'Turquie', acceptedEn:['turkey'], acceptedFr:['turquie'] },
+  { id:'lm30', category:'landmarks', en:'In which country is Mont Saint-Michel?', fr:'Dans quel pays se trouve le Mont-Saint-Michel ?', answerEn:'France', answerFr:'France', acceptedEn:['france'], acceptedFr:['france'] },
+  { id:'lm31', category:'landmarks', en:'In which country is Uluru (Ayers Rock)?', fr:'Dans quel pays se trouve Uluru (Ayers Rock) ?', answerEn:'Australia', answerFr:'Australie', acceptedEn:['australia'], acceptedFr:['australie'] },
+  { id:'lm32', category:'landmarks', en:'In which country is the Great Barrier Reef?', fr:'Dans quel pays se trouve la Grande Barrière de corail ?', answerEn:'Australia', answerFr:'Australie', acceptedEn:['australia'], acceptedFr:['australie'] },
+  { id:'lm33', category:'landmarks', en:'In which country is the Empire State Building?', fr:'Dans quel pays se trouve l\'Empire State Building ?', answerEn:'United States', answerFr:'États-Unis', acceptedEn:['united states'], acceptedFr:['états-unis'] },
+  { id:'lm34', category:'landmarks', en:'In which country is Charles Bridge?', fr:'Dans quel pays se trouve le pont Charles ?', answerEn:'Czech Republic', answerFr:'République tchèque', acceptedEn:['czech republic'], acceptedFr:['république tchèque'] },
+  { id:'lm35', category:'landmarks', en:'In which country is Hagia Sophia?', fr:'Dans quel pays se trouve Sainte-Sophie ?', answerEn:'Turkey', answerFr:'Turquie', acceptedEn:['turkey'], acceptedFr:['turquie'] },
+  { id:'lm36', category:'landmarks', en:'In which country is Mount Kilimanjaro?', fr:'Dans quel pays se trouve le mont Kilimandjaro ?', answerEn:'Tanzania', answerFr:'Tanzanie', acceptedEn:['tanzania'], acceptedFr:['tanzanie'] },
+  { id:'lm37', category:'landmarks', en:'In which country is the Petronas Towers?', fr:'Dans quel pays se trouve les tours Petronas ?', answerEn:'Malaysia', answerFr:'Malaisie', acceptedEn:['malaysia'], acceptedFr:['malaisie'] },
+  { id:'lm38', category:'landmarks', en:'In which country is Windsor Castle?', fr:'Dans quel pays se trouve le château de Windsor ?', answerEn:'United Kingdom', answerFr:'Royaume-Uni', acceptedEn:['united kingdom'], acceptedFr:['royaume-uni'] },
+  { id:'lm39', category:'landmarks', en:'In which two countries is Niagara Falls found?', fr:'Dans quels deux pays se trouvent les chutes du Niagara ?', answerEn:'Canada and the United States', answerFr:'Canada et États-Unis', acceptedEn:['canada','united states','canada and the united states','usa'], acceptedFr:['canada','etats-unis','canada et etats-unis'] },
+  { id:'lm40', category:'landmarks', en:'In which two countries is Victoria Falls found?', fr:'Dans quels deux pays se trouvent les chutes Victoria ?', answerEn:'Zambia and Zimbabwe', answerFr:'Zambie et Zimbabwe', acceptedEn:['zambia','zimbabwe','zambia and zimbabwe'], acceptedFr:['zambie','zimbabwe','zambie et zimbabwe'] },
+  { id:'gen1', category:'general', en:'What is the longest river in the world?', fr:'Quel est le plus long fleuve du monde ?', answerEn:'Nile', answerFr:'Nil', acceptedEn:['nile','the nile'], acceptedFr:['nil','le nil'] },
+  { id:'gen2', category:'general', en:'What is the largest hot desert in the world?', fr:'Quel est le plus grand désert chaud du monde ?', answerEn:'Sahara', answerFr:'Sahara', acceptedEn:['sahara'], acceptedFr:['sahara'] },
+  { id:'gen3', category:'general', en:'What is the highest mountain in the world?', fr:'Quelle est la plus haute montagne du monde ?', answerEn:'Mount Everest', answerFr:'Mont Everest', acceptedEn:['everest','mount everest'], acceptedFr:['everest','mont everest'] },
+  { id:'gen4', category:'general', en:'What is the largest country in the world by area?', fr:'Quel est le plus grand pays du monde ?', answerEn:'Russia', answerFr:'Russie', acceptedEn:['russia'], acceptedFr:['russie'] },
+  { id:'gen5', category:'general', en:'What is the smallest country in the world?', fr:'Quel est le plus petit pays du monde ?', answerEn:'Vatican City', answerFr:'Vatican', acceptedEn:['vatican city','vatican'], acceptedFr:['vatican','cite du vatican'] },
+  { id:'gen6', category:'general', en:'What is the largest island in the world?', fr:'Quelle est la plus grande île du monde ?', answerEn:'Greenland', answerFr:'Groenland', acceptedEn:['greenland'], acceptedFr:['groenland'] },
+  { id:'gen7', category:'general', en:'What is the largest rainforest in the world?', fr:'Quelle est la plus grande forêt tropicale du monde ?', answerEn:'Amazon Rainforest', answerFr:'Forêt amazonienne', acceptedEn:['amazon','amazon rainforest'], acceptedFr:['amazonie','foret amazonienne'] },
+  { id:'gen8', category:'general', en:'Which mountain range separates France and Spain?', fr:'Quelle chaîne de montagnes sépare la France et l\'Espagne ?', answerEn:'Pyrenees', answerFr:'Pyrénées', acceptedEn:['pyrenees','the pyrenees'], acceptedFr:['pyrenees','les pyrenees'] },
+  { id:'gen9', category:'general', en:'What is the longest mountain range in the world?', fr:'Quelle est la plus longue chaîne de montagnes du monde ?', answerEn:'Andes', answerFr:'Andes', acceptedEn:['andes','the andes'], acceptedFr:['andes','les andes'] },
+  { id:'gen10', category:'general', en:'What is the largest lake in the world?', fr:'Quel est le plus grand lac du monde ?', answerEn:'Caspian Sea', answerFr:'Mer Caspienne', acceptedEn:['caspian sea','the caspian'], acceptedFr:['mer caspienne','caspienne'] },
+  { id:'gen11', category:'general', en:'What is the highest waterfall in the world?', fr:'Quelle est la plus haute chute d\'eau du monde ?', answerEn:'Angel Falls', answerFr:'Chutes Angel', acceptedEn:['angel falls'], acceptedFr:['chutes angel','chute angel'] },
+  { id:'gen12', category:'general', en:'What is the longest river in South America?', fr:'Quel est le plus long fleuve d\'Amérique du Sud ?', answerEn:'Amazon River', answerFr:'Amazone', acceptedEn:['amazon','amazon river','the amazon'], acceptedFr:['amazone','le fleuve amazone'] },
+  { id:'gen13', category:'general', en:'Which continent has the coldest desert in the world?', fr:'Quel continent abrite le désert le plus froid du monde ?', answerEn:'Antarctica', answerFr:'Antarctique', acceptedEn:['antarctica'], acceptedFr:['antarctique'] },
+  { id:'gen14', category:'general', en:'Which is the most populated continent in the world?', fr:'Quel est le continent le plus peuplé du monde ?', answerEn:'Asia', answerFr:'Asie', acceptedEn:['asia'], acceptedFr:['asie'] },
+  { id:'gen15', category:'general', en:'Which country has the longest coastline in the world?', fr:'Quel pays a la plus longue côte du monde ?', answerEn:'Canada', answerFr:'Canada', acceptedEn:['canada'], acceptedFr:['canada'] },
+  { id:'gen16', category:'general', en:'Which country is known for having the most islands in the world?', fr:'Quel pays est connu pour avoir le plus d\'îles au monde ?', answerEn:'Sweden', answerFr:'Suède', acceptedEn:['sweden'], acceptedFr:['suede'] },
+  { id:'gen17', category:'general', en:'How many time zones does Russia have?', fr:'Combien de fuseaux horaires la Russie a-t-elle ?', answerEn:'11', answerFr:'11', acceptedEn:['11','eleven'], acceptedFr:['11','onze'] },
+  { id:'gen18', category:'general', en:'What is the nickname for the vast desert landscape of central Australia?', fr:'Quel est le surnom du vaste désert du centre de l\'Australie ?', answerEn:'Outback', answerFr:'Outback', acceptedEn:['outback','the outback'], acceptedFr:['outback'] },
+  { id:'gen19', category:'general', en:'What is the driest place on Earth?', fr:'Quel est l\'endroit le plus sec sur Terre ?', answerEn:'Atacama Desert', answerFr:'Désert d\'Atacama', acceptedEn:['atacama','atacama desert'], acceptedFr:['atacama','desert d\'atacama'] },
+  { id:'gen20', category:'general', en:'What is the deepest point in the ocean?', fr:'Quel est le point le plus profond de l\'océan ?', answerEn:'Mariana Trench', answerFr:'Fosse des Mariannes', acceptedEn:['mariana trench','the mariana trench'], acceptedFr:['fosse des mariannes'] },
+  { id:'gen21', category:'general', en:'On which continent is the Sahara Desert located?', fr:'Sur quel continent se trouve le désert du Sahara ?', answerEn:'Africa', answerFr:'Afrique', acceptedEn:['africa'], acceptedFr:['afrique'] },
+  { id:'gen22', category:'general', en:'What is the largest freshwater lake in the world by surface area?', fr:'Quel est le plus grand lac d\'eau douce du monde en superficie ?', answerEn:'Lake Superior', answerFr:'Lac Supérieur', acceptedEn:['lake superior','superior'], acceptedFr:['lac superieur'] },
+  { id:'gen23', category:'general', en:'What is the longest river in Asia?', fr:'Quel est le plus long fleuve d\'Asie ?', answerEn:'Yangtze River', answerFr:'Yangtsé', acceptedEn:['yangtze','yangtze river'], acceptedFr:['yangtse','le yangtse'] },
+  { id:'gen24', category:'general', en:'Which volcano famously destroyed the Roman city of Pompeii?', fr:'Quel volcan a détruit la ville romaine de Pompéi ?', answerEn:'Mount Vesuvius', answerFr:'Vésuve', acceptedEn:['vesuvius','mount vesuvius'], acceptedFr:['vesuve','le vesuve'] },
+  { id:'gen25', category:'general', en:'Which desert in Namibia is famous for its huge sand dunes?', fr:'Quel désert namibien est célèbre pour ses immenses dunes de sable ?', answerEn:'Namib Desert', answerFr:'Désert du Namib', acceptedEn:['namib','namib desert'], acceptedFr:['namib','desert du namib'] },
+  { id:'gen26', category:'general', en:'What is the longest river in North America?', fr:'Quel est le plus long fleuve d\'Amérique du Nord ?', answerEn:'Mississippi River', answerFr:'Mississippi', acceptedEn:['mississippi','mississippi river'], acceptedFr:['mississippi','le mississippi'] },
+  { id:'gen27', category:'general', en:'About how many countries are there in Africa?', fr:'Combien de pays y a-t-il environ en Afrique ?', answerEn:'54', answerFr:'54', acceptedEn:['54'], acceptedFr:['54'] },
+  { id:'gen28', category:'general', en:'What is the smallest continent by land area?', fr:'Quel est le plus petit continent en superficie ?', answerEn:'Australia', answerFr:'Australie', acceptedEn:['australia'], acceptedFr:['australie'] },
+  { id:'gen29', category:'general', en:'What is the highest capital city in the world by elevation?', fr:'Quelle est la capitale la plus élevée du monde en altitude ?', answerEn:'La Paz', answerFr:'La Paz', acceptedEn:['la paz'], acceptedFr:['la paz'] },
+  { id:'gen30', category:'general', en:'What is the longest river in Europe?', fr:'Quel est le plus long fleuve d\'Europe ?', answerEn:'Volga River', answerFr:'Volga', acceptedEn:['volga','volga river'], acceptedFr:['volga','la volga'] },
+];
+// ---- Shuffle-bag deck (no repeats until exhausted), persisted per subject ----
+const GEO_DECK_KEY = 'classroom.geography.deck';
+
+function shuffledIds() {
+  const ids = GEOGRAPHY_QUESTIONS.map((q) => q.id);
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  return ids;
+}
+
+function loadGeoDeck() {
+  const raw = lsGet(GEO_DECK_KEY);
+  if (raw) {
+    try {
+      const d = JSON.parse(raw);
+      if (Array.isArray(d)) {
+        // keep only ids that still exist in the bank
+        const valid = d.filter((id) => GEOGRAPHY_QUESTIONS.some((q) => q.id === id));
+        if (valid.length) return valid;
+      }
+    } catch (e) {}
+  }
+  const fresh = shuffledIds();
+  lsSet(GEO_DECK_KEY, JSON.stringify(fresh));
+  return fresh;
+}
+
+let geoDeck = [];
+
+// Draw the next question from the deck; reshuffle a fresh full copy when empty.
+function drawGeoQuestion() {
+  if (!geoDeck || geoDeck.length === 0) geoDeck = shuffledIds();
+  const id = geoDeck.shift();
+  lsSet(GEO_DECK_KEY, JSON.stringify(geoDeck));
+  return GEOGRAPHY_QUESTIONS.find((q) => q.id === id) || GEOGRAPHY_QUESTIONS[0];
+}
+
+// ---- Word-based answer normalization (accents, articles stripped) ----
+function normalizeWord(str) {
+  let s = (str || '').toLowerCase().trim();
+  // strip accents/diacritics
+  s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  // remove punctuation to spaces
+  s = s.replace(/[.,!?;:'"()]/g, ' ');
+  // strip leading articles (repeatedly): the, a, an, le, la, les, l', un, une
+  s = s.replace(/^(the|a|an|le|la|les|l|un|une)\s+/g, '');
+  s = s.replace(/^l\s+/g, '');
+  // collapse whitespace
+  s = s.replace(/\s+/g, ' ').trim();
+  return s;
+}
+
+// Evaluate a geography transcript against the current question.
+// Returns 'correct' | 'wrong' | 'unclear'.
+function evaluateGeoAnswer(rawText) {
+  const norm = normalizeWord(rawText);
+  if (!norm) return 'unclear';
+  const accepted = (currentLang === 'fr' ? currentGeoQ.acceptedFr : currentGeoQ.acceptedEn) || [];
+  for (const a of accepted) {
+    const na = normalizeWord(a);
+    if (!na) continue;
+    if (norm === na || norm.indexOf(na) !== -1) return 'correct';
+  }
+  return 'wrong';
+}
+
+// ============================================================
+//  SPEECH RECOGNITION
+// ============================================================
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+const speechSupported = !!SpeechRec;
+let recognition = null;
+let isListening = false;
+let finalTranscript = '';
+let micDenied = false;
+
+function setupRecognition() {
+  if (!speechSupported) return;
+  recognition = new SpeechRec();
+  recognition.lang = currentLang === 'fr' ? 'fr-FR' : 'en-US';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    finalTranscript = '';
+    for (let i = 0; i < e.results.length; i++) {
+      const res = e.results[i];
+      if (res.isFinal) finalTranscript += res[0].transcript;
+      else interim += res[0].transcript;
+    }
+    if (interim) setStatus('… ' + interim);
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+      micDenied = true;
+      setStatus(t('statusMicDenied'));
+      enableFallback();
+    } else if (e.error === 'no-speech') {
+      setStatus(t('statusNoSpeech'));
+    }
+  };
+
+  recognition.onend = () => {
+    // If we ended while user still meant to speak, ignore; handled by release.
+    isListening = false;
+    listeningEl.classList.remove('on');
+  };
+}
+
+function startListening() {
+  if (!recognition || isListening) return;
+  finalTranscript = '';
+  try {
+    recognition.start();
+    isListening = true;
+    listeningEl.classList.add('on');
+    setStatus(t('statusSpeakNow'));
+  } catch (err) {
+    // start() can throw if already started; ignore
+  }
+}
+
+function stopListeningAndCheck() {
+  if (!recognition) return;
+  try { recognition.stop(); } catch (err) {}
+  isListening = false;
+  listeningEl.classList.remove('on');
+  // Give recognition a moment to flush final result
+  setTimeout(() => {
+    onPlayerAnswer(finalTranscript);
+  }, 350);
+}
+
+// ============================================================
+//  SCORE & TROPHY BOARDS
+// ============================================================
+function allEntityIds() { return ['player'].concat(NPCS.map((n) => n.id)); }
+
+function renderScoreBoard() {
+  if (!scoreBoard3D) return;
+  const answeringId = turn && turn.answerer;
+  const rows = allEntityIds()
+    .map((id) => ({ id, s: scores[id] || defaultScore() }))
+    .sort((a, b) => b.s.points - a.s.points)
+    .map((r) => ({
+      id: r.id,
+      name: entityName(r.id),
+      valueText: String(r.s.points),
+      isPlayer: r.id === 'player',
+      isAnswering: (answeringId === r.id)
+    }));
+  drawBoardPanel(scoreBoard3D, t('scoresTitle'), rows);
+}
+
+function renderTrophyBoard() {
+  if (!trophyBoard3D) return;
+  const rows = allEntityIds()
+    .map((id) => ({ id, s: scores[id] || defaultScore() }))
+    .sort((a, b) => b.s.trophyCount - a.s.trophyCount)
+    .map((r) => ({
+      id: r.id,
+      name: entityName(r.id),
+      valueText: '🏆 × ' + r.s.trophyCount,
+      isPlayer: r.id === 'player',
+      isAnswering: false
+    }));
+  drawBoardPanel(trophyBoard3D, t('trophiesTitle'), rows);
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function refreshBoards() { renderScoreBoard(); renderTrophyBoard(); }
+
+// ============================================================
+//  GAME FLOW / UI STATE
+// ============================================================
+function setStatus(msg) { statusEl.textContent = msg; }
+
+function enableFallback() {
+  fallbackEl.classList.add('on');
+  btnSpeak.style.display = 'none';
+}
+
+function showFeedback(correct, message) {
+  feedbackEl.classList.remove('correct', 'wrong');
+  feedbackEl.classList.add(correct ? 'correct' : 'wrong');
+  feedbackEl.querySelector('.icon').textContent = correct ? '✅' : '❌';
+  feedbackEl.querySelector('.msg').textContent = message;
+  feedbackEl.classList.add('show');
+}
+function hideFeedback() { feedbackEl.classList.remove('show'); }
+
+// ============================================================
+//  SPEECH BUBBLES
+// ============================================================
+// Track what each bubble is showing so we can reposition on resize.
+let npcBubbleState = null;    // { npcId, value }
+let playerBubbleState = null; // { value }
+
+function showNpcBubble(npcId, value) {
+  npcBubbleState = { npcId: npcId, value: value };
+  npcBubbleEl.textContent = String(value);
+  npcBubbleEl.classList.add('on');
+  positionNpcBubble();
+}
+
+function showPlayerBubble(value) {
+  playerBubbleState = { value: value };
+  playerBubbleEl.innerHTML =
+    '<span class="pb-label">' + escapeHtml(t('youSaid')) + '</span>' + escapeHtml(String(value));
+  playerBubbleEl.classList.add('on');
+  positionPlayerBubble();
+}
+
+function positionNpcBubble() {
+  if (!npcBubbleState || !camera) return;
+  const st = students.find((s) => s.npcId === npcBubbleState.npcId);
+  const a = st && st.bubbleAnchor;
+  if (!a) return;
+  const p = worldToScreen(a.x, a.y, a.z);
+  npcBubbleEl.style.left = p.x + 'px';
+  npcBubbleEl.style.top = p.y + 'px';
+}
+
+function positionPlayerBubble() {
+  if (!playerBubbleState || !whiteboardMesh) return;
+  // Anchor just below the whiteboard's bottom-center.
+  const halfH = whiteboardSize.h / 2;
+  const p = worldToScreen(whiteboardMesh.position.x, whiteboardMesh.position.y - halfH - 0.3, whiteboardMesh.position.z);
+  playerBubbleEl.style.left = p.x + 'px';
+  // translate(-50%,-100%) anchors by bottom; nudge down so it sits below the board
+  playerBubbleEl.style.top = (p.y + 46) + 'px';
+}
+
+function clearBubbles() {
+  npcBubbleState = null;
+  playerBubbleState = null;
+  npcBubbleEl.classList.remove('on');
+  playerBubbleEl.classList.remove('on');
+}
+
+function repositionBubbles() {
+  if (npcBubbleState) positionNpcBubble();
+  if (playerBubbleState) positionPlayerBubble();
+}
+
+// Compute what an NPC "says" for their bubble.
+// Correct -> the real answer; wrong -> a plausible incorrect guess.
+function npcSpokenValue(correct) {
+  if (isGeography()) return geoNpcSpokenValue(correct);
+  // Math: numeric answer or a nearby wrong number.
+  if (correct) return currentAnswer;
+  let wrong = currentAnswer;
+  let tries = 0;
+  while (wrong === currentAnswer && tries < 10) {
+    const delta = randInt(1, 5) * (Math.random() < 0.5 ? -1 : 1);
+    wrong = Math.max(0, currentAnswer + delta);
+    tries++;
+  }
+  if (wrong === currentAnswer) wrong = currentAnswer + 1;
+  return wrong;
+}
+
+// Geography: correct -> this question's answer; wrong -> another question's
+// answer from the SAME category (a plausible-looking guess), else any other.
+function geoNpcSpokenValue(correct) {
+  const answer = currentLang === 'fr' ? currentGeoQ.answerFr : currentGeoQ.answerEn;
+  if (correct) return answer;
+  const sameCat = GEOGRAPHY_QUESTIONS.filter(
+    (q) => q.category === currentGeoQ.category && q.id !== currentGeoQ.id
+  );
+  const pool = sameCat.length ? sameCat : GEOGRAPHY_QUESTIONS.filter((q) => q.id !== currentGeoQ.id);
+  const pick = pool[randInt(0, pool.length - 1)];
+  return currentLang === 'fr' ? pick.answerFr : pick.answerEn;
+}
+
+// ============================================================
+//  TURN-TAKING ENGINE
+// ============================================================
+const SESSION_LENGTH = 20;
+const ANSWER_SECONDS = 5;
+const NPC_ANSWER_MS = 1600;   // beat before an NPC resolves
+const NEXT_PAUSE_MS = 2000;   // pause (ms) after a question fully resolves before the next one
+
+// Reveal the real answer on the board once a question resolves.
+// Math: fill the "?" (e.g. "10 × 5 = 50"). Geography: add an "Answer: X" line.
+function revealAnswerOnBoard() {
+  if (isGeography()) {
+    const ans = currentLang === 'fr' ? currentGeoQ.answerFr : currentGeoQ.answerEn;
+    drawGeoBoard(currentQuestionText, t('answerLabel') + ans);
+  } else {
+    drawBoard(equationPrefix + currentAnswer, '');
+  }
+}
+
+// turn holds all per-question state.
+// floorState: 'open' (no one has the floor) | 'taken' (someone answering) | 'closed' (resolved)
+let turn = null;
+let questionIndex = 0;
+
+function clearTurnTimers() {
+  if (!turn) return;
+  turn.npcTimers.forEach((id) => clearTimeout(id));
+  turn.npcTimers = [];
+  if (turn.countdownInterval) { clearInterval(turn.countdownInterval); turn.countdownInterval = null; }
+  if (turn.npcResolveTimer) { clearTimeout(turn.npcResolveTimer); turn.npcResolveTimer = null; }
+}
+
+function newTurn() {
+  clearTurnTimers();
+  turn = {
+    floor: 'open',
+    answerer: null,       // entity id currently holding the floor
+    queue: [],            // NPC ids waiting, ordered by fire time
+    playerLockedOut: false,
+    resolved: false,
+    npcTimers: [],
+    pendingNpc: 0,        // NPC hand-timers not yet fired
+    countdownInterval: null,
+    npcResolveTimer: null,
+    countdownRemaining: ANSWER_SECONDS
+  };
+}
+
+// Schedule each NPC's raise-hand attempt. Higher skill => shorter average delay.
+function scheduleNpcHands() {
+  turn.pendingNpc = NPCS.length;
+  NPCS.forEach((npc) => {
+    // Hard 2s floor; randomized above it up to a skill-scaled ceiling.
+    // Higher skill -> lower ceiling (shorter average), but never below 2s.
+    const FLOOR_MS = 2000;
+    const ceiling = FLOOR_MS + (1 - npc.skill) * 7000; // skill 0.85 -> ~4.05s, skill 0.35 -> ~7.55s
+    const delay = FLOOR_MS + Math.random() * (ceiling - FLOOR_MS);
+    const id = setTimeout(() => npcRaiseHand(npc.id), delay);
+    turn.npcTimers.push(id);
+  });
+}
+
+function npcRaiseHand(npcId) {
+  if (!turn || turn.resolved) return;
+  turn.pendingNpc = Math.max(0, turn.pendingNpc - 1);
+  if (turn.floor === 'open') {
+    takeFloor(npcId);
+  } else {
+    // floor busy: queue if not already queued and not the current answerer
+    if (turn.answerer !== npcId && turn.queue.indexOf(npcId) === -1) {
+      turn.queue.push(npcId);
+    }
+  }
+}
+
+function takeFloor(entityId) {
+  turn.floor = 'taken';
+  turn.answerer = entityId;
+  hideFeedback();
+  refreshBoards();
+  if (entityId === 'player') {
+    beginPlayerTurn();
+  } else {
+    beginNpcTurn(entityId);
+  }
+}
+
+// ----- Player turn -----
+function beginPlayerTurn() {
+  // Keep the speak button visible/usable — the player is actively pressing it.
+  playerCueEl.classList.add('on');
+  startCountdown();
+  // recording begins immediately (mic already started on press); if fallback, show input
+  if (!speechSupported || micDenied) {
+    enableFallback();
+  }
+}
+
+function startCountdown() {
+  turn.countdownRemaining = ANSWER_SECONDS;
+  countdownEl.classList.add('on');
+  countdownEl.textContent = turn.countdownRemaining;
+  turn.countdownInterval = setInterval(() => {
+    turn.countdownRemaining -= 1;
+    countdownEl.textContent = Math.max(0, turn.countdownRemaining);
+    if (turn.countdownRemaining <= 0) {
+      stopCountdown();
+      // timeout counts as wrong for the player
+      if (isListening) { try { recognition.stop(); } catch (e) {} isListening = false; listeningEl.classList.remove('on'); }
+      resolveAnswer('player', false, true);
+    }
+  }, 1000);
+}
+function stopCountdown() {
+  countdownEl.classList.remove('on');
+  if (turn && turn.countdownInterval) { clearInterval(turn.countdownInterval); turn.countdownInterval = null; }
+}
+
+// Called when the player's speech (or fallback) produced a raw transcript.
+// Subject-aware: Math parses a number; Geography matches accepted answers.
+function onPlayerAnswer(rawText) {
+  if (!turn || turn.resolved) return;
+  if (turn.answerer !== 'player') return; // floor no longer theirs
+
+  if (isGeography()) {
+    const verdict = evaluateGeoAnswer(rawText);
+    if (verdict === 'unclear') {
+      // "didn't understand": no penalty, retry within remaining time
+      setStatus(t('statusNoUnderstand'));
+      if (speechSupported && !micDenied) btnSpeak.style.display = '';
+      else enableFallback();
+      return;
+    }
+    setStatus(t('statusYouAnswered') + rawText.trim());
+    showPlayerBubble(rawText.trim());
+    stopCountdown();
+    resolveAnswer('player', verdict === 'correct', false);
+    return;
+  }
+
+  // Math: parse a numeric guess.
+  const guess = normalizeTranscript(rawText);
+  if (guess === null) {
+    // "didn't understand": no penalty, retry within remaining time
+    setStatus(t('statusNoUnderstand'));
+    if (speechSupported && !micDenied) btnSpeak.style.display = '';
+    else enableFallback();
+    return;
+  }
+  const correct = (guess === currentAnswer);
+  setStatus(t('statusYouAnswered') + guess);
+  showPlayerBubble(guess);
+  stopCountdown();
+  resolveAnswer('player', correct, false);
+}
+
+// ----- NPC turn -----
+function beginNpcTurn(npcId) {
+  hidePlayerControls();
+  const name = entityName(npcId);
+  npcTurnTextEl.textContent = name + t('npcAnswering');
+  npcTurnEl.classList.add('on');
+  setStatus(name + t('npcAnswering'));
+  const npc = NPCS.find((n) => n.id === npcId);
+  // Decide the outcome up front so the spoken number matches the result,
+  // and show the speech bubble at the same moment as the "is answering" beat.
+  const correct = Math.random() < npc.skill;
+  showNpcBubble(npcId, npcSpokenValue(correct));
+  turn.npcResolveTimer = setTimeout(() => {
+    npcTurnEl.classList.remove('on');
+    resolveAnswer(npcId, correct, false);
+  }, NPC_ANSWER_MS);
+}
+
+// ----- Resolution -----
+function resolveAnswer(entityId, correct, isTimeout) {
+  if (!turn || turn.resolved) return;
+  const name = entityName(entityId);
+
+  if (correct) {
+    const evt = applyResult(entityId, correct);
+    refreshBoards();
+    let msg = entityId === 'player'
+      ? t('correct')[randInt(0, t('correct').length - 1)]
+      : name + t('npcCorrect');
+    if (evt.trophy) msg = name + t('trophyEarned');
+    else if (evt.bonus) msg = msg + '  ' + t('bonusStreak');
+    playSfx(true);
+    showFeedback(true, msg);
+    finishQuestion();
+    return;
+  }
+
+  // Wrong or timeout
+  applyResult(entityId, false);
+  playSfx(false);
+  refreshBoards();
+  if (entityId === 'player') {
+    turn.playerLockedOut = true;
+    showFeedback(false, t('lockedOut'));
+  } else {
+    showFeedback(false, name + t('npcWrong'));
+  }
+
+  // Floor frees up — pass to next queued hand if any.
+  turn.floor = 'open';
+  turn.answerer = null;
+  refreshBoards();
+
+  setTimeout(() => {
+    if (!turn || turn.resolved) return;
+    hideFeedback();
+    // A pending NPC may have already grabbed the reopened floor in the meantime.
+    if (turn.floor === 'taken') return;
+    if (turn.queue.length > 0) {
+      const nextId = turn.queue.shift();
+      takeFloor(nextId);
+    } else {
+      // no one waiting: reopen floor. Player may answer if not locked out.
+      if (!turn.playerLockedOut) showPlayerControls();
+      setStatus(t('statusReadBoard'));
+      // If nobody ever answers and player is locked out, the teacher will reveal
+      // once all NPC timers have fired and queue stays empty — handled by a watchdog.
+      maybeRevealIfStuck();
+    }
+  }, 900);
+}
+
+// If the player is locked out and no NPCs remain to answer, reveal & advance.
+function maybeRevealIfStuck() {
+  if (!turn || turn.resolved) return;
+  if (!turn.playerLockedOut) return; // player can still answer, don't force
+  if (turn.queue.length === 0 && turn.pendingNpc === 0 && turn.floor === 'open') {
+    revealAndAdvance();
+  }
+}
+
+function revealAndAdvance() {
+  if (!turn || turn.resolved) return;
+  clearTurnTimers();
+  const ans = isGeography()
+    ? (currentLang === 'fr' ? currentGeoQ.answerFr : currentGeoQ.answerEn)
+    : currentAnswer;
+  showFeedback(false, t('teacherReveals') + ans);
+  finishQuestion(); // reveals the answer inline on the board
+}
+
+function finishQuestion() {
+  if (!turn) return;
+  turn.resolved = true;
+  clearTurnTimers();
+  hidePlayerControls();
+  npcTurnEl.classList.remove('on');
+  playerCueEl.classList.remove('on');
+  stopCountdown();
+  // Reveal the real answer inline on the board (e.g. "10 × 5 = 50") and keep it
+  // visible — along with any speech bubbles — through the 2s pause.
+  revealAnswerOnBoard();
+  setTimeout(() => {
+    hideFeedback();
+    clearBubbles();
+    if (questionIndex >= SESSION_LENGTH) {
+      showSummary();
+    } else {
+      nextQuestion();
+    }
+  }, NEXT_PAUSE_MS);
+}
+
+// ----- Player controls visibility -----
+function hidePlayerControls() {
+  btnSpeak.style.display = 'none';
+  btnSpeak.classList.remove('holding');
+  fallbackEl.classList.remove('on');
+}
+function showPlayerControls() {
+  if (turn && turn.playerLockedOut) return;
+  if (speechSupported && !micDenied) {
+    btnSpeak.style.display = '';
+    btnSpeak.disabled = false;
+  } else {
+    enableFallback();
+  }
+}
+
+// ============================================================
+//  QUESTION / SESSION FLOW
+// ============================================================
+function nextQuestion() {
+  questionIndex += 1;
+  generateQuestion();
+  hideFeedback();
+  fallbackInput.value = '';
+  newTurn();
+  refreshBoards();
+  showPlayerControls();
+  updateQuestionCounter();
+  setStatus(t('statusReadBoard'));
+  scheduleNpcHands();
+}
+
+// Idle classroom: scene visible, no question, no timers — waiting on "Start Class".
+function enterIdleState() {
+  turn = null;
+  questionIndex = 0;
+  clearBubbles();
+  hideFeedback();
+  hidePlayerControls();
+  npcTurnEl.classList.remove('on');
+  playerCueEl.classList.remove('on');
+  stopCountdown();
+  currentQuestionText = null;
+  hideQuestionCounter();
+  drawBoard(t('boardWelcome1'), t('boardWelcome2'));
+  refreshBoards();
+  setStatus(t('classReady'));
+  startClassWrapEl.classList.add('on');
+}
+
+function startSession() {
+  startClassWrapEl.classList.remove('on');
+  questionIndex = 0;
+  nextQuestion();
+}
+btnStartClass.addEventListener('click', startSession);
+
+function summaryRows(metric) {
+  return allEntityIds()
+    .map((id) => ({ id, s: scores[id] || defaultScore() }))
+    .sort((a, b) => b.s[metric] - a.s[metric])
+    .map((r) => {
+      const isPlayer = r.id === 'player';
+      const val = metric === 'trophyCount' ? ('🏆 × ' + r.s.trophyCount) : r.s.points;
+      return '<div class="sb-row' + (isPlayer ? ' is-player' : '') + '">' +
+        '<span class="sb-name">' + escapeHtml(entityName(r.id)) +
+        (isPlayer ? ' ' + t('youTag') : '') + '</span>' +
+        '<span class="sb-val">' + val + '</span></div>';
+    }).join('');
+}
+
+function showSummary() {
+  turn = null;
+  hidePlayerControls();
+  hideQuestionCounter();
+  el('summaryScoreList').innerHTML = summaryRows('points');
+  el('summaryTrophyList').innerHTML = summaryRows('trophyCount');
+  summaryEl.classList.add('on');
+}
+
+// ---------- Button wiring ----------
+// Hold-to-answer: attempt to grab the floor on press; race against NPCs.
+function pressStart(e) {
+  e.preventDefault();
+  if (btnSpeak.disabled) return;
+  if (!turn || turn.resolved) return;
+  if (turn.playerLockedOut) { setStatus(t('lockedOut')); return; }
+
+  if (turn.answerer === 'player') {
+    // Player already holds the floor (retry after "didn't understand") — keep listening.
+    btnSpeak.classList.add('holding');
+    startListening();
+    return;
+  }
+  if (turn.floor !== 'open') {
+    // Floor already taken or queued — reject, no penalty.
+    const who = turn.answerer ? entityName(turn.answerer) : null;
+    setStatus(who ? (who + t('handAlreadyRaised')) : t('floorBusy'));
+    return;
+  }
+  // Player grabs the floor.
+  btnSpeak.classList.add('holding');
+  takeFloor('player');
+  startListening();
+}
+function pressEnd(e) {
+  e.preventDefault();
+  if (!btnSpeak.classList.contains('holding')) return;
+  btnSpeak.classList.remove('holding');
+  stopListeningAndCheck();
+}
+btnSpeak.addEventListener('pointerdown', pressStart);
+btnSpeak.addEventListener('pointerup', pressEnd);
+btnSpeak.addEventListener('pointercancel', pressEnd);
+btnSpeak.addEventListener('pointerleave', (e) => { if (btnSpeak.classList.contains('holding')) pressEnd(e); });
+
+// Fallback text submit routes through the same player-answer path.
+function submitFallback() {
+  if (!turn || turn.resolved || turn.playerLockedOut) return;
+  if (turn.floor === 'open') { takeFloor('player'); }
+  else if (turn.answerer !== 'player') {
+    const who = turn.answerer ? entityName(turn.answerer) : null;
+    setStatus(who ? (who + t('handAlreadyRaised')) : t('floorBusy'));
+    return;
+  }
+  onPlayerAnswer(fallbackInput.value);
+}
+fallbackSubmit.addEventListener('click', submitFallback);
+fallbackInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitFallback(); });
+
+el('btnNewSession').addEventListener('click', () => {
+  summaryEl.classList.remove('on');
+  gameUiEl.classList.add('hidden');
+  gameStarted = false;
+  menuEl.style.display = 'flex';
+  menuEl.classList.remove('fade-out');
+});
+
+// ============================================================
+//  NAME ENTRY
+// ============================================================
+function showNameEntry(isEdit) {
+  nameInput.value = getPlayerName();
+  nameEntryEl.style.display = 'flex';
+  nameEntryEl.dataset.edit = isEdit ? '1' : '';
+  setTimeout(() => nameInput.focus(), 100);
+}
+function commitName() {
+  const val = nameInput.value.trim().slice(0, 16);
+  if (!val) { nameInput.focus(); return; }
+  setPlayerName(val);
+  const wasEdit = nameEntryEl.dataset.edit === '1';
+  nameEntryEl.style.display = 'none';
+  el('playerCueWho').textContent = getPlayerName() || t('playerWho');
+  el('menuEditName').textContent = t('editNameLabel') + (getPlayerName() || t('playerWho'));
+  if (wasEdit) {
+    if (scoreBoard3D && trophyBoard3D && NPCS.length) refreshBoards();
+  } else {
+    menuEl.style.display = 'flex';
+  }
+}
+function openNameEdit() { showNameEntry(true); }
+el('nameContinue').addEventListener('click', commitName);
+nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') commitName(); });
+el('menuEditName').addEventListener('click', openNameEdit);
+
+// ---------- About / How to Play modal ----------
+function openAbout() { aboutModalEl.classList.add('on'); }
+function closeAbout() { aboutModalEl.classList.remove('on'); }
+el('menuAbout').addEventListener('click', openAbout);
+el('aboutClose').addEventListener('click', closeAbout);
+// Click outside the panel dismisses it.
+aboutModalEl.addEventListener('click', (e) => { if (e.target === aboutModalEl) closeAbout(); });
+
+// ---------- Return to classes (only available in the idle pre-session state) ----------
+btnReturnMenu.addEventListener('click', () => {
+  gameUiEl.classList.add('hidden');
+  startClassWrapEl.classList.remove('on');
+  gameStarted = false;
+  menuEl.style.display = 'flex';
+});
+
+// ============================================================
+//  START-UP
+// ============================================================
+function startSubject(id) {
+  if (id !== 'math' && id !== 'geographie') return;
+  currentSubject = id;
+  loadScores(id);
+  if (id === 'geographie') geoDeck = loadGeoDeck();
+  // Fallback keyboard hint: numeric for math, text for geography.
+  fallbackInput.inputMode = (id === 'geographie') ? 'text' : 'numeric';
+  menuEl.classList.add('fade-out');
+  setTimeout(() => { menuEl.style.display = 'none'; menuEl.classList.remove('fade-out'); }, 500);
+  gameUiEl.classList.remove('hidden');
+  gameStarted = true;
+  setupRecognition();
+  enterIdleState();
+}
+
+function boot() {
+  wireLangToggles();
+  NPCS = loadOrCreateNPCs();
+  applyLanguage();
+  checkOrientation();
+  try {
+    initScene();
+  } catch (err) {
+    loadingEl.innerHTML = '<div>' + err.message + '</div>';
+    return;
+  }
+  // Hide loader, then show name entry (or skip straight to menu if name known).
+  setTimeout(() => {
+    loadingEl.classList.add('fade-out');
+    if (getPlayerName()) menuEl.style.display = 'flex';
+    else showNameEntry(false);
+  }, 400);
+}
+
+// Wait for Three.js to be available
+if (window.THREE) {
+  boot();
+} else {
+  window.addEventListener('load', () => {
+    if (window.THREE) boot();
+    else loadingEl.innerHTML = '<div>Erreur : Three.js n\'a pas pu être chargé.<br>Vérifie ta connexion Internet.</div>';
+  });
+}
+</script>
+</body>
+</html>
