@@ -231,7 +231,6 @@
     .hud-bottom { gap: 8px; padding-top: 8px; }
     .btn { min-height: 48px; padding: 12px 24px; font-size: clamp(15px, 2.4vw, 20px); }
     #startClassWrap .btn { min-height: 54px; padding: 14px 30px; font-size: clamp(17px, 3vw, 24px); }
-    #startClassWrap { padding-top: 2vh; align-items: center; }
     .status-line { padding: 6px 14px; }
   }
   /* Very short viewports: tighten further. */
@@ -297,9 +296,14 @@
   #questionCounter.on { display: block; }
 
   /* Start Class (idle) */
+  /* Anchored by JS (positionStartClass) to the projected whiteboard, like the
+     question counter — so it stays attached to the board on any aspect ratio.
+     left/top are set at runtime; transform centers it on the anchor point. */
   #startClassWrap {
-    position: absolute; inset: 0; display: none; align-items: flex-start; justify-content: center;
-    padding-top: 4vh; z-index: 19; pointer-events: none;
+    position: absolute; top: -9999px; left: -9999px;
+    transform: translate(-50%, -50%);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 19; pointer-events: none;
   }
   #startClassWrap.on { display: flex; }
   #startClassWrap .btn { pointer-events: auto; font-size: clamp(20px, 3.4vw, 30px); padding: 20px 44px; min-height: 68px; }
@@ -1387,6 +1391,9 @@ function animate() {
 }
 
 function resize() {
+  // Refresh the viewport unit first so any dvh/--vh-driven layout and the values
+  // read below are computed against the same, current height (never stale).
+  updateViewportUnit();
   const w = window.innerWidth, h = window.innerHeight;
   renderer.setSize(w, h, false);
   const aspect = w / h;
@@ -1403,6 +1410,7 @@ function resize() {
   camera.updateProjectionMatrix();
   repositionBubbles();
   positionQuestionCounter();
+  positionStartClass();
 }
 
 // Project a world point to screen pixels.
@@ -1431,6 +1439,17 @@ function updateQuestionCounter() {
   positionQuestionCounter();
 }
 function hideQuestionCounter() { questionCounterEl.classList.remove('on'); }
+
+// Anchor the idle "Start Class" / "Back to Classes" button group over the
+// whiteboard's centre (projected to screen), so it stays attached to the board
+// on any aspect ratio — recalculated on every resize like the question counter.
+function positionStartClass() {
+  if (!startClassWrapEl || !whiteboardMesh || !camera) return;
+  if (!startClassWrapEl.classList.contains('on')) return; // only when visible
+  const p = worldToScreen(whiteboardMesh.position.x, whiteboardMesh.position.y, whiteboardMesh.position.z);
+  startClassWrapEl.style.left = p.x + 'px';
+  startClassWrapEl.style.top = p.y + 'px';
+}
 
 // ============================================================
 //  ORIENTATION / RESPONSIVE
@@ -2603,6 +2622,11 @@ function startSubject(id) {
   gameStarted = true;
   setupRecognition();
   enterIdleState();
+  // Recalculate sizing/anchoring against the now-visible, settled classroom layout
+  // (the menu was still showing when the scene was first sized). Run again next
+  // frame so it's correct after the browser has laid the game UI out.
+  if (renderer) resize();
+  requestAnimationFrame(() => { if (renderer) resize(); });
 }
 
 function boot() {
