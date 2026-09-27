@@ -2,12 +2,19 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>Classe 3D - Apprendre en s'amusant</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: #eaf4ff; }
-  #app { position: fixed; inset: 0; }
+  :root { --vh: 1vh; }
+  html, body {
+    width: 100%; height: 100%; height: calc(var(--vh) * 100); height: 100dvh;
+    overflow: hidden; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: #eaf4ff;
+    -webkit-text-size-adjust: 100%;
+  }
+  /* Full-viewport app container: robust height on mobile browsers where the
+     URL/tool bars change the visible area (uses dvh with a JS --vh fallback). */
+  #app { position: fixed; inset: 0; height: calc(var(--vh) * 100); height: 100dvh; }
 
   /* ---------- 3D canvas ---------- */
   #scene { position: absolute; inset: 0; display: block; }
@@ -16,7 +23,10 @@
   .overlay {
     position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center; text-align: center;
-    padding: 4vmin; z-index: 20;
+    padding: 4vmin;
+    padding-top: max(4vmin, env(safe-area-inset-top));
+    padding-bottom: max(4vmin, env(safe-area-inset-bottom));
+    z-index: 20;
   }
 
   /* ---------- Subject selection ---------- */
@@ -61,7 +71,9 @@
 
   /* About button (bottom-left corner of the menu) */
   #menuAbout {
-    position: absolute; bottom: 18px; left: 18px; z-index: 22;
+    position: absolute; z-index: 22;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    left: max(18px, env(safe-area-inset-left));
     background: rgba(255,255,255,0.9); color: #4f6bd0; border: none;
     border-radius: 999px; cursor: pointer; font-family: inherit; font-weight: 700;
     font-size: clamp(13px, 1.8vw, 16px); padding: 10px 18px; min-height: 44px;
@@ -112,13 +124,18 @@
     position: absolute; left: 0; right: 0; bottom: 0;
     display: flex; flex-direction: column; align-items: center; gap: 12px;
     padding: 18px clamp(12px, 3vw, 32px) clamp(18px, 4vh, 34px);
+    padding-bottom: max(clamp(18px, 4vh, 34px), env(safe-area-inset-bottom));
+    padding-left: max(clamp(12px, 3vw, 32px), env(safe-area-inset-left));
+    padding-right: max(clamp(12px, 3vw, 32px), env(safe-area-inset-right));
+    max-height: 100%; overflow: hidden;
     pointer-events: none;
   }
   .btn {
     pointer-events: auto; border: none; border-radius: 16px; cursor: pointer;
     font-family: inherit; font-weight: 700; color: #fff;
     font-size: clamp(16px, 2.6vw, 22px);
-    padding: 16px 30px; min-height: 56px; min-width: 200px;
+    padding: 16px 30px; min-height: 56px; min-width: min(200px, 70vw);
+    max-width: 92vw;
     box-shadow: 0 8px 18px rgba(0,0,0,0.22);
     transition: transform 0.12s ease, filter 0.12s ease;
     touch-action: manipulation; user-select: none;
@@ -176,13 +193,15 @@
 
   /* Player raised-hand avatar cue */
   #player-cue {
-    position: absolute; bottom: 18px; left: 18px; pointer-events: none;
+    position: absolute; pointer-events: none;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    left: max(18px, env(safe-area-inset-left));
     display: none; align-items: flex-end; gap: 8px;
     background: rgba(255,255,255,0.92); border-radius: 18px; padding: 10px 16px;
     box-shadow: 0 6px 16px rgba(0,0,0,0.18);
   }
   #player-cue.on { display: flex; }
-  #player-cue .who { font-weight: 700; color: #33406b; font-size: 14px; }
+  #player-cue .who { font-weight: 700; color: #33406b; font-size: clamp(13px, 1.6vw, 15px); }
   .hand-emoji { font-size: 30px; display: inline-block; transform-origin: bottom center; animation: wave 0.9s infinite ease-in-out; }
   @keyframes wave { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(12deg); } }
 
@@ -205,20 +224,38 @@
   .fade-out { animation: fadeOut 0.5s forwards; }
   @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
+  /* ---------- Short / landscape-tablet viewports ---------- */
+  /* On shorter viewports (many landscape tablets, once browser chrome is
+     subtracted) compact the bottom HUD so buttons + status never overflow. */
+  @media (max-height: 640px) {
+    .hud-bottom { gap: 8px; padding-top: 8px; }
+    .btn { min-height: 48px; padding: 12px 24px; font-size: clamp(15px, 2.4vw, 20px); }
+    #startClassWrap .btn { min-height: 54px; padding: 14px 30px; font-size: clamp(17px, 3vw, 24px); }
+    #startClassWrap { padding-top: 2vh; align-items: center; }
+    .status-line { padding: 6px 14px; }
+  }
+  /* Very short viewports: tighten further. */
+  @media (max-height: 480px) {
+    .hud-bottom { gap: 6px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+    .btn { min-height: 44px; padding: 10px 20px; }
+  }
+
   /* ---------- Language toggle ---------- */
   .lang-toggle {
-    position: absolute; top: 14px; right: 14px; z-index: 30;
+    position: absolute; z-index: 30;
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
     display: flex; background: rgba(255,255,255,0.92); border-radius: 999px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.18); overflow: hidden; pointer-events: auto;
   }
   .lang-toggle button {
     border: none; background: transparent; cursor: pointer; font-family: inherit;
-    font-weight: 800; font-size: 15px; color: #6a76a8; padding: 10px 16px;
+    font-weight: 800; font-size: clamp(14px, 1.8vw, 16px); color: #6a76a8; padding: 10px 16px;
     min-width: 52px; min-height: 44px; transition: background 0.15s ease, color 0.15s ease;
     touch-action: manipulation;
   }
   .lang-toggle button.active { background: linear-gradient(160deg, #4f9dff, #3a6fe0); color: #fff; }
-  #menu .lang-toggle { top: 16px; right: 16px; }
+  #menu .lang-toggle { top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); }
 
   /* ---------- Name entry ---------- */
   #nameEntry {
@@ -850,6 +887,13 @@ function wireLangToggles() {
 let renderer, scene, camera;
 let whiteboardCanvas, whiteboardCtx, whiteboardTexture;
 let whiteboardMesh, whiteboardFrameMesh, whiteboardSize = { w: 8, h: 4 };
+// Camera framing: vertical FOV designed for a wide desktop; on narrower (tablet)
+// aspects we widen the FOV so the whole front wall (whiteboard + side boards) stays
+// visible. Tuned so the desktop baseline (~1.78 aspect) is unchanged.
+const CAMERA_BASE_FOV = 55;      // vertical FOV at/above the reference aspect
+const CAMERA_REF_ASPECT = 1.7;   // aspect at which base FOV frames the scene well
+const CAMERA_TARGET_HALF_W = 8.0; // world half-width to keep on-screen at board depth
+const CAMERA_FIT_DEPTH = 15.0;   // distance from camera to the front wall (~7.5 - (-7.6))
 let teacher, students = [];
 let clock;
 
@@ -1345,7 +1389,17 @@ function animate() {
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
   renderer.setSize(w, h, false);
-  camera.aspect = w / h;
+  const aspect = w / h;
+  camera.aspect = aspect;
+
+  // Vertical FOV needed so the required HORIZONTAL half-width stays visible at the
+  // front-wall depth. On wide (desktop) aspects this equals the base FOV; on
+  // narrower (tablet/portrait-ish) aspects it widens so the boards don't get cropped.
+  const wantHalfAngle = Math.atan(CAMERA_TARGET_HALF_W / CAMERA_FIT_DEPTH); // desired horizontal half-FOV
+  const neededVFov = 2 * Math.atan(Math.tan(wantHalfAngle) / Math.max(aspect, 0.0001)) * 180 / Math.PI;
+  // Never go below the base FOV (keeps desktop framing identical), and cap to avoid extremes.
+  camera.fov = Math.min(90, Math.max(CAMERA_BASE_FOV, neededVFov));
+
   camera.updateProjectionMatrix();
   repositionBubbles();
   positionQuestionCounter();
@@ -1382,23 +1436,44 @@ function hideQuestionCounter() { questionCounterEl.classList.remove('on'); }
 //  ORIENTATION / RESPONSIVE
 // ============================================================
 function checkOrientation() {
-  // On small (tablet/phone) screens in portrait, prompt to rotate.
+  // Prompt to rotate only when actually in portrait on a touch-sized screen.
+  // Gate on orientation (not an arbitrary large min-dimension) so all landscape
+  // tablets pass through. Desktops (large screens) are never gated.
   const isPortrait = window.innerHeight > window.innerWidth;
-  const smallish = Math.min(window.innerWidth, window.innerHeight) < 900;
-  if (isPortrait && smallish) {
+  const touchSized = Math.min(window.innerWidth, window.innerHeight) < 600
+    || window.matchMedia('(pointer: coarse)').matches;
+  if (isPortrait && touchSized) {
     rotateEl.style.display = 'flex';
   } else {
     rotateEl.style.display = 'none';
   }
 }
 
-window.addEventListener('resize', () => {
+// Update the --vh custom property to the real visible viewport height (mobile
+// browser chrome changes window.innerHeight; this keeps full-height layouts correct).
+function updateViewportUnit() {
+  document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px');
+}
+
+function handleViewportChange() {
+  updateViewportUnit();
   if (renderer) resize();
   checkOrientation();
-});
+}
+
+window.addEventListener('resize', handleViewportChange);
 window.addEventListener('orientationchange', () => {
-  setTimeout(() => { if (renderer) resize(); checkOrientation(); }, 200);
+  setTimeout(handleViewportChange, 200);
 });
+// Re-check once layout settles after initial load.
+window.addEventListener('load', () => { setTimeout(handleViewportChange, 100); });
+if (window.matchMedia) {
+  const mq = window.matchMedia('(orientation: portrait)');
+  const onMq = () => { setTimeout(handleViewportChange, 50); };
+  if (mq.addEventListener) mq.addEventListener('change', onMq);
+  else if (mq.addListener) mq.addListener(onMq);
+}
+updateViewportUnit();
 
 // ============================================================
 //  QUESTION LOGIC (subject-aware)
