@@ -17,7 +17,7 @@
   #app { position: fixed; inset: 0; height: calc(var(--vh) * 100); height: 100dvh; }
 
   /* ---------- 3D canvas ---------- */
-  #scene { position: absolute; inset: 0; display: block; }
+  #scene { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 
   /* ---------- Generic overlay ---------- */
   .overlay {
@@ -169,15 +169,15 @@
   /* Feedback banner */
   #feedback {
     position: absolute; top: 12%; left: 50%; transform: translateX(-50%) scale(0.8);
-    display: none; flex-direction: column; align-items: center; gap: 8px;
-    background: rgba(255,255,255,0.97); border-radius: 24px; padding: 24px 36px;
+    display: none; flex-direction: column; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.97); border-radius: 20px; padding: 16px 26px;
     box-shadow: 0 12px 30px rgba(0,0,0,0.25); pointer-events: none;
     z-index: 18; opacity: 0; transition: opacity 0.25s ease, transform 0.25s ease;
     max-width: 88vw;
   }
   #feedback.show { display: flex; opacity: 1; transform: translateX(-50%) scale(1); }
-  #feedback .icon { font-size: clamp(50px, 12vw, 90px); line-height: 1; }
-  #feedback .msg { font-size: clamp(18px, 3vw, 28px); font-weight: 800; color: #33406b; text-align: center; }
+  #feedback .icon { font-size: clamp(38px, 9vw, 64px); line-height: 1; }
+  #feedback .msg { font-size: clamp(15px, 2.4vw, 22px); font-weight: 800; color: #33406b; text-align: center; }
   #feedback.correct .icon { color: #2f9e5f; }
   #feedback.wrong .icon { color: #e0466f; }
 
@@ -230,7 +230,7 @@
   @media (max-height: 640px) {
     .hud-bottom { gap: 8px; padding-top: 8px; }
     .btn { min-height: 48px; padding: 12px 24px; font-size: clamp(15px, 2.4vw, 20px); }
-    #startClassWrap .btn { min-height: 54px; padding: 14px 30px; font-size: clamp(17px, 3vw, 24px); }
+    #startClassWrap .btn { min-height: 48px; padding: 11px 26px; font-size: clamp(15px, 2.4vw, 20px); }
     .status-line { padding: 6px 14px; }
   }
   /* Very short viewports: tighten further. */
@@ -306,7 +306,7 @@
     z-index: 19; pointer-events: none;
   }
   #startClassWrap.on { display: flex; }
-  #startClassWrap .btn { pointer-events: auto; font-size: clamp(20px, 3.4vw, 30px); padding: 20px 44px; min-height: 68px; }
+  #startClassWrap .btn { pointer-events: auto; font-size: clamp(16px, 2.6vw, 23px); padding: 14px 32px; min-height: 54px; }
 
   /* Speech bubbles */
   .bubble {
@@ -557,7 +557,7 @@ const STRINGS = {
     statusYouAnswered: 'You answered: ',
     // board
     boardSubject: '📘 Mathematics',
-    boardWelcome1: 'Welcome!',
+    boardWelcome1: '',
     boardWelcome2: 'Get ready...',
     boardPrompt: 'What does it equal?',
     boardReveal: 'The answer was ',
@@ -626,7 +626,7 @@ const STRINGS = {
     statusMicDenied: '🎤 Micro refusé. Utilise le clavier ci-dessous.',
     statusYouAnswered: 'Tu as répondu : ',
     boardSubject: '📘 Mathématiques',
-    boardWelcome1: 'Bienvenue !',
+    boardWelcome1: '',
     boardWelcome2: 'Prépare-toi...',
     boardPrompt: 'Combien ça fait ?',
     boardReveal: 'La réponse était ',
@@ -770,8 +770,8 @@ function entityName(id) {
 const SUBJECTS = [
   { id: 'math', emoji: '🔢', enabled: true },
   { id: 'geographie', emoji: '🌍', enabled: true },
+  { id: 'sciences', emoji: '🔬', enabled: true },
   { id: 'physique', emoji: '⚛️', enabled: false },
-  { id: 'sciences', emoji: '🔬', enabled: false },
   { id: 'histoire', emoji: '📜', enabled: false },
   { id: 'langues', emoji: '💬', enabled: false },
 ];
@@ -854,8 +854,8 @@ function applyLanguage() {
 
   // Re-render the whiteboard: current question if playing, else welcome.
   if (whiteboardCtx) {
-    if (gameStarted && isGeography() && currentGeoQ) {
-      // Re-render the geography question (and revealed answer, if resolved) in the new language.
+    if (gameStarted && isWordSubject() && currentGeoQ) {
+      // Re-render the word-subject question (and revealed answer, if resolved) in the new language.
       const qText = currentLang === 'fr' ? currentGeoQ.fr : currentGeoQ.en;
       currentQuestionText = qText;
       if (turn && turn.resolved) {
@@ -1154,6 +1154,7 @@ function clipText(ctx, str, maxW) {
 // Subject label shown at the top of the whiteboard (localized, subject-aware).
 function boardSubjectLabel() {
   if (isGeography()) return '🌍 ' + t('subjects').geographie;
+  if (isScience()) return '🔬 ' + t('subjects').sciences;
   return '📘 ' + t('subjects').math;
 }
 
@@ -1499,15 +1500,20 @@ updateViewportUnit();
 // ============================================================
 let currentAnswer = null;   // math: numeric answer
 let equationPrefix = '';    // math: "a op b = "
-let currentGeoQ = null;     // geography: current question object
+let currentGeoQ = null;     // word subjects (geography/science): current question object
 
-// True when the active subject is Geography.
+// Subject predicates. Geography and Science share the same word-based path.
 function isGeography() { return currentSubject === 'geographie'; }
+function isScience() { return currentSubject === 'sciences'; }
+function isWordSubject() { return isGeography() || isScience(); }
+
+// The active word-subject's question bank.
+function wordBank() { return isScience() ? SCIENCE_QUESTIONS : GEOGRAPHY_QUESTIONS; }
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
 function generateQuestion() {
-  if (isGeography()) { generateGeographyQuestion(); return; }
+  if (isWordSubject()) { generateWordQuestion(); return; }
   generateMathQuestion();
 }
 
@@ -1541,8 +1547,8 @@ function generateMathQuestion() {
   drawBoard(text, t('boardPrompt'));
 }
 
-function generateGeographyQuestion() {
-  currentGeoQ = drawGeoQuestion();
+function generateWordQuestion() {
+  currentGeoQ = drawWordQuestion();
   const text = currentLang === 'fr' ? currentGeoQ.fr : currentGeoQ.en;
   currentQuestionText = text;
   drawGeoBoard(text, null); // no answer yet
@@ -1872,11 +1878,222 @@ const GEOGRAPHY_QUESTIONS = [
   { id:'gen29', category:'general', en:'What is the highest capital city in the world by elevation?', fr:'Quelle est la capitale la plus élevée du monde en altitude ?', answerEn:'La Paz', answerFr:'La Paz', acceptedEn:['la paz'], acceptedFr:['la paz'] },
   { id:'gen30', category:'general', en:'What is the longest river in Europe?', fr:'Quel est le plus long fleuve d\'Europe ?', answerEn:'Volga River', answerFr:'Volga', acceptedEn:['volga','volga river'], acceptedFr:['volga','la volga'] },
 ];
+
+// ============================================================
+//  SCIENCE QUESTION BANK
+// ============================================================
+const SCIENCE_QUESTIONS = [
+  { id:'body1', category:'body', en:'What is the largest organ in the human body?', fr:'Quel est le plus grand organe du corps humain ?', answerEn:'Skin', answerFr:'Peau', acceptedEn:['skin'], acceptedFr:['peau','la peau'] },
+  { id:'body2', category:'body', en:'What organ pumps blood around your body?', fr:'Quel organe pompe le sang dans votre corps ?', answerEn:'Heart', answerFr:'Cœur', acceptedEn:['heart'], acceptedFr:['coeur','cœur'] },
+  { id:'body3', category:'body', en:'How many chambers does the human heart have?', fr:'Combien de cavités le cœur humain a-t-il ?', answerEn:'4', answerFr:'4', acceptedEn:['4','four'], acceptedFr:['4','quatre'] },
+  { id:'body4', category:'body', en:'What organ do you use to breathe?', fr:'Quel organe utilisez-vous pour respirer ?', answerEn:'Lungs', answerFr:'Poumons', acceptedEn:['lungs'], acceptedFr:['poumons','les poumons'] },
+  { id:'body5', category:'body', en:'What is the largest bone in the human body?', fr:'Quel est le plus grand os du corps humain ?', answerEn:'Femur', answerFr:'Fémur', acceptedEn:['femur','thigh bone'], acceptedFr:['femur','fémur'] },
+  { id:'body6', category:'body', en:'What organ helps you think and controls your body?', fr:'Quel organe vous aide à penser et contrôle votre corps ?', answerEn:'Brain', answerFr:'Cerveau', acceptedEn:['brain'], acceptedFr:['cerveau','le cerveau'] },
+  { id:'body7', category:'body', en:'How many senses do humans typically have?', fr:'Combien de sens les humains ont-ils généralement ?', answerEn:'5', answerFr:'5', acceptedEn:['5','five'], acceptedFr:['5','cinq'] },
+  { id:'body8', category:'body', en:'How many bones are in the adult human body?', fr:'Combien d\'os y a-t-il dans le corps d\'un adulte ?', answerEn:'206', answerFr:'206', acceptedEn:['206'], acceptedFr:['206'] },
+  { id:'body9', category:'body', en:'What liquid does your heart pump around your body?', fr:'Quel liquide votre cœur fait-il circuler dans votre corps ?', answerEn:'Blood', answerFr:'Sang', acceptedEn:['blood'], acceptedFr:['sang','le sang'] },
+  { id:'body10', category:'body', en:'What organs filter waste from your blood?', fr:'Quels organes filtrent les déchets de votre sang ?', answerEn:'Kidneys', answerFr:'Reins', acceptedEn:['kidneys'], acceptedFr:['reins','les reins'] },
+  { id:'body11', category:'body', en:'What is the hard outer covering that protects your teeth called?', fr:'Comment s\'appelle la couche dure qui protège vos dents ?', answerEn:'Enamel', answerFr:'Émail', acceptedEn:['enamel'], acceptedFr:['email','émail'] },
+  { id:'body12', category:'body', en:'How many teeth does a full set of adult permanent teeth usually have?', fr:'Combien de dents une dentition adulte complète compte-t-elle généralement ?', answerEn:'32', answerFr:'32', acceptedEn:['32'], acceptedFr:['32'] },
+  { id:'body13', category:'body', en:'What gas do we breathe in that our body needs to survive?', fr:'Quel gaz respirons-nous et dont notre corps a besoin pour survivre ?', answerEn:'Oxygen', answerFr:'Oxygène', acceptedEn:['oxygen'], acceptedFr:['oxygene','oxygène'] },
+  { id:'body14', category:'body', en:'What gas do we breathe out?', fr:'Quel gaz expirons-nous ?', answerEn:'Carbon dioxide', answerFr:'Dioxyde de carbone', acceptedEn:['carbon dioxide','co2'], acceptedFr:['dioxyde de carbone','co2'] },
+  { id:'body15', category:'body', en:'What organ helps you digest food, located in your belly?', fr:'Quel organe vous aide à digérer, situé dans votre ventre ?', answerEn:'Stomach', answerFr:'Estomac', acceptedEn:['stomach'], acceptedFr:['estomac','l\'estomac'] },
+  { id:'body16', category:'body', en:'Which system in your body carries messages between your brain and the rest of your body?', fr:'Quel système de votre corps transporte les messages entre le cerveau et le reste du corps ?', answerEn:'Nervous system', answerFr:'Système nerveux', acceptedEn:['nervous system'], acceptedFr:['systeme nerveux','système nerveux'] },
+  { id:'body17', category:'body', en:'What part of your body protects your brain?', fr:'Quelle partie de votre corps protège votre cerveau ?', answerEn:'Skull', answerFr:'Crâne', acceptedEn:['skull'], acceptedFr:['crane','crâne'] },
+  { id:'body18', category:'body', en:'What is the tube that connects your mouth to your stomach called?', fr:'Comment s\'appelle le tube qui relie votre bouche à votre estomac ?', answerEn:'Esophagus', answerFr:'Œsophage', acceptedEn:['esophagus'], acceptedFr:['oesophage','œsophage'] },
+  { id:'body19', category:'body', en:'Which organ produces insulin to control blood sugar?', fr:'Quel organe produit l\'insuline pour contrôler le sucre dans le sang ?', answerEn:'Pancreas', answerFr:'Pancréas', acceptedEn:['pancreas'], acceptedFr:['pancreas','pancréas'] },
+  { id:'body20', category:'body', en:'What is the colored part of your eye called?', fr:'Comment s\'appelle la partie colorée de votre œil ?', answerEn:'Iris', answerFr:'Iris', acceptedEn:['iris'], acceptedFr:['iris'] },
+  { id:'body21', category:'body', en:'What organ do you use to hear?', fr:'Quel organe utilisez-vous pour entendre ?', answerEn:'Ears', answerFr:'Oreilles', acceptedEn:['ears'], acceptedFr:['oreilles','les oreilles'] },
+  { id:'body22', category:'body', en:'What organ do you use to smell?', fr:'Quel organe utilisez-vous pour sentir les odeurs ?', answerEn:'Nose', answerFr:'Nez', acceptedEn:['nose'], acceptedFr:['nez','le nez'] },
+  { id:'body23', category:'body', en:'What is the liquid part of blood called?', fr:'Comment s\'appelle la partie liquide du sang ?', answerEn:'Plasma', answerFr:'Plasma', acceptedEn:['plasma'], acceptedFr:['plasma'] },
+  { id:'body24', category:'body', en:'What part of your body helps you move?', fr:'Quelle partie de votre corps vous aide à bouger ?', answerEn:'Muscles', answerFr:'Muscles', acceptedEn:['muscles'], acceptedFr:['muscles','les muscles'] },
+  { id:'body25', category:'body', en:'What organ do you use to taste food?', fr:'Quel organe utilisez-vous pour goûter la nourriture ?', answerEn:'Tongue', answerFr:'Langue', acceptedEn:['tongue'], acceptedFr:['langue','la langue'] },
+  { id:'body26', category:'body', en:'What do we call the bones that protect your spinal cord, running down your back?', fr:'Comment appelle-t-on les os qui protègent la moelle épinière, le long de votre dos ?', answerEn:'Spine', answerFr:'Colonne vertébrale', acceptedEn:['spine','backbone'], acceptedFr:['colonne vertebrale','colonne vertébrale'] },
+  { id:'body27', category:'body', en:'What do we call all the bones in your body together?', fr:'Comment appelle-t-on l\'ensemble des os de votre corps ?', answerEn:'Skeleton', answerFr:'Squelette', acceptedEn:['skeleton'], acceptedFr:['squelette','le squelette'] },
+  { id:'body28', category:'body', en:'What do red blood cells carry around your body?', fr:'Que transportent les globules rouges dans votre corps ?', answerEn:'Oxygen', answerFr:'Oxygène', acceptedEn:['oxygen'], acceptedFr:['oxygene','oxygène'] },
+  { id:'body29', category:'body', en:'What do white blood cells do in your body?', fr:'Que font les globules blancs dans votre corps ?', answerEn:'Fight germs', answerFr:'Combattre les microbes', acceptedEn:['fight germs','fight infection'], acceptedFr:['combattre les microbes','combattre les infections'] },
+  { id:'body30', category:'body', en:'What liquid in your mouth helps you start digesting food?', fr:'Quel liquide dans votre bouche vous aide à commencer à digérer la nourriture ?', answerEn:'Saliva', answerFr:'Salive', acceptedEn:['saliva'], acceptedFr:['salive','la salive'] },
+  { id:'animals1', category:'animals', en:'What is the largest mammal in the world?', fr:'Quel est le plus grand mammifère du monde ?', answerEn:'Blue whale', answerFr:'Baleine bleue', acceptedEn:['blue whale'], acceptedFr:['baleine bleue'] },
+  { id:'animals2', category:'animals', en:'What is the largest land animal in the world?', fr:'Quel est le plus grand animal terrestre du monde ?', answerEn:'African elephant', answerFr:'Éléphant d\'Afrique', acceptedEn:['african elephant','elephant'], acceptedFr:['elephant d\'afrique','éléphant d\'afrique','elephant'] },
+  { id:'animals3', category:'animals', en:'What is the fastest land animal in the world?', fr:'Quel est l\'animal terrestre le plus rapide du monde ?', answerEn:'Cheetah', answerFr:'Guépard', acceptedEn:['cheetah'], acceptedFr:['guepard','guépard'] },
+  { id:'animals4', category:'animals', en:'What is the tallest animal in the world?', fr:'Quel est l\'animal le plus grand du monde ?', answerEn:'Giraffe', answerFr:'Girafe', acceptedEn:['giraffe'], acceptedFr:['girafe'] },
+  { id:'animals5', category:'animals', en:'Which bird cannot fly but is a very fast runner?', fr:'Quel oiseau ne peut pas voler mais court très vite ?', answerEn:'Ostrich', answerFr:'Autruche', acceptedEn:['ostrich'], acceptedFr:['autruche'] },
+  { id:'animals6', category:'animals', en:'Which animal is known as the King of the Jungle?', fr:'Quel animal est surnommé le roi de la jungle ?', answerEn:'Lion', answerFr:'Lion', acceptedEn:['lion'], acceptedFr:['lion'] },
+  { id:'animals7', category:'animals', en:'What do we call animals that eat only plants?', fr:'Comment appelle-t-on les animaux qui mangent uniquement des plantes ?', answerEn:'Herbivores', answerFr:'Herbivores', acceptedEn:['herbivores','herbivore'], acceptedFr:['herbivores','herbivore'] },
+  { id:'animals8', category:'animals', en:'What do we call animals that eat only meat?', fr:'Comment appelle-t-on les animaux qui mangent uniquement de la viande ?', answerEn:'Carnivores', answerFr:'Carnivores', acceptedEn:['carnivores','carnivore'], acceptedFr:['carnivores','carnivore'] },
+  { id:'animals9', category:'animals', en:'What do we call animals that eat both plants and meat?', fr:'Comment appelle-t-on les animaux qui mangent à la fois des plantes et de la viande ?', answerEn:'Omnivores', answerFr:'Omnivores', acceptedEn:['omnivores','omnivore'], acceptedFr:['omnivores','omnivore'] },
+  { id:'animals10', category:'animals', en:'What is the process called when a caterpillar becomes a butterfly?', fr:'Comment appelle-t-on le processus par lequel une chenille devient un papillon ?', answerEn:'Metamorphosis', answerFr:'Métamorphose', acceptedEn:['metamorphosis'], acceptedFr:['metamorphose','métamorphose'] },
+  { id:'animals11', category:'animals', en:'How many legs does a spider have?', fr:'Combien de pattes une araignée a-t-elle ?', answerEn:'8', answerFr:'8', acceptedEn:['8','eight'], acceptedFr:['8','huit'] },
+  { id:'animals12', category:'animals', en:'How many legs does an insect have?', fr:'Combien de pattes un insecte a-t-il ?', answerEn:'6', answerFr:'6', acceptedEn:['6','six'], acceptedFr:['6','six'] },
+  { id:'animals13', category:'animals', en:'Which sea creature has eight arms?', fr:'Quelle créature marine a huit bras ?', answerEn:'Octopus', answerFr:'Pieuvre', acceptedEn:['octopus'], acceptedFr:['pieuvre'] },
+  { id:'animals14', category:'animals', en:'What is the largest fish in the world?', fr:'Quel est le plus grand poisson du monde ?', answerEn:'Whale shark', answerFr:'Requin-baleine', acceptedEn:['whale shark'], acceptedFr:['requin-baleine','requin baleine'] },
+  { id:'animals15', category:'animals', en:'Which is the only mammal that can truly fly?', fr:'Quel est le seul mammifère capable de vraiment voler ?', answerEn:'Bat', answerFr:'Chauve-souris', acceptedEn:['bat'], acceptedFr:['chauve-souris','chauve souris'] },
+  { id:'animals16', category:'animals', en:'Which bird is known for fanning out its colorful tail feathers?', fr:'Quel oiseau est connu pour déployer ses plumes de queue colorées ?', answerEn:'Peacock', answerFr:'Paon', acceptedEn:['peacock'], acceptedFr:['paon'] },
+  { id:'animals17', category:'animals', en:'What do baby kangaroos live in on their mother?', fr:'Où vivent les bébés kangourous sur leur mère ?', answerEn:'Pouch', answerFr:'Poche', acceptedEn:['pouch'], acceptedFr:['poche','la poche'] },
+  { id:'animals18', category:'animals', en:'Which animal is known for its black and white stripes?', fr:'Quel animal est connu pour ses rayures noires et blanches ?', answerEn:'Zebra', answerFr:'Zèbre', acceptedEn:['zebra'], acceptedFr:['zebre','zèbre'] },
+  { id:'animals19', category:'animals', en:'Which reptile can change the color of its skin?', fr:'Quel reptile peut changer la couleur de sa peau ?', answerEn:'Chameleon', answerFr:'Caméléon', acceptedEn:['chameleon'], acceptedFr:['cameleon','caméléon'] },
+  { id:'animals20', category:'animals', en:'What is a baby dog called?', fr:'Comment appelle-t-on un bébé chien ?', answerEn:'Puppy', answerFr:'Chiot', acceptedEn:['puppy'], acceptedFr:['chiot'] },
+  { id:'animals21', category:'animals', en:'What is a baby cat called?', fr:'Comment appelle-t-on un bébé chat ?', answerEn:'Kitten', answerFr:'Chaton', acceptedEn:['kitten'], acceptedFr:['chaton'] },
+  { id:'animals22', category:'animals', en:'What is a baby cow called?', fr:'Comment appelle-t-on un bébé vache ?', answerEn:'Calf', answerFr:'Veau', acceptedEn:['calf'], acceptedFr:['veau'] },
+  { id:'animals23', category:'animals', en:'What is a baby sheep called?', fr:'Comment appelle-t-on un bébé mouton ?', answerEn:'Lamb', answerFr:'Agneau', acceptedEn:['lamb'], acceptedFr:['agneau'] },
+  { id:'animals24', category:'animals', en:'What is a baby frog called?', fr:'Comment appelle-t-on un bébé grenouille ?', answerEn:'Tadpole', answerFr:'Têtard', acceptedEn:['tadpole'], acceptedFr:['tetard','têtard'] },
+  { id:'animals25', category:'animals', en:'What do we call a group of lions?', fr:'Comment appelle-t-on un groupe de lions ?', answerEn:'Pride', answerFr:'Troupe', acceptedEn:['pride'], acceptedFr:['troupe'] },
+  { id:'animals26', category:'animals', en:'What do we call a group of wolves?', fr:'Comment appelle-t-on un groupe de loups ?', answerEn:'Pack', answerFr:'Meute', acceptedEn:['pack'], acceptedFr:['meute'] },
+  { id:'animals27', category:'animals', en:'What do we call a group of fish?', fr:'Comment appelle-t-on un groupe de poissons ?', answerEn:'School', answerFr:'Banc', acceptedEn:['school'], acceptedFr:['banc'] },
+  { id:'animals28', category:'animals', en:'Which animal is famous for sleeping up to 20 hours a day?', fr:'Quel animal est célèbre pour dormir jusqu\'à 20 heures par jour ?', answerEn:'Koala', answerFr:'Koala', acceptedEn:['koala'], acceptedFr:['koala'] },
+  { id:'animals29', category:'animals', en:'Which bird is known for its loud hoot at night?', fr:'Quel oiseau est connu pour son cri fort la nuit ?', answerEn:'Owl', answerFr:'Hibou', acceptedEn:['owl'], acceptedFr:['hibou','chouette'] },
+  { id:'animals30', category:'animals', en:'Which sea mammal is known for its intelligence and use of echolocation?', fr:'Quel mammifère marin est connu pour son intelligence et son écholocation ?', answerEn:'Dolphin', answerFr:'Dauphin', acceptedEn:['dolphin'], acceptedFr:['dauphin'] },
+  { id:'animals31', category:'animals', en:'Which insect makes honey?', fr:'Quel insecte fabrique du miel ?', answerEn:'Bee', answerFr:'Abeille', acceptedEn:['bee'], acceptedFr:['abeille'] },
+  { id:'animals32', category:'animals', en:'Which animal is known for building dams in rivers?', fr:'Quel animal est connu pour construire des barrages dans les rivières ?', answerEn:'Beaver', answerFr:'Castor', acceptedEn:['beaver'], acceptedFr:['castor'] },
+  { id:'animals33', category:'animals', en:'Which is the slowest mammal in the world?', fr:'Quel est le mammifère le plus lent du monde ?', answerEn:'Sloth', answerFr:'Paresseux', acceptedEn:['sloth'], acceptedFr:['paresseux'] },
+  { id:'animals34', category:'animals', en:'How many hearts does an octopus have?', fr:'Combien de cœurs une pieuvre a-t-elle ?', answerEn:'3', answerFr:'3', acceptedEn:['3','three'], acceptedFr:['3','trois'] },
+  { id:'animals35', category:'animals', en:'Which is the largest reptile in the world?', fr:'Quel est le plus grand reptile du monde ?', answerEn:'Saltwater crocodile', answerFr:'Crocodile marin', acceptedEn:['saltwater crocodile','crocodile'], acceptedFr:['crocodile marin','crocodile'] },
+  { id:'plants1', category:'plants', en:'What is the process called where plants make their own food using sunlight?', fr:'Comment appelle-t-on le processus par lequel les plantes fabriquent leur nourriture grâce au soleil ?', answerEn:'Photosynthesis', answerFr:'Photosynthèse', acceptedEn:['photosynthesis'], acceptedFr:['photosynthese','photosynthèse'] },
+  { id:'plants2', category:'plants', en:'What gas do plants absorb from the air during photosynthesis?', fr:'Quel gaz les plantes absorbent-elles de l\'air pendant la photosynthèse ?', answerEn:'Carbon dioxide', answerFr:'Dioxyde de carbone', acceptedEn:['carbon dioxide','co2'], acceptedFr:['dioxyde de carbone','co2'] },
+  { id:'plants3', category:'plants', en:'What gas do plants release during photosynthesis?', fr:'Quel gaz les plantes libèrent-elles pendant la photosynthèse ?', answerEn:'Oxygen', answerFr:'Oxygène', acceptedEn:['oxygen'], acceptedFr:['oxygene','oxygène'] },
+  { id:'plants4', category:'plants', en:'What part of the plant absorbs water from the soil?', fr:'Quelle partie de la plante absorbe l\'eau du sol ?', answerEn:'Roots', answerFr:'Racines', acceptedEn:['roots'], acceptedFr:['racines','les racines'] },
+  { id:'plants5', category:'plants', en:'What part of the plant makes food using sunlight?', fr:'Quelle partie de la plante fabrique la nourriture grâce au soleil ?', answerEn:'Leaves', answerFr:'Feuilles', acceptedEn:['leaves'], acceptedFr:['feuilles','les feuilles'] },
+  { id:'plants6', category:'plants', en:'What is the green substance in leaves that helps capture sunlight called?', fr:'Comment s\'appelle la substance verte des feuilles qui capte la lumière du soleil ?', answerEn:'Chlorophyll', answerFr:'Chlorophylle', acceptedEn:['chlorophyll'], acceptedFr:['chlorophylle'] },
+  { id:'plants7', category:'plants', en:'What part of the plant supports it and carries water up to the leaves?', fr:'Quelle partie de la plante la soutient et transporte l\'eau jusqu\'aux feuilles ?', answerEn:'Stem', answerFr:'Tige', acceptedEn:['stem'], acceptedFr:['tige','la tige'] },
+  { id:'plants8', category:'plants', en:'What do bees carry from flower to flower to help plants reproduce?', fr:'Que transportent les abeilles de fleur en fleur pour aider les plantes à se reproduire ?', answerEn:'Pollen', answerFr:'Pollen', acceptedEn:['pollen'], acceptedFr:['pollen'] },
+  { id:'plants9', category:'plants', en:'What is the fertilized part of a flower that can grow into a new plant called?', fr:'Comment appelle-t-on la partie fécondée d\'une fleur qui peut donner une nouvelle plante ?', answerEn:'Seed', answerFr:'Graine', acceptedEn:['seed'], acceptedFr:['graine'] },
+  { id:'plants10', category:'plants', en:'What is the tallest type of tree in the world?', fr:'Quel est le type d\'arbre le plus haut du monde ?', answerEn:'Redwood', answerFr:'Séquoia', acceptedEn:['redwood','sequoia'], acceptedFr:['sequoia','séquoia'] },
+  { id:'plants11', category:'plants', en:'Which plant is famous for catching and eating insects?', fr:'Quelle plante est célèbre pour attraper et manger des insectes ?', answerEn:'Venus flytrap', answerFr:'Dionée attrape-mouche', acceptedEn:['venus flytrap'], acceptedFr:['dionee','dionée','attrape-mouche'] },
+  { id:'plants12', category:'plants', en:'What do we call plants that live for only one year?', fr:'Comment appelle-t-on les plantes qui ne vivent qu\'une seule année ?', answerEn:'Annuals', answerFr:'Plantes annuelles', acceptedEn:['annuals','annual plants'], acceptedFr:['annuelles','plantes annuelles'] },
+  { id:'plants13', category:'plants', en:'What do we call trees that lose their leaves in autumn?', fr:'Comment appelle-t-on les arbres qui perdent leurs feuilles en automne ?', answerEn:'Deciduous trees', answerFr:'Arbres à feuilles caduques', acceptedEn:['deciduous','deciduous trees'], acceptedFr:['feuilles caduques','arbres a feuilles caduques'] },
+  { id:'plants14', category:'plants', en:'What do we call trees that keep their leaves all year round?', fr:'Comment appelle-t-on les arbres qui gardent leurs feuilles toute l\'année ?', answerEn:'Evergreen trees', answerFr:'Arbres à feuilles persistantes', acceptedEn:['evergreen','evergreen trees'], acceptedFr:['feuilles persistantes','arbres a feuilles persistantes'] },
+  { id:'plants15', category:'plants', en:'What do we call a baby plant that has just grown from a seed?', fr:'Comment appelle-t-on une jeune plante qui vient de pousser d\'une graine ?', answerEn:'Seedling', answerFr:'Plantule', acceptedEn:['seedling'], acceptedFr:['plantule'] },
+  { id:'plants16', category:'plants', en:'Which part of a cactus is adapted to store water?', fr:'Quelle partie d\'un cactus est adaptée pour stocker de l\'eau ?', answerEn:'Stem', answerFr:'Tige', acceptedEn:['stem'], acceptedFr:['tige','la tige'] },
+  { id:'plants17', category:'plants', en:'What is the outer covering of a seed called?', fr:'Comment s\'appelle l\'enveloppe extérieure d\'une graine ?', answerEn:'Seed coat', answerFr:'Tégument', acceptedEn:['seed coat'], acceptedFr:['tegument','tégument'] },
+  { id:'plants18', category:'plants', en:'What is the process by which water moves up through a plant and evaporates from its leaves called?', fr:'Comment appelle-t-on le processus par lequel l\'eau monte dans une plante et s\'évapore par ses feuilles ?', answerEn:'Transpiration', answerFr:'Transpiration', acceptedEn:['transpiration'], acceptedFr:['transpiration'] },
+  { id:'plants19', category:'plants', en:'Which part of a plant is usually colorful and attracts insects for pollination?', fr:'Quelle partie de la plante est souvent colorée et attire les insectes pour la pollinisation ?', answerEn:'Flower', answerFr:'Fleur', acceptedEn:['flower','petals'], acceptedFr:['fleur','petales','pétales'] },
+  { id:'plants20', category:'plants', en:'What do we call plants that grow without seeds, like ferns and mosses?', fr:'Comment appelle-t-on les plantes qui poussent sans graines, comme les fougères et les mousses ?', answerEn:'Spore plants', answerFr:'Plantes à spores', acceptedEn:['spore plants','spores'], acceptedFr:['plantes a spores','spores'] },
+  { id:'space1', category:'space', en:'What is the closest star to Earth?', fr:'Quelle est l\'étoile la plus proche de la Terre ?', answerEn:'The Sun', answerFr:'Le Soleil', acceptedEn:['sun','the sun'], acceptedFr:['soleil','le soleil'] },
+  { id:'space2', category:'space', en:'How many planets are there in our solar system?', fr:'Combien de planètes y a-t-il dans notre système solaire ?', answerEn:'8', answerFr:'8', acceptedEn:['8','eight'], acceptedFr:['8','huit'] },
+  { id:'space3', category:'space', en:'Which planet is known as the Red Planet?', fr:'Quelle planète est surnommée la planète rouge ?', answerEn:'Mars', answerFr:'Mars', acceptedEn:['mars'], acceptedFr:['mars'] },
+  { id:'space4', category:'space', en:'Which is the largest planet in our solar system?', fr:'Quelle est la plus grande planète de notre système solaire ?', answerEn:'Jupiter', answerFr:'Jupiter', acceptedEn:['jupiter'], acceptedFr:['jupiter'] },
+  { id:'space5', category:'space', en:'Which is the smallest planet in our solar system?', fr:'Quelle est la plus petite planète de notre système solaire ?', answerEn:'Mercury', answerFr:'Mercure', acceptedEn:['mercury'], acceptedFr:['mercure'] },
+  { id:'space6', category:'space', en:'Which planet is closest to the Sun?', fr:'Quelle planète est la plus proche du Soleil ?', answerEn:'Mercury', answerFr:'Mercure', acceptedEn:['mercury'], acceptedFr:['mercure'] },
+  { id:'space7', category:'space', en:'Which planet is famous for its beautiful rings?', fr:'Quelle planète est célèbre pour ses magnifiques anneaux ?', answerEn:'Saturn', answerFr:'Saturne', acceptedEn:['saturn'], acceptedFr:['saturne'] },
+  { id:'space8', category:'space', en:'What is Earth\'s only natural satellite called?', fr:'Comment s\'appelle le seul satellite naturel de la Terre ?', answerEn:'The Moon', answerFr:'La Lune', acceptedEn:['moon','the moon'], acceptedFr:['lune','la lune'] },
+  { id:'space9', category:'space', en:'What do we call a huge collection of stars, gas, and dust in space?', fr:'Comment appelle-t-on un immense ensemble d\'étoiles, de gaz et de poussière dans l\'espace ?', answerEn:'Galaxy', answerFr:'Galaxie', acceptedEn:['galaxy'], acceptedFr:['galaxie'] },
+  { id:'space10', category:'space', en:'What is the name of our galaxy?', fr:'Comment s\'appelle notre galaxie ?', answerEn:'Milky Way', answerFr:'Voie lactée', acceptedEn:['milky way'], acceptedFr:['voie lactee','voie lactée'] },
+  { id:'space11', category:'space', en:'What is a shooting star actually called?', fr:'Comment appelle-t-on réellement une étoile filante ?', answerEn:'Meteor', answerFr:'Météore', acceptedEn:['meteor'], acceptedFr:['meteore','météore'] },
+  { id:'space12', category:'space', en:'What do we call a rock from space that lands on Earth?', fr:'Comment appelle-t-on une roche venue de l\'espace qui atterrit sur Terre ?', answerEn:'Meteorite', answerFr:'Météorite', acceptedEn:['meteorite'], acceptedFr:['meteorite','météorite'] },
+  { id:'space13', category:'space', en:'What do we call a large ball of ice and dust with a glowing tail that orbits the Sun?', fr:'Comment appelle-t-on une grosse boule de glace et de poussière avec une queue brillante qui orbite autour du Soleil ?', answerEn:'Comet', answerFr:'Comète', acceptedEn:['comet'], acceptedFr:['comete','comète'] },
+  { id:'space14', category:'space', en:'What force keeps planets in orbit around the Sun?', fr:'Quelle force maintient les planètes en orbite autour du Soleil ?', answerEn:'Gravity', answerFr:'Gravité', acceptedEn:['gravity'], acceptedFr:['gravite','gravité'] },
+  { id:'space15', category:'space', en:'About how long does it take Earth to orbit the Sun?', fr:'Combien de temps faut-il environ à la Terre pour faire le tour du Soleil ?', answerEn:'1 year', answerFr:'1 an', acceptedEn:['1 year','one year','365 days'], acceptedFr:['1 an','un an','365 jours'] },
+  { id:'space16', category:'space', en:'About how long does it take Earth to rotate once on its axis?', fr:'Combien de temps faut-il environ à la Terre pour faire un tour sur elle-même ?', answerEn:'1 day', answerFr:'1 jour', acceptedEn:['1 day','one day','24 hours'], acceptedFr:['1 jour','un jour','24 heures'] },
+  { id:'space17', category:'space', en:'What causes day and night on Earth?', fr:'Qu\'est-ce qui provoque le jour et la nuit sur Terre ?', answerEn:'Earth\'s rotation', answerFr:'La rotation de la Terre', acceptedEn:['earth\'s rotation','rotation'], acceptedFr:['rotation de la terre','rotation'] },
+  { id:'space18', category:'space', en:'Who was the first man to walk on the Moon?', fr:'Qui fut le premier homme à marcher sur la Lune ?', answerEn:'Neil Armstrong', answerFr:'Neil Armstrong', acceptedEn:['neil armstrong'], acceptedFr:['neil armstrong'] },
+  { id:'space19', category:'space', en:'What is the name of the United States\' space agency?', fr:'Comment s\'appelle l\'agence spatiale des États-Unis ?', answerEn:'NASA', answerFr:'NASA', acceptedEn:['nasa'], acceptedFr:['nasa'] },
+  { id:'space20', category:'space', en:'What do astronauts wear to be able to breathe in space?', fr:'Que portent les astronautes pour pouvoir respirer dans l\'espace ?', answerEn:'Spacesuit', answerFr:'Combinaison spatiale', acceptedEn:['spacesuit'], acceptedFr:['combinaison spatiale'] },
+  { id:'space21', category:'space', en:'What do we call a group of stars that forms a picture in the sky?', fr:'Comment appelle-t-on un groupe d\'étoiles qui forme un dessin dans le ciel ?', answerEn:'Constellation', answerFr:'Constellation', acceptedEn:['constellation'], acceptedFr:['constellation'] },
+  { id:'space22', category:'space', en:'Which planet is known as Earth\'s twin because of its similar size?', fr:'Quelle planète est surnommée la jumelle de la Terre à cause de sa taille similaire ?', answerEn:'Venus', answerFr:'Vénus', acceptedEn:['venus'], acceptedFr:['venus','vénus'] },
+  { id:'space23', category:'space', en:'Which is the hottest planet in our solar system?', fr:'Quelle est la planète la plus chaude de notre système solaire ?', answerEn:'Venus', answerFr:'Vénus', acceptedEn:['venus'], acceptedFr:['venus','vénus'] },
+  { id:'space24', category:'space', en:'What is the center of our solar system?', fr:'Quel est le centre de notre système solaire ?', answerEn:'The Sun', answerFr:'Le Soleil', acceptedEn:['sun','the sun'], acceptedFr:['soleil','le soleil'] },
+  { id:'space25', category:'space', en:'What do we call the path a planet takes around the Sun?', fr:'Comment appelle-t-on le chemin que suit une planète autour du Soleil ?', answerEn:'Orbit', answerFr:'Orbite', acceptedEn:['orbit'], acceptedFr:['orbite'] },
+  { id:'space26', category:'space', en:'How many moons does Earth have?', fr:'Combien de lunes la Terre a-t-elle ?', answerEn:'1', answerFr:'1', acceptedEn:['1','one'], acceptedFr:['1','une'] },
+  { id:'space27', category:'space', en:'What do we call a region of space with gravity so strong that nothing, not even light, can escape?', fr:'Comment appelle-t-on une région de l\'espace où la gravité est si forte que rien, pas même la lumière, ne peut s\'échapper ?', answerEn:'Black hole', answerFr:'Trou noir', acceptedEn:['black hole'], acceptedFr:['trou noir'] },
+  { id:'space28', category:'space', en:'What do we call the layer of gases surrounding Earth?', fr:'Comment appelle-t-on la couche de gaz qui entoure la Terre ?', answerEn:'Atmosphere', answerFr:'Atmosphère', acceptedEn:['atmosphere'], acceptedFr:['atmosphere','atmosphère'] },
+  { id:'space29', category:'space', en:'Which planet is farthest from the Sun in our solar system?', fr:'Quelle est la planète la plus éloignée du Soleil dans notre système solaire ?', answerEn:'Neptune', answerFr:'Neptune', acceptedEn:['neptune'], acceptedFr:['neptune'] },
+  { id:'space30', category:'space', en:'What do we call a scientist who studies stars, planets, and space?', fr:'Comment appelle-t-on un scientifique qui étudie les étoiles, les planètes et l\'espace ?', answerEn:'Astronomer', answerFr:'Astronome', acceptedEn:['astronomer'], acceptedFr:['astronome'] },
+  { id:'space31', category:'space', en:'What do we call it when the Moon passes between the Earth and the Sun, blocking sunlight?', fr:'Comment appelle-t-on le phénomène où la Lune passe entre la Terre et le Soleil, bloquant la lumière ?', answerEn:'Solar eclipse', answerFr:'Éclipse solaire', acceptedEn:['solar eclipse'], acceptedFr:['eclipse solaire','éclipse solaire'] },
+  { id:'space32', category:'space', en:'What do we call it when the Earth passes between the Sun and the Moon?', fr:'Comment appelle-t-on le phénomène où la Terre passe entre le Soleil et la Lune ?', answerEn:'Lunar eclipse', answerFr:'Éclipse lunaire', acceptedEn:['lunar eclipse'], acceptedFr:['eclipse lunaire','éclipse lunaire'] },
+  { id:'space33', category:'space', en:'Which two gases make up most of the Sun?', fr:'Quels deux gaz composent la majeure partie du Soleil ?', answerEn:'Hydrogen and helium', answerFr:'Hydrogène et hélium', acceptedEn:['hydrogen and helium','hydrogen','helium'], acceptedFr:['hydrogene et helium','hydrogene','helium'] },
+  { id:'space34', category:'space', en:'What do we call the imaginary line Earth spins around?', fr:'Comment appelle-t-on la ligne imaginaire autour de laquelle la Terre tourne ?', answerEn:'Axis', answerFr:'Axe', acceptedEn:['axis'], acceptedFr:['axe'] },
+  { id:'physics1', category:'physics', en:'What force pulls objects toward the Earth?', fr:'Quelle force attire les objets vers la Terre ?', answerEn:'Gravity', answerFr:'Gravité', acceptedEn:['gravity'], acceptedFr:['gravite','gravité'] },
+  { id:'physics2', category:'physics', en:'What do we call a push or a pull?', fr:'Comment appelle-t-on une poussée ou une traction ?', answerEn:'Force', answerFr:'Force', acceptedEn:['force'], acceptedFr:['force'] },
+  { id:'physics3', category:'physics', en:'What do we call the resistance that slows down moving objects when two surfaces rub together?', fr:'Comment appelle-t-on la résistance qui ralentit les objets quand deux surfaces frottent l\'une contre l\'autre ?', answerEn:'Friction', answerFr:'Frottement', acceptedEn:['friction'], acceptedFr:['frottement'] },
+  { id:'physics4', category:'physics', en:'What are the two poles of a magnet called?', fr:'Comment appelle-t-on les deux pôles d\'un aimant ?', answerEn:'North and South', answerFr:'Nord et Sud', acceptedEn:['north and south','north','south'], acceptedFr:['nord et sud','nord','sud'] },
+  { id:'physics5', category:'physics', en:'What happens when you put two magnets\' same poles together?', fr:'Que se passe-t-il quand vous rapprochez les mêmes pôles de deux aimants ?', answerEn:'They repel', answerFr:'Ils se repoussent', acceptedEn:['they repel','repel'], acceptedFr:['ils se repoussent','se repoussent'] },
+  { id:'physics6', category:'physics', en:'What happens when you put two magnets\' opposite poles together?', fr:'Que se passe-t-il quand vous rapprochez des pôles opposés de deux aimants ?', answerEn:'They attract', answerFr:'Ils s\'attirent', acceptedEn:['they attract','attract'], acceptedFr:['ils s\'attirent','s\'attirent'] },
+  { id:'physics7', category:'physics', en:'What is the fastest thing in the universe?', fr:'Quelle est la chose la plus rapide de l\'univers ?', answerEn:'Light', answerFr:'La lumière', acceptedEn:['light'], acceptedFr:['lumiere','la lumiere','lumière'] },
+  { id:'physics8', category:'physics', en:'Does light travel faster than sound?', fr:'La lumière voyage-t-elle plus vite que le son ?', answerEn:'Yes', answerFr:'Oui', acceptedEn:['yes'], acceptedFr:['oui'] },
+  { id:'physics9', category:'physics', en:'What do we call the band of colors made when white light is split, like in a rainbow?', fr:'Comment appelle-t-on la bande de couleurs formée quand la lumière blanche se décompose, comme dans un arc-en-ciel ?', answerEn:'Spectrum', answerFr:'Spectre', acceptedEn:['spectrum'], acceptedFr:['spectre'] },
+  { id:'physics10', category:'physics', en:'What are the three states of matter?', fr:'Quels sont les trois états de la matière ?', answerEn:'Solid, liquid, and gas', answerFr:'Solide, liquide et gazeux', acceptedEn:['solid liquid and gas','solid','liquid','gas'], acceptedFr:['solide liquide et gazeux','solide','liquide','gazeux'] },
+  { id:'physics11', category:'physics', en:'What do we call it when a solid turns into a liquid?', fr:'Comment appelle-t-on le phénomène où un solide devient liquide ?', answerEn:'Melting', answerFr:'Fusion', acceptedEn:['melting'], acceptedFr:['fusion'] },
+  { id:'physics12', category:'physics', en:'What do we call it when a liquid turns into a gas?', fr:'Comment appelle-t-on le phénomène où un liquide devient gazeux ?', answerEn:'Evaporation', answerFr:'Évaporation', acceptedEn:['evaporation'], acceptedFr:['evaporation','évaporation'] },
+  { id:'physics13', category:'physics', en:'What do we call it when a gas turns into a liquid?', fr:'Comment appelle-t-on le phénomène où un gaz devient liquide ?', answerEn:'Condensation', answerFr:'Condensation', acceptedEn:['condensation'], acceptedFr:['condensation'] },
+  { id:'physics14', category:'physics', en:'What do we call it when a liquid turns into a solid?', fr:'Comment appelle-t-on le phénomène où un liquide devient solide ?', answerEn:'Freezing', answerFr:'Solidification', acceptedEn:['freezing'], acceptedFr:['solidification','congelation','congélation'] },
+  { id:'physics15', category:'physics', en:'At what temperature in Celsius does water freeze?', fr:'À quelle température en Celsius l\'eau gèle-t-elle ?', answerEn:'0', answerFr:'0', acceptedEn:['0','zero'], acceptedFr:['0','zero','zéro'] },
+  { id:'physics16', category:'physics', en:'At what temperature in Celsius does water boil?', fr:'À quelle température en Celsius l\'eau bout-elle ?', answerEn:'100', answerFr:'100', acceptedEn:['100'], acceptedFr:['100'] },
+  { id:'physics17', category:'physics', en:'What do we call energy that comes from the movement of an object?', fr:'Comment appelle-t-on l\'énergie qui vient du mouvement d\'un objet ?', answerEn:'Kinetic energy', answerFr:'Énergie cinétique', acceptedEn:['kinetic energy','kinetic'], acceptedFr:['energie cinetique','énergie cinétique'] },
+  { id:'physics18', category:'physics', en:'What do we call stored energy that an object has because of its position?', fr:'Comment appelle-t-on l\'énergie stockée qu\'un objet possède à cause de sa position ?', answerEn:'Potential energy', answerFr:'Énergie potentielle', acceptedEn:['potential energy','potential'], acceptedFr:['energie potentielle','énergie potentielle'] },
+  { id:'physics19', category:'physics', en:'What simple machine uses a wheel and a rope to help lift things?', fr:'Quelle machine simple utilise une roue et une corde pour aider à soulever des objets ?', answerEn:'Pulley', answerFr:'Poulie', acceptedEn:['pulley'], acceptedFr:['poulie'] },
+  { id:'physics20', category:'physics', en:'What simple machine is a flat surface tilted at an angle, like a ramp?', fr:'Quelle machine simple est une surface plate inclinée, comme une rampe ?', answerEn:'Inclined plane', answerFr:'Plan incliné', acceptedEn:['inclined plane','ramp'], acceptedFr:['plan incline','plan incliné','rampe'] },
+  { id:'physics21', category:'physics', en:'What simple machine is a bar that pivots on a fixed point?', fr:'Quelle machine simple est une barre qui pivote sur un point fixe ?', answerEn:'Lever', answerFr:'Levier', acceptedEn:['lever'], acceptedFr:['levier'] },
+  { id:'physics22', category:'physics', en:'What do we call the fixed point a lever pivots around?', fr:'Comment appelle-t-on le point fixe autour duquel un levier pivote ?', answerEn:'Fulcrum', answerFr:'Point d\'appui', acceptedEn:['fulcrum'], acceptedFr:['point d\'appui','point d appui'] },
+  { id:'physics23', category:'physics', en:'What travels through the air as vibrations and lets us hear things?', fr:'Qu\'est-ce qui voyage dans l\'air sous forme de vibrations et nous permet d\'entendre ?', answerEn:'Sound', answerFr:'Son', acceptedEn:['sound'], acceptedFr:['son','le son'] },
+  { id:'physics24', category:'physics', en:'What do we call how high or low a sound is?', fr:'Comment appelle-t-on le caractère aigu ou grave d\'un son ?', answerEn:'Pitch', answerFr:'Hauteur', acceptedEn:['pitch'], acceptedFr:['hauteur'] },
+  { id:'physics25', category:'physics', en:'What do we call how loud or soft a sound is?', fr:'Comment appelle-t-on l\'intensité d\'un son, fort ou faible ?', answerEn:'Volume', answerFr:'Volume', acceptedEn:['volume'], acceptedFr:['volume'] },
+  { id:'physics26', category:'physics', en:'What do we call a complete path that electricity can flow through?', fr:'Comment appelle-t-on un chemin complet par lequel l\'électricité peut circuler ?', answerEn:'Circuit', answerFr:'Circuit', acceptedEn:['circuit'], acceptedFr:['circuit'] },
+  { id:'physics27', category:'physics', en:'What material allows electricity to pass through it easily?', fr:'Quel type de matériau laisse passer facilement l\'électricité ?', answerEn:'Conductor', answerFr:'Conducteur', acceptedEn:['conductor'], acceptedFr:['conducteur'] },
+  { id:'physics28', category:'physics', en:'What material does NOT allow electricity to pass through it easily?', fr:'Quel type de matériau ne laisse pas facilement passer l\'électricité ?', answerEn:'Insulator', answerFr:'Isolant', acceptedEn:['insulator'], acceptedFr:['isolant'] },
+  { id:'physics29', category:'physics', en:'Which simple machine is basically a rod wound around a cylinder?', fr:'Quelle machine simple est essentiellement une tige enroulée autour d\'un cylindre ?', answerEn:'Screw', answerFr:'Vis', acceptedEn:['screw'], acceptedFr:['vis'] },
+  { id:'physics30', category:'physics', en:'What do we call the amount of matter in an object?', fr:'Comment appelle-t-on la quantité de matière contenue dans un objet ?', answerEn:'Mass', answerFr:'Masse', acceptedEn:['mass'], acceptedFr:['masse'] },
+  { id:'physics31', category:'physics', en:'What do we call the force of gravity pulling on an object\'s mass?', fr:'Comment appelle-t-on la force de gravité qui agit sur la masse d\'un objet ?', answerEn:'Weight', answerFr:'Poids', acceptedEn:['weight'], acceptedFr:['poids'] },
+  { id:'physics32', category:'physics', en:'What instrument do we use to measure temperature?', fr:'Quel instrument utilise-t-on pour mesurer la température ?', answerEn:'Thermometer', answerFr:'Thermomètre', acceptedEn:['thermometer'], acceptedFr:['thermometre','thermomètre'] },
+  { id:'physics33', category:'physics', en:'What do we call energy stored in food, fuel, or batteries that can be released?', fr:'Comment appelle-t-on l\'énergie stockée dans la nourriture, le carburant ou les piles ?', answerEn:'Chemical energy', answerFr:'Énergie chimique', acceptedEn:['chemical energy'], acceptedFr:['energie chimique','énergie chimique'] },
+  { id:'physics34', category:'physics', en:'What natural phenomenon happens when sunlight passes through raindrops and splits into colors?', fr:'Quel phénomène naturel se produit quand la lumière du soleil traverse des gouttes de pluie et se décompose en couleurs ?', answerEn:'Rainbow', answerFr:'Arc-en-ciel', acceptedEn:['rainbow'], acceptedFr:['arc-en-ciel','arc en ciel'] },
+  { id:'physics35', category:'physics', en:'What do we call the bending of light as it passes from one material into another?', fr:'Comment appelle-t-on la déviation de la lumière quand elle passe d\'un milieu à un autre ?', answerEn:'Refraction', answerFr:'Réfraction', acceptedEn:['refraction'], acceptedFr:['refraction','réfraction'] },
+  { id:'earth1', category:'earth', en:'What is the process called when water evaporates, forms clouds, and falls as rain?', fr:'Comment appelle-t-on le processus où l\'eau s\'évapore, forme des nuages, et retombe en pluie ?', answerEn:'Water cycle', answerFr:'Cycle de l\'eau', acceptedEn:['water cycle'], acceptedFr:['cycle de l\'eau','cycle de l eau'] },
+  { id:'earth2', category:'earth', en:'What instrument measures rainfall?', fr:'Quel instrument mesure les précipitations ?', answerEn:'Rain gauge', answerFr:'Pluviomètre', acceptedEn:['rain gauge'], acceptedFr:['pluviometre','pluviomètre'] },
+  { id:'earth3', category:'earth', en:'What instrument measures wind speed?', fr:'Quel instrument mesure la vitesse du vent ?', answerEn:'Anemometer', answerFr:'Anémomètre', acceptedEn:['anemometer'], acceptedFr:['anemometre','anémomètre'] },
+  { id:'earth4', category:'earth', en:'What instrument measures atmospheric pressure?', fr:'Quel instrument mesure la pression atmosphérique ?', answerEn:'Barometer', answerFr:'Baromètre', acceptedEn:['barometer'], acceptedFr:['barometre','baromètre'] },
+  { id:'earth5', category:'earth', en:'What do we call frozen rain that falls from the sky as balls of ice?', fr:'Comment appelle-t-on la pluie gelée qui tombe du ciel sous forme de boules de glace ?', answerEn:'Hail', answerFr:'Grêle', acceptedEn:['hail'], acceptedFr:['grele','grêle'] },
+  { id:'earth6', category:'earth', en:'What do we call a violently rotating column of air that touches the ground?', fr:'Comment appelle-t-on une colonne d\'air tournant violemment qui touche le sol ?', answerEn:'Tornado', answerFr:'Tornade', acceptedEn:['tornado'], acceptedFr:['tornade'] },
+  { id:'earth7', category:'earth', en:'What do we call a powerful storm that forms over warm ocean water with strong winds and rain?', fr:'Comment appelle-t-on une tempête puissante qui se forme sur une mer chaude, avec de forts vents et de la pluie ?', answerEn:'Hurricane', answerFr:'Ouragan', acceptedEn:['hurricane'], acceptedFr:['ouragan'] },
+  { id:'earth8', category:'earth', en:'What are the three main types of rocks?', fr:'Quels sont les trois principaux types de roches ?', answerEn:'Igneous, sedimentary, and metamorphic', answerFr:'Ignées, sédimentaires et métamorphiques', acceptedEn:['igneous sedimentary and metamorphic','igneous','sedimentary','metamorphic'], acceptedFr:['igneous sedimentaires et metamorphiques','ignee','sedimentaire','metamorphique'] },
+  { id:'earth9', category:'earth', en:'What do we call rock formed from cooled melted lava or magma?', fr:'Comment appelle-t-on la roche formée par du magma ou de la lave refroidie ?', answerEn:'Igneous rock', answerFr:'Roche ignée', acceptedEn:['igneous rock','igneous'], acceptedFr:['roche ignee','roche ignée','ignee'] },
+  { id:'earth10', category:'earth', en:'What do we call rock formed from layers of sediment pressed together over time?', fr:'Comment appelle-t-on la roche formée par des couches de sédiments compressées au fil du temps ?', answerEn:'Sedimentary rock', answerFr:'Roche sédimentaire', acceptedEn:['sedimentary rock','sedimentary'], acceptedFr:['roche sedimentaire','roche sédimentaire','sedimentaire'] },
+  { id:'earth11', category:'earth', en:'What do we call rock that has been changed by heat and pressure?', fr:'Comment appelle-t-on la roche qui a été transformée par la chaleur et la pression ?', answerEn:'Metamorphic rock', answerFr:'Roche métamorphique', acceptedEn:['metamorphic rock','metamorphic'], acceptedFr:['roche metamorphique','roche métamorphique','metamorphique'] },
+  { id:'earth12', category:'earth', en:'What do we call the molten rock found inside a volcano, before it erupts?', fr:'Comment appelle-t-on la roche en fusion à l\'intérieur d\'un volcan, avant l\'éruption ?', answerEn:'Magma', answerFr:'Magma', acceptedEn:['magma'], acceptedFr:['magma'] },
+  { id:'earth13', category:'earth', en:'What do we call molten rock once it erupts from a volcano onto the surface?', fr:'Comment appelle-t-on la roche en fusion une fois qu\'elle a jailli d\'un volcan à la surface ?', answerEn:'Lava', answerFr:'Lave', acceptedEn:['lava'], acceptedFr:['lave'] },
+  { id:'earth14', category:'earth', en:'What is the outer, rocky layer of the Earth that we live on called?', fr:'Comment appelle-t-on la couche rocheuse externe de la Terre sur laquelle nous vivons ?', answerEn:'Crust', answerFr:'Croûte terrestre', acceptedEn:['crust'], acceptedFr:['croute terrestre','croûte terrestre'] },
+  { id:'earth15', category:'earth', en:'What is the very hot center of the Earth called?', fr:'Comment appelle-t-on le centre très chaud de la Terre ?', answerEn:'Core', answerFr:'Noyau', acceptedEn:['core'], acceptedFr:['noyau'] },
+  { id:'earth16', category:'earth', en:'What do we call the process of rocks slowly breaking down and moving from wind, water, or ice?', fr:'Comment appelle-t-on le processus par lequel les roches se brisent et se déplacent lentement à cause du vent, de l\'eau ou de la glace ?', answerEn:'Erosion', answerFr:'Érosion', acceptedEn:['erosion'], acceptedFr:['erosion','érosion'] },
+  { id:'earth17', category:'earth', en:'What do we call the huge moving pieces of Earth\'s crust called tectonic plates?', fr:'Comment appelle-t-on les immenses morceaux mobiles de la croûte terrestre appelés plaques tectoniques ?', answerEn:'Plate tectonics', answerFr:'Tectonique des plaques', acceptedEn:['plate tectonics','tectonic plates'], acceptedFr:['tectonique des plaques','plaques tectoniques'] },
+  { id:'earth18', category:'earth', en:'What natural disaster is caused by the sudden shaking of the Earth\'s crust?', fr:'Quelle catastrophe naturelle est causée par une secousse soudaine de la croûte terrestre ?', answerEn:'Earthquake', answerFr:'Tremblement de terre', acceptedEn:['earthquake'], acceptedFr:['tremblement de terre','seisme','séisme'] },
+  { id:'earth19', category:'earth', en:'What device measures the strength of an earthquake?', fr:'Quel appareil mesure la force d\'un tremblement de terre ?', answerEn:'Seismograph', answerFr:'Sismographe', acceptedEn:['seismograph'], acceptedFr:['sismographe'] },
+  { id:'earth20', category:'earth', en:'What do we call the preserved remains of ancient plants or animals?', fr:'Comment appelle-t-on les restes conservés de plantes ou d\'animaux anciens ?', answerEn:'Fossils', answerFr:'Fossiles', acceptedEn:['fossils','fossil'], acceptedFr:['fossiles','fossile'] },
+  { id:'earth21', category:'earth', en:'What are the four seasons?', fr:'Quelles sont les quatre saisons ?', answerEn:'Spring, summer, autumn, and winter', answerFr:'Printemps, été, automne et hiver', acceptedEn:['spring summer autumn and winter','spring','summer','autumn','winter','fall'], acceptedFr:['printemps ete automne et hiver','printemps','ete','été','automne','hiver'] },
+  { id:'earth22', category:'earth', en:'What causes the seasons to change on Earth?', fr:'Qu\'est-ce qui provoque le changement des saisons sur Terre ?', answerEn:'Earth\'s tilt', answerFr:'L\'inclinaison de la Terre', acceptedEn:['earth\'s tilt','tilt'], acceptedFr:['inclinaison de la terre','inclinaison'] },
+  { id:'earth23', category:'earth', en:'What do we call the layer of gases that protects Earth from the Sun\'s harmful rays?', fr:'Comment appelle-t-on la couche de gaz qui protège la Terre des rayons nocifs du Soleil ?', answerEn:'Ozone layer', answerFr:'Couche d\'ozone', acceptedEn:['ozone layer'], acceptedFr:['couche d\'ozone','couche d ozone'] },
+  { id:'earth24', category:'earth', en:'What do we call the effect of gases trapping heat in Earth\'s atmosphere?', fr:'Comment appelle-t-on l\'effet des gaz qui emprisonnent la chaleur dans l\'atmosphère terrestre ?', answerEn:'Greenhouse effect', answerFr:'Effet de serre', acceptedEn:['greenhouse effect'], acceptedFr:['effet de serre'] },
+  { id:'earth25', category:'earth', en:'About what percentage of Earth\'s surface is covered by water?', fr:'Quel pourcentage environ de la surface de la Terre est couvert d\'eau ?', answerEn:'71%', answerFr:'71 %', acceptedEn:['71','71%'], acceptedFr:['71','71 %'] },
+  { id:'earth26', category:'earth', en:'What do we call the frozen, solid areas at the North and South Poles?', fr:'Comment appelle-t-on les zones gelées et solides aux pôles Nord et Sud ?', answerEn:'Ice caps', answerFr:'Calottes glaciaires', acceptedEn:['ice caps','polar ice caps'], acceptedFr:['calottes glaciaires'] },
+  { id:'earth27', category:'earth', en:'What do we call a large mass of ice that moves slowly over land?', fr:'Comment appelle-t-on une grande masse de glace qui se déplace lentement sur la terre ?', answerEn:'Glacier', answerFr:'Glacier', acceptedEn:['glacier'], acceptedFr:['glacier'] },
+  { id:'earth28', category:'earth', en:'What do we call a mountain that can erupt with lava, ash, and gas?', fr:'Comment appelle-t-on une montagne qui peut entrer en éruption avec de la lave, des cendres et des gaz ?', answerEn:'Volcano', answerFr:'Volcan', acceptedEn:['volcano'], acceptedFr:['volcan'] },
+  { id:'earth29', category:'earth', en:'What natural event happens when a huge ocean wave is caused by an underwater earthquake?', fr:'Quel événement naturel se produit quand une énorme vague océanique est causée par un séisme sous-marin ?', answerEn:'Tsunami', answerFr:'Tsunami', acceptedEn:['tsunami'], acceptedFr:['tsunami'] },
+  { id:'earth30', category:'earth', en:'What do we call the layer of soil and rock just below Earth\'s crust?', fr:'Comment appelle-t-on la couche de roche située juste sous la croûte terrestre ?', answerEn:'Mantle', answerFr:'Manteau', acceptedEn:['mantle'], acceptedFr:['manteau'] },
+  { id:'matter1', category:'matter', en:'What is the smallest building block of matter called?', fr:'Comment appelle-t-on le plus petit élément constitutif de la matière ?', answerEn:'Atom', answerFr:'Atome', acceptedEn:['atom'], acceptedFr:['atome'] },
+  { id:'matter2', category:'matter', en:'What do we call a substance made of only one type of atom?', fr:'Comment appelle-t-on une substance composée d\'un seul type d\'atome ?', answerEn:'Element', answerFr:'Élément', acceptedEn:['element'], acceptedFr:['element','élément'] },
+  { id:'matter3', category:'matter', en:'What do we call two or more elements chemically combined together?', fr:'Comment appelle-t-on deux éléments ou plus combinés chimiquement ensemble ?', answerEn:'Compound', answerFr:'Composé', acceptedEn:['compound'], acceptedFr:['compose','composé'] },
+  { id:'matter4', category:'matter', en:'What is the chemical formula for water?', fr:'Quelle est la formule chimique de l\'eau ?', answerEn:'H2O', answerFr:'H2O', acceptedEn:['h2o'], acceptedFr:['h2o'] },
+  { id:'matter5', category:'matter', en:'What gas makes up about 21% of the air we breathe?', fr:'Quel gaz représente environ 21 % de l\'air que nous respirons ?', answerEn:'Oxygen', answerFr:'Oxygène', acceptedEn:['oxygen'], acceptedFr:['oxygene','oxygène'] },
+  { id:'matter6', category:'matter', en:'What gas makes up about 78% of the air we breathe, the most common gas in air?', fr:'Quel gaz représente environ 78 % de l\'air que nous respirons, le gaz le plus courant de l\'air ?', answerEn:'Nitrogen', answerFr:'Azote', acceptedEn:['nitrogen'], acceptedFr:['azote'] },
+  { id:'matter7', category:'matter', en:'What do we call mixing two substances that do not chemically combine, like sand and water?', fr:'Comment appelle-t-on le fait de mélanger deux substances qui ne se combinent pas chimiquement, comme le sable et l\'eau ?', answerEn:'Mixture', answerFr:'Mélange', acceptedEn:['mixture'], acceptedFr:['melange','mélange'] },
+  { id:'matter8', category:'matter', en:'What is the chemical name for table salt?', fr:'Quel est le nom chimique du sel de table ?', answerEn:'Sodium chloride', answerFr:'Chlorure de sodium', acceptedEn:['sodium chloride'], acceptedFr:['chlorure de sodium'] },
+  { id:'matter9', category:'matter', en:'What do we call a chart that organizes all the known chemical elements?', fr:'Comment appelle-t-on un tableau qui organise tous les éléments chimiques connus ?', answerEn:'Periodic table', answerFr:'Tableau périodique', acceptedEn:['periodic table'], acceptedFr:['tableau periodique','tableau périodique'] },
+  { id:'matter10', category:'matter', en:'What is the chemical symbol for oxygen?', fr:'Quel est le symbole chimique de l\'oxygène ?', answerEn:'O', answerFr:'O', acceptedEn:['o'], acceptedFr:['o'] },
+  { id:'matter11', category:'matter', en:'What is the chemical symbol for gold?', fr:'Quel est le symbole chimique de l\'or ?', answerEn:'Au', answerFr:'Au', acceptedEn:['au'], acceptedFr:['au'] },
+  { id:'matter12', category:'matter', en:'What forms when iron meets oxygen and water over time?', fr:'Que se forme-t-il quand le fer est exposé à l\'oxygène et à l\'eau pendant longtemps ?', answerEn:'Rust', answerFr:'Rouille', acceptedEn:['rust'], acceptedFr:['rouille'] },
+  { id:'matter13', category:'matter', en:'What do we call it when a substance burns and combines with oxygen?', fr:'Comment appelle-t-on le fait qu\'une substance brûle en se combinant avec l\'oxygène ?', answerEn:'Combustion', answerFr:'Combustion', acceptedEn:['combustion','burning'], acceptedFr:['combustion'] },
+  { id:'matter14', category:'matter', en:'What do we call two or more atoms bonded together?', fr:'Comment appelle-t-on deux atomes ou plus liés ensemble ?', answerEn:'Molecule', answerFr:'Molécule', acceptedEn:['molecule'], acceptedFr:['molecule','molécule'] },
+  { id:'matter15', category:'matter', en:'What do we call it when a solid turns directly into a gas without becoming liquid first?', fr:'Comment appelle-t-on le fait qu\'un solide se transforme directement en gaz sans passer par l\'état liquide ?', answerEn:'Sublimation', answerFr:'Sublimation', acceptedEn:['sublimation'], acceptedFr:['sublimation'] },
+  { id:'matter16', category:'matter', en:'What do we call a substance that dissolves in a liquid, like sugar in water?', fr:'Comment appelle-t-on une substance qui se dissout dans un liquide, comme le sucre dans l\'eau ?', answerEn:'Solute', answerFr:'Soluté', acceptedEn:['solute'], acceptedFr:['solute','soluté'] },
+  { id:'matter17', category:'matter', en:'What do we call the liquid that dissolves another substance, like water?', fr:'Comment appelle-t-on le liquide qui dissout une autre substance, comme l\'eau ?', answerEn:'Solvent', answerFr:'Solvant', acceptedEn:['solvent'], acceptedFr:['solvant'] },
+  { id:'matter18', category:'matter', en:'What do we call it when a solute and a solvent are fully mixed together?', fr:'Comment appelle-t-on le fait qu\'un soluté et un solvant soient entièrement mélangés ensemble ?', answerEn:'Solution', answerFr:'Solution', acceptedEn:['solution'], acceptedFr:['solution'] },
+  { id:'matter19', category:'matter', en:'What is the chemical symbol for hydrogen?', fr:'Quel est le symbole chimique de l\'hydrogène ?', answerEn:'H', answerFr:'H', acceptedEn:['h'], acceptedFr:['h'] },
+  { id:'matter20', category:'matter', en:'What is the chemical formula for carbon dioxide?', fr:'Quelle est la formule chimique du dioxyde de carbone ?', answerEn:'CO2', answerFr:'CO2', acceptedEn:['co2'], acceptedFr:['co2'] },
+];
 // ---- Shuffle-bag deck (no repeats until exhausted), persisted per subject ----
-const GEO_DECK_KEY = 'classroom.geography.deck';
+// Each word subject keeps its own deck under its own key.
+function deckKey() { return isScience() ? 'classroom.science.deck' : 'classroom.geography.deck'; }
 
 function shuffledIds() {
-  const ids = GEOGRAPHY_QUESTIONS.map((q) => q.id);
+  const ids = wordBank().map((q) => q.id);
   for (let i = ids.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [ids[i], ids[j]] = [ids[j], ids[i]];
@@ -1885,30 +2102,32 @@ function shuffledIds() {
 }
 
 function loadGeoDeck() {
-  const raw = lsGet(GEO_DECK_KEY);
+  const raw = lsGet(deckKey());
   if (raw) {
     try {
       const d = JSON.parse(raw);
       if (Array.isArray(d)) {
-        // keep only ids that still exist in the bank
-        const valid = d.filter((id) => GEOGRAPHY_QUESTIONS.some((q) => q.id === id));
+        // keep only ids that still exist in the active bank
+        const bank = wordBank();
+        const valid = d.filter((id) => bank.some((q) => q.id === id));
         if (valid.length) return valid;
       }
     } catch (e) {}
   }
   const fresh = shuffledIds();
-  lsSet(GEO_DECK_KEY, JSON.stringify(fresh));
+  lsSet(deckKey(), JSON.stringify(fresh));
   return fresh;
 }
 
 let geoDeck = [];
 
-// Draw the next question from the deck; reshuffle a fresh full copy when empty.
-function drawGeoQuestion() {
+// Draw the next question from the active subject's deck; reshuffle when empty.
+function drawWordQuestion() {
   if (!geoDeck || geoDeck.length === 0) geoDeck = shuffledIds();
   const id = geoDeck.shift();
-  lsSet(GEO_DECK_KEY, JSON.stringify(geoDeck));
-  return GEOGRAPHY_QUESTIONS.find((q) => q.id === id) || GEOGRAPHY_QUESTIONS[0];
+  lsSet(deckKey(), JSON.stringify(geoDeck));
+  const bank = wordBank();
+  return bank.find((q) => q.id === id) || bank[0];
 }
 
 // ---- Word-based answer normalization (accents, articles stripped) ----
@@ -2128,7 +2347,7 @@ function repositionBubbles() {
 // Compute what an NPC "says" for their bubble.
 // Correct -> the real answer; wrong -> a plausible incorrect guess.
 function npcSpokenValue(correct) {
-  if (isGeography()) return geoNpcSpokenValue(correct);
+  if (isWordSubject()) return geoNpcSpokenValue(correct);
   // Math: numeric answer or a nearby wrong number.
   if (correct) return currentAnswer;
   let wrong = currentAnswer;
@@ -2147,10 +2366,11 @@ function npcSpokenValue(correct) {
 function geoNpcSpokenValue(correct) {
   const answer = currentLang === 'fr' ? currentGeoQ.answerFr : currentGeoQ.answerEn;
   if (correct) return answer;
-  const sameCat = GEOGRAPHY_QUESTIONS.filter(
+  const bank = wordBank();
+  const sameCat = bank.filter(
     (q) => q.category === currentGeoQ.category && q.id !== currentGeoQ.id
   );
-  const pool = sameCat.length ? sameCat : GEOGRAPHY_QUESTIONS.filter((q) => q.id !== currentGeoQ.id);
+  const pool = sameCat.length ? sameCat : bank.filter((q) => q.id !== currentGeoQ.id);
   const pick = pool[randInt(0, pool.length - 1)];
   return currentLang === 'fr' ? pick.answerFr : pick.answerEn;
 }
@@ -2166,7 +2386,7 @@ const NEXT_PAUSE_MS = 2000;   // pause (ms) after a question fully resolves befo
 // Reveal the real answer on the board once a question resolves.
 // Math: fill the "?" (e.g. "10 × 5 = 50"). Geography: add an "Answer: X" line.
 function revealAnswerOnBoard() {
-  if (isGeography()) {
+  if (isWordSubject()) {
     const ans = currentLang === 'fr' ? currentGeoQ.answerFr : currentGeoQ.answerEn;
     drawGeoBoard(currentQuestionText, t('answerLabel') + ans);
   } else {
@@ -2207,10 +2427,11 @@ function newTurn() {
 function scheduleNpcHands() {
   turn.pendingNpc = NPCS.length;
   NPCS.forEach((npc) => {
-    // Hard 2s floor; randomized above it up to a skill-scaled ceiling.
-    // Higher skill -> lower ceiling (shorter average), but never below 2s.
-    const FLOOR_MS = 2000;
-    const ceiling = FLOOR_MS + (1 - npc.skill) * 7000; // skill 0.85 -> ~4.05s, skill 0.35 -> ~7.55s
+    // Hard floor before any NPC can raise a hand; randomized above it up to a
+    // skill-scaled ceiling. Higher skill -> lower ceiling (shorter average), but
+    // never below the floor. Science uses a 4s floor; other subjects use 2s.
+    const FLOOR_MS = isScience() ? 4000 : 2000;
+    const ceiling = FLOOR_MS + (1 - npc.skill) * 7000;
     const delay = FLOOR_MS + Math.random() * (ceiling - FLOOR_MS);
     const id = setTimeout(() => npcRaiseHand(npc.id), delay);
     turn.npcTimers.push(id);
@@ -2279,7 +2500,7 @@ function onPlayerAnswer(rawText) {
   if (!turn || turn.resolved) return;
   if (turn.answerer !== 'player') return; // floor no longer theirs
 
-  if (isGeography()) {
+  if (isWordSubject()) {
     const verdict = evaluateGeoAnswer(rawText);
     if (verdict === 'unclear') {
       // "didn't understand": no penalty, retry within remaining time
@@ -2395,7 +2616,7 @@ function maybeRevealIfStuck() {
 function revealAndAdvance() {
   if (!turn || turn.resolved) return;
   clearTurnTimers();
-  const ans = isGeography()
+  const ans = isWordSubject()
     ? (currentLang === 'fr' ? currentGeoQ.answerFr : currentGeoQ.answerEn)
     : currentAnswer;
   showFeedback(false, t('teacherReveals') + ans);
@@ -2610,12 +2831,12 @@ btnReturnMenu.addEventListener('click', () => {
 //  START-UP
 // ============================================================
 function startSubject(id) {
-  if (id !== 'math' && id !== 'geographie') return;
+  if (id !== 'math' && id !== 'geographie' && id !== 'sciences') return;
   currentSubject = id;
   loadScores(id);
-  if (id === 'geographie') geoDeck = loadGeoDeck();
-  // Fallback keyboard hint: numeric for math, text for geography.
-  fallbackInput.inputMode = (id === 'geographie') ? 'text' : 'numeric';
+  if (id === 'geographie' || id === 'sciences') geoDeck = loadGeoDeck();
+  // Fallback keyboard hint: numeric for math, text for word subjects.
+  fallbackInput.inputMode = (id === 'math') ? 'numeric' : 'text';
   menuEl.classList.add('fade-out');
   setTimeout(() => { menuEl.style.display = 'none'; menuEl.classList.remove('fade-out'); }, 500);
   gameUiEl.classList.remove('hidden');
@@ -2657,6 +2878,34 @@ if (window.THREE) {
     else loadingEl.innerHTML = '<div>Erreur : Three.js n\'a pas pu être chargé.<br>Vérifie ta connexion Internet.</div>';
   });
 }
+</script>
+
+<!-- Optional on-screen diagnostics: only active when the URL contains ?debug=1 -->
+<script>
+(function () {
+  if (!/[?&]debug=1(&|$)/.test(window.location.search)) return;
+  var box = document.createElement('div');
+  box.id = 'dbg';
+  box.style.cssText = 'position:fixed;top:0;left:0;z-index:9999;' +
+    'background:rgba(0,0,0,.8);color:#0f0;font:12px monospace;' +
+    'padding:6px 8px;white-space:pre;pointer-events:none;';
+  document.body.appendChild(box);
+  function upd() {
+    var c = document.getElementById('scene');
+    var vv = window.visualViewport;
+    box.textContent =
+      'inner: ' + window.innerWidth + ' x ' + window.innerHeight + '\n' +
+      'dpr: ' + window.devicePixelRatio + '\n' +
+      'visualVP: ' + (vv ? Math.round(vv.width) + ' x ' + Math.round(vv.height) : 'n/a') + '\n' +
+      'canvas.client: ' + (c ? c.clientWidth + ' x ' + c.clientHeight : 'n/a') + '\n' +
+      'canvas.attr: ' + (c ? c.width + ' x ' + c.height : 'n/a') + '\n' +
+      '--vh: ' + getComputedStyle(document.documentElement).getPropertyValue('--vh');
+  }
+  window.addEventListener('resize', upd);
+  window.addEventListener('orientationchange', function () { setTimeout(upd, 300); });
+  setInterval(upd, 500);
+  upd();
+})();
 </script>
 </body>
 </html>
