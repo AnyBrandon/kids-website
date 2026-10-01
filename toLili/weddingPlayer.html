@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#160f19">
+<title>Our Wedding Songs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #160f19;
+    --ivory: #f8f1e4;
+    --gold: #d8bc84;
+    --gold-deep: #b8975a;
+    --blush: #ebc9bf;
+    --muted: rgba(248, 241, 228, .66);
+    --hair: rgba(248, 241, 228, .16);
+    --serif: 'Cormorant Garamond', 'Cormorant', Georgia, 'Times New Roman', serif;
+    --script: 'Pinyon Script', 'Snell Roundhand', 'Apple Chancery', 'Brush Script MT', cursive;
+    --sans: 'Jost', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--ink);
+    color: var(--ivory);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  button {
+    font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
+
+  /* ---------- Backdrop ---------- */
+  .bg {
+    position: fixed; inset: 0;
+    background:
+      url('images/cover/us.png') center 30% / cover no-repeat,
+      radial-gradient(120% 90% at 20% 10%, #3a2142 0%, var(--ink) 70%);
+    animation: bgIn 2.6s ease both;
+  }
+  .veil {
+    position: fixed; inset: 0;
+    background:
+      linear-gradient(0deg, rgba(22,15,25,.82) 0%, rgba(22,15,25,0) 42%),
+      linear-gradient(90deg, rgba(22,15,25,.88) 0%, rgba(22,15,25,.52) 48%, rgba(22,15,25,.30) 100%);
+  }
+  @keyframes bgIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: none; } }
+  @keyframes stageIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ---------- Layout ---------- */
+  .stage {
+    position: relative;
+    height: 100vh; height: 100dvh;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      "head lyrics"
+      "player lyrics"
+      "tracks lyrics";
+    column-gap: clamp(28px, 4.5vw, 80px);
+    padding:
+      calc(env(safe-area-inset-top, 0px) + clamp(20px, 5vh, 56px))
+      calc(env(safe-area-inset-right, 0px) + clamp(22px, 5vw, 80px))
+      calc(env(safe-area-inset-bottom, 0px) + clamp(20px, 4vh, 48px))
+      calc(env(safe-area-inset-left, 0px) + clamp(22px, 5vw, 80px));
+    animation: stageIn 1.4s ease .5s both;
+  }
+
+  /* ---------- Heading ---------- */
+  .head { grid-area: head; align-self: end; padding-bottom: clamp(18px, 3.5vh, 36px); }
+  .kicker {
+    margin: 0;
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 1.25rem; color: var(--gold);
+  }
+  .title {
+    margin: .12em 0 .08em;
+    font-family: var(--script); font-weight: 400;
+    font-size: clamp(3rem, min(7.4vw, 12vh), 6.8rem);
+    line-height: 1.08;
+    text-shadow: 0 2px 36px rgba(0,0,0,.5);
+  }
+  .mood {
+    margin: 0;
+    font-family: var(--serif); font-style: italic;
+    font-size: 1.3rem; color: var(--muted);
+  }
+
+  /* ---------- Player ---------- */
+  .player { grid-area: player; }
+  .seek { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; }
+  .time { font-size: .85rem; font-weight: 300; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 2.6em; }
+  .time.end { text-align: right; }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 22px; margin: 0; background: transparent; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 3px; border-radius: 3px;
+    background: linear-gradient(to right, var(--gold) var(--p, 0%), rgba(248,241,228,.24) var(--p, 0%));
+  }
+  input[type=range]::-moz-range-track { height: 3px; border-radius: 3px; background: rgba(248,241,228,.24); }
+  input[type=range]::-moz-range-progress { height: 3px; border-radius: 3px; background: var(--gold); }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5.5px;
+    border-radius: 50%; background: var(--ivory); border: 0;
+    box-shadow: 0 0 0 4px rgba(216,188,132,.28);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%; background: var(--ivory); border: 0;
+    box-shadow: 0 0 0 4px rgba(216,188,132,.28);
+  }
+
+  .controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 10px; }
+  .transport { display: flex; align-items: center; gap: clamp(14px, 2.4vw, 26px); }
+  .icon-btn {
+    width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%;
+    color: var(--ivory); transition: color .25s, background .25s;
+  }
+  .icon-btn:hover { color: var(--gold); background: rgba(248,241,228,.07); }
+  .icon-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+  .play {
+    position: relative; width: 72px; height: 72px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: linear-gradient(145deg, #ecd6a4, var(--gold-deep));
+    color: var(--ink);
+    box-shadow: 0 10px 34px rgba(184,151,90,.38);
+    transition: transform .2s ease;
+  }
+  .play:hover { transform: scale(1.05); }
+  .play:active { transform: scale(.97); }
+  .play svg { width: 30px; height: 30px; fill: currentColor; }
+  .play .i-pause { display: none; }
+  .play.on .i-play { display: none; }
+  .play.on .i-pause { display: block; }
+  .play.on::after {
+    content: ''; position: absolute; inset: -6px; border-radius: 50%;
+    border: 1px solid var(--gold);
+    animation: ring 2.6s ease-out infinite;
+  }
+  @keyframes ring { from { opacity: .75; transform: scale(.94); } to { opacity: 0; transform: scale(1.38); } }
+
+  .vol { display: flex; align-items: center; gap: 4px; width: min(170px, 38%); }
+  .vol .icon-btn svg { width: 22px; height: 22px; }
+  .vol .i-muted { display: none; }
+  .vol.muted .i-muted { display: block; }
+  .vol.muted .i-vol { display: none; }
+
+  .notice { margin: 10px 0 0; min-height: 0; font-size: .9rem; color: var(--blush); }
+  .notice:empty { display: none; }
+
+  /* ---------- Track list ---------- */
+  .tracks { grid-area: tracks; list-style: none; margin: clamp(18px, 3vh, 30px) 0 0; padding: 0; }
+  .track {
+    display: flex; align-items: center; gap: 14px; width: 100%;
+    padding: 15px 2px; text-align: left;
+    border-top: 1px solid var(--hair);
+    color: var(--muted); transition: color .3s;
+  }
+  .tracks li:last-child .track { border-bottom: 1px solid var(--hair); }
+  .track:hover { color: var(--ivory); }
+  .track[aria-current="true"] { color: var(--gold); }
+  .track .name { flex: 1; font-family: var(--serif); font-weight: 500; font-size: 1.55rem; line-height: 1.2; }
+  .track .tag { font-size: .85rem; font-weight: 300; }
+
+  .eq { display: inline-flex; align-items: flex-end; gap: 3px; width: 18px; height: 16px; opacity: 0; transition: opacity .3s; }
+  .eq i { flex: 1; height: 30%; background: currentColor; border-radius: 1px; }
+  .track[aria-current="true"] .eq { opacity: 1; }
+  .is-playing .track[aria-current="true"] .eq i { animation: eq 1s ease-in-out infinite; }
+  .is-playing .track[aria-current="true"] .eq i:nth-child(2) { animation-delay: -.35s; }
+  .is-playing .track[aria-current="true"] .eq i:nth-child(3) { animation-delay: -.7s; }
+  @keyframes eq { 0%, 100% { height: 25%; } 50% { height: 100%; } }
+
+  /* ---------- Lyrics ---------- */
+  .panel {
+    grid-area: lyrics; position: relative; min-height: 0;
+    border-radius: 26px; overflow: hidden;
+    background: rgba(22,15,25,.46);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    backdrop-filter: blur(18px) saturate(120%);
+    border: 1px solid rgba(216,188,132,.24);
+    box-shadow: 0 30px 90px rgba(0,0,0,.4);
+  }
+  .lyrics {
+    position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain;
+    padding: 0 clamp(20px, 6%, 56px);
+    text-align: center;
+    scrollbar-width: thin; scrollbar-color: rgba(216,188,132,.45) transparent;
+    -webkit-mask-image: linear-gradient(transparent 0, #000 12%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(transparent 0, #000 12%, #000 88%, transparent 100%);
+  }
+  .lyrics::-webkit-scrollbar { width: 6px; }
+  .lyrics::-webkit-scrollbar-thumb { background: rgba(216,188,132,.4); border-radius: 6px; }
+  .spacer { height: 40%; }
+
+  .stanza {
+    margin: 0 0 2.3rem;
+    font-family: var(--serif); font-weight: 500;
+    font-size: clamp(1.35rem, 2.1vw, 1.95rem); line-height: 1.5;
+    color: var(--ivory); opacity: .36;
+    transition: opacity .7s ease, text-shadow .7s ease;
+  }
+  .stanza.tight { margin-bottom: .95rem; }
+  .stanza.chorus { font-style: italic; }
+  .stanza.active { opacity: 1; text-shadow: 0 0 30px rgba(216,188,132,.4); }
+  .stanza .ln { display: block; }
+
+  .follow {
+    position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
+    padding: .6rem 1.2rem; border-radius: 999px;
+    border: 1px solid rgba(216,188,132,.55);
+    background: rgba(22,15,25,.86); color: var(--gold);
+    font-size: .92rem; font-weight: 400;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  }
+  .follow[hidden] { display: none; }
+  .follow:hover { background: rgba(40,26,46,.95); }
+
+  /* ============================================================
+     RESPONSIVE
+     1. Large screens        – scale everything up
+     2. Single column        – phones (portrait) and tablets/narrow windows (portrait)
+     3. Tablet portrait      – roomier single column
+     4. Short landscape      – phones and small windows on their side
+     5. Very small phones
+     6. Touch devices        – bigger hit areas
+     ============================================================ */
+
+  /* 1. Large screens */
+  @media (min-width: 1700px) { html { font-size: 18px; } .stage { max-width: 1700px; } }
+  @media (min-width: 2200px) { html { font-size: 22px; } .stage { max-width: 2100px; } }
+  @media (min-width: 3000px) { html { font-size: 30px; } .stage { max-width: 2900px; } }
+
+  /* 2. Single column */
+  @media (max-width: 860px), (orientation: portrait) and (max-width: 1100px) {
+    .veil {
+      background: linear-gradient(180deg, rgba(22,15,25,.72) 0%, rgba(22,15,25,.5) 38%, rgba(22,15,25,.9) 100%);
+    }
+    .stage {
+      max-width: 760px;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr) auto auto;
+      grid-template-areas: "head" "lyrics" "player" "tracks";
+      row-gap: 14px;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 18px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+      padding-left: calc(env(safe-area-inset-left, 0px) + 18px);
+      padding-right: calc(env(safe-area-inset-right, 0px) + 18px);
+    }
+    .head { align-self: start; padding-bottom: 0; text-align: center; }
+    .kicker, .mood { display: none; }
+    .title { font-size: clamp(2.6rem, 11vw, 3.6rem); margin: 0; }
+    .panel { border-radius: 20px; }
+    .stanza { font-size: clamp(1.25rem, 5.4vw, 1.6rem); }
+    .play { width: 64px; height: 64px; }
+    .tracks { margin-top: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .track {
+      justify-content: center; text-align: center; padding: 11px 10px;
+      border: 1px solid var(--hair); border-radius: 999px; gap: 8px;
+    }
+    .tracks li:last-child .track { border-bottom: 1px solid var(--hair); }
+    .track[aria-current="true"] { border-color: rgba(216,188,132,.6); background: rgba(216,188,132,.1); }
+    .track .name { flex: none; font-size: 1.1rem; }
+    .track .tag { display: none; }
+    .eq { display: none; }
+  }
+
+  /* 3. Tablet portrait: more room, larger type */
+  @media (min-width: 600px) and (max-width: 1100px) and (orientation: portrait) {
+    .stage {
+      row-gap: 22px;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 36px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 30px);
+    }
+    .kicker { display: block; text-align: center; font-size: 1.3rem; }
+    .mood { display: block; text-align: center; font-size: 1.25rem; }
+    .title { font-size: clamp(3.6rem, 10.5vw, 5.4rem); margin: .1em 0 .05em; }
+    .stanza { font-size: clamp(1.6rem, 3.8vw, 2.2rem); margin-bottom: 2.6rem; }
+    .stanza.tight { margin-bottom: 1.1rem; }
+    .play { width: 76px; height: 76px; }
+    .time { font-size: .95rem; }
+    .track { padding: 14px 16px; }
+    .track .name { font-size: 1.35rem; }
+  }
+
+  /* 4. Short landscape (phones on their side, short windows): two compact columns */
+  @media (orientation: landscape) and (max-height: 600px) {
+    .veil {
+      background:
+        linear-gradient(0deg, rgba(22,15,25,.82) 0%, rgba(22,15,25,0) 42%),
+        linear-gradient(90deg, rgba(22,15,25,.88) 0%, rgba(22,15,25,.52) 48%, rgba(22,15,25,.30) 100%);
+    }
+    .stage {
+      max-width: 1500px;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      grid-template-rows: minmax(0, 1fr) auto auto;
+      grid-template-areas: "head lyrics" "player lyrics" "tracks lyrics";
+      column-gap: 22px; row-gap: 0;
+      padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+      padding-left: calc(env(safe-area-inset-left, 0px) + 22px);
+      padding-right: calc(env(safe-area-inset-right, 0px) + 22px);
+    }
+    .head { align-self: end; text-align: left; padding-bottom: 8px; }
+    .kicker, .mood { display: none; }
+    .title { font-size: clamp(2.1rem, 13vh, 3.6rem); }
+    .controls { margin-top: 4px; }
+    .play { width: 54px; height: 54px; }
+    .play svg { width: 26px; height: 26px; }
+    .icon-btn { width: 40px; height: 40px; }
+    .tracks { margin-top: 8px; grid-template-columns: 1fr; gap: 6px; }
+    .track { justify-content: flex-start; text-align: left; padding: 7px 14px; }
+    .track .name { font-size: 1.05rem; }
+    .eq { display: inline-flex; width: 14px; height: 12px; }
+    .panel { border-radius: 18px; }
+    .stanza { font-size: clamp(1.15rem, 6.4vh, 1.6rem); margin-bottom: 1.5rem; line-height: 1.45; }
+    .stanza.tight { margin-bottom: .7rem; }
+    .follow { bottom: 12px; padding: .45rem 1rem; font-size: .85rem; }
+    .notice { font-size: .8rem; margin-top: 4px; }
+  }
+
+  /* 5. Very small phones */
+  @media (max-width: 360px) {
+    .title { font-size: 2.3rem; }
+    .stage { padding-left: 12px; padding-right: 12px; }
+    .transport { gap: 8px; }
+    .track .name { font-size: 1rem; }
+    .stanza { font-size: 1.2rem; }
+  }
+  @media (max-height: 640px) and (orientation: portrait) {
+    .stage { row-gap: 10px; padding-top: calc(env(safe-area-inset-top, 0px) + 10px); }
+    .title { font-size: 2.3rem; }
+    .play { width: 56px; height: 56px; }
+    .track { padding: 8px 8px; }
+    .controls { margin-top: 2px; }
+  }
+
+  /* 6. Touch devices: no volume slider (phones control it with hardware keys), larger hit areas */
+  @media (hover: none) and (pointer: coarse) {
+    .vol { display: none; }
+    .controls { justify-content: center; }
+    input[type=range] { height: 34px; }
+    input[type=range]::-webkit-slider-thumb { width: 20px; height: 20px; margin-top: -8.5px; }
+    input[type=range]::-moz-range-thumb { width: 20px; height: 20px; }
+    .icon-btn { width: 48px; height: 48px; }
+  }
+  @media (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+    .controls { justify-content: flex-start; }
+    .icon-btn { width: 42px; height: 42px; }
+    input[type=range] { height: 28px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true"></div>
+  <div class="veil" aria-hidden="true"></div>
+
+  <main class="stage" id="stage">
+    <header class="head">
+      <p class="kicker">Two songs for our wedding day</p>
+      <h1 class="title" id="title">Forever Starts Now</h1>
+      <p class="mood" id="mood"></p>
+    </header>
+
+    <section class="player" aria-label="Player">
+      <div class="seek">
+        <span class="time" id="cur">0:00</span>
+        <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="Seek">
+        <span class="time end" id="dur">0:00</span>
+      </div>
+      <div class="controls">
+        <div class="transport">
+          <button class="icon-btn" id="prev" aria-label="Previous song">
+            <svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9.5 12z"/></svg>
+          </button>
+          <button class="play" id="play" aria-label="Play">
+            <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="i-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+          </button>
+          <button class="icon-btn" id="next" aria-label="Next song">
+            <svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5l10.5 7L4 19z"/></svg>
+          </button>
+        </div>
+        <div class="vol" id="vol">
+          <button class="icon-btn" id="mute" aria-label="Mute">
+            <svg class="i-vol" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM16.5 12a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+            <svg class="i-muted" viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9zM16.6 12l2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z"/></svg>
+          </button>
+          <input type="range" id="volume" min="0" max="1" step="0.01" value="1" aria-label="Volume">
+        </div>
+      </div>
+      <p class="notice" id="notice" role="status"></p>
+    </section>
+
+    <ul class="tracks" id="tracks"></ul>
+
+    <section class="panel" aria-label="Lyrics">
+      <div class="lyrics" id="lyrics" tabindex="0"></div>
+      <button class="follow" id="follow" hidden>Follow the song</button>
+    </section>
+  </main>
+
+  <audio id="audio" preload="metadata"></audio>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------
+     Songs and lyrics
+     ln: lines of a stanza. c: chorus (set in italics).
+     cont: continues the previous stanza (tighter spacing).
+     ------------------------------------------------------------ */
+  var S = function (lines, opts) {
+    opts = opts || {};
+    return { ln: lines, c: !!opts.c, cont: !!opts.cont };
+  };
+
+  var songs = [
+    {
+      title: 'Forever Starts Now',
+      file: 'song/forevertartsNow.mp3',
+      mood: 'A slow dance for the two of us',
+      intro: 0.05, outro: 0.04,
+      stanzas: [
+        S(['Beirut taught me how to hold on tight,', 'Spain gave you the sun you carry in your eyes,', 'Two different skies, two different songs,', 'Then Paris found us where we both belong.']),
+        S(['A little café, a little luck,', 'One look, and I was done, I was caught.', "I didn't know that home could be a person,", 'Until I heard you laugh, and it all made sense.'], { cont: true }),
+        S(['And now the whole world is watching us say', 'What my heart has known since that very first day...']),
+        S(['Today is the beginning of our life together,', 'Hand in hand, whatever the weather.', "I'll love every version of you,", 'And grow beside you in all that we do.'], { c: true }),
+        S(["You'll never face this life alone,", "I'm your backbone, I'm your home.", 'Mi amor, habibi, here\u2019s my vow:', "It's you and me, forever starts now."], { c: true, cont: true }),
+        S(['Through the busy days and the quiet nights,', 'Through the rainy Sundays and the golden lights,', "We'll laugh at nothing, we'll dance in the kitchen,", 'Even boredom feels like a gift with you in it.']),
+        S(["I'll respect your dreams like they're my own,", 'Hold your hand when the road is unknown,', "And when life gets heavy, I'll take my share,", "You'll look to your side and I'll always be there."], { cont: true }),
+        S(["And we'll protect this love like a flame we keep,", 'Through every season, shallow or deep...']),
+        S(['Today is the beginning of our life together,', 'Hand in hand, whatever the weather.', "I'll love every version of you,", 'And grow beside you in all that we do.'], { c: true }),
+        S(["You'll never face this life alone,", "I'm your backbone, I'm your home.", 'Mi amor, habibi, here\u2019s my vow:', "It's you and me, forever starts now."], { c: true, cont: true }),
+        S(["One day there'll be little voices in the hall,", 'Little feet running, laughter on the walls,', 'Two cultures, two languages, one family tree,']),
+        S(['Rooted in love, as wild and as free', 'As the cedars and the olive trees,', 'Growing stronger in the same warm breeze.'], { cont: true }),
+        S(['Today is the beginning of our life together,', 'Every beautiful day, good or better.', "I'll love every version of you,", 'And grow beside you in all that we do.'], { c: true }),
+        S(["You'll never face this life alone,", "I'm your backbone, I'm your home.", 'Mi amor, habibi, hear me say:', 'I choose you, today and every day.'], { c: true, cont: true }),
+        S(['Forever starts now...'])
+      ]
+    },
+    {
+      title: 'Yalla Vamos',
+      file: 'song/yallaVamos.mp3',
+      mood: 'A song for the whole room to dance to',
+      intro: 0.0, outro: 0.04,
+      stanzas: [
+        S(['Yalla! Vamos!']),
+        S(['Beirut in my blood, Spain in your smile,', 'Paris brought us together, it took a little while.', 'One look across the room and I was gone,', "Now here we are, and the party's on!"]),
+        S(['Say it with me, say it loud,', "Look around, we've got the crowd!"]),
+        S(['Today is the beginning of our life together!', 'Dance with me, whatever the weather!', 'Mi amor, habibi, take my hand,', "Loving every version of you, that's the plan!"], { c: true }),
+        S(['You will never face this life alone,', "I'm your backbone, I'm your home!", 'Clap your hands, we\u2019re on our way,', 'Forever starts today, hey!'], { c: true, cont: true }),
+        S(['Sunny days and lazy Sundays too,', 'Even boring moments are fun with you.', "I'll respect you, hold you, have your back,", "Growing side by side, we're on track!"]),
+        S(['Kitchen dancing, laughing loud,', 'Making memories, making it count!']),
+        S(['Today is the beginning of our life together!', 'Dance with me, whatever the weather!', 'Mi amor, habibi, take my hand,', "Loving every version of you, that's the plan!"], { c: true }),
+        S(['You will never face this life alone,', "I'm your backbone, I'm your home!", 'Clap your hands, we\u2019re on our way,', 'Forever starts today, hey!'], { c: true, cont: true }),
+        S(['Everybody clap! One, two, three, four!']),
+        S(['Little feet running through the hall one day,', 'Two cultures, one family, come what may!', 'Cedars and olive trees, roots run deep,', "Love we'll protect, love we'll keep!"]),
+        S(['Today is the beginning of our life together!', 'Dance with me, now and forever!', 'Mi amor, habibi, take my hand,', "Loving every version of you, that's the plan!"], { c: true }),
+        S(['You will never face this life alone,', "I'm your backbone, I'm your home!", 'Clap your hands, we\u2019re on our way,', 'I choose you every single day, hey!'], { c: true, cont: true }),
+        S(['Yalla, habibi... forever starts now!'])
+      ]
+    }
+  ];
+
+  /* ------------------------------------------------------------
+     Elements
+     ------------------------------------------------------------ */
+  var $ = function (id) { return document.getElementById(id); };
+  var audio = $('audio'), stage = $('stage');
+  var titleEl = $('title'), moodEl = $('mood');
+  var seek = $('seek'), cur = $('cur'), dur = $('dur');
+  var playBtn = $('play'), prevBtn = $('prev'), nextBtn = $('next');
+  var muteBtn = $('mute'), volWrap = $('vol'), volume = $('volume');
+  var lyricsEl = $('lyrics'), followBtn = $('follow');
+  var tracksEl = $('tracks'), notice = $('notice');
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var current = 0, active = -1, schedule = [], stanzaEls = [];
+  var userUntil = 0, resumeTimer = null, rafId = null;
+
+  /* ------------------------------------------------------------
+     Build track list
+     ------------------------------------------------------------ */
+  songs.forEach(function (s, i) {
+    var li = document.createElement('li');
+    var b = document.createElement('button');
+    b.className = 'track';
+    b.type = 'button';
+    b.innerHTML = '<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>' +
+                  '<span class="name"></span><span class="tag"></span>';
+    b.querySelector('.name').textContent = s.title;
+    b.querySelector('.tag').textContent = i === 0 ? 'Slow dance' : 'Celebration';
+    b.addEventListener('click', function () {
+      if (i === current) { toggle(); } else { loadSong(i, true); }
+    });
+    li.appendChild(b);
+    tracksEl.appendChild(li);
+  });
+
+  /* ------------------------------------------------------------
+     Lyrics rendering + schedule
+     ------------------------------------------------------------ */
+  function renderLyrics(song) {
+    lyricsEl.innerHTML = '';
+    stanzaEls = [];
+    var top = document.createElement('div'); top.className = 'spacer'; lyricsEl.appendChild(top);
+    song.stanzas.forEach(function (st, i) {
+      var p = document.createElement('p');
+      p.className = 'stanza' + (st.c ? ' chorus' : '');
+      var next = song.stanzas[i + 1];
+      if (next && next.cont) p.classList.add('tight');
+      st.ln.forEach(function (line) {
+        var span = document.createElement('span');
+        span.className = 'ln';
+        span.textContent = line.replace(/'/g, '\u2019');
+        p.appendChild(span);
+      });
+      lyricsEl.appendChild(p);
+      stanzaEls.push(p);
+    });
+    var bottom = document.createElement('div'); bottom.className = 'spacer'; lyricsEl.appendChild(bottom);
+  }
+
+  // Lyrics are spread across the song in proportion to their length.
+  function buildSchedule(song) {
+    var weights = song.stanzas.map(function (st) {
+      return st.ln.join(' ').length + 30;
+    });
+    var total = weights.reduce(function (a, b) { return a + b; }, 0);
+    var start = song.intro, end = 1 - song.outro, acc = 0;
+    schedule = weights.map(function (w) {
+      var from = start + (end - start) * (acc / total);
+      acc += w;
+      return from;
+    });
+  }
+
+  function indexAt(frac) {
+    var idx = 0;
+    for (var i = 0; i < schedule.length; i++) { if (frac >= schedule[i]) idx = i; }
+    return idx;
+  }
+
+  function setActive(idx, forceScroll) {
+    if (idx !== active) {
+      if (stanzaEls[active]) stanzaEls[active].classList.remove('active');
+      active = idx;
+      if (stanzaEls[active]) stanzaEls[active].classList.add('active');
+      if (isFollowing()) scrollToActive();
+    } else if (forceScroll) {
+      scrollToActive();
+    }
+  }
+
+  function scrollToActive(instant) {
+    var el = stanzaEls[active];
+    if (!el) return;
+    var target = el.offsetTop - (lyricsEl.clientHeight - el.offsetHeight) / 2;
+    lyricsEl.scrollTo({ top: Math.max(0, target), behavior: (reduceMotion || instant) ? 'auto' : 'smooth' });
+  }
+
+  /* ------------------------------------------------------------
+     Manual scrolling: the reader is in charge; auto-follow returns
+     after a few seconds, or right away with the button.
+     ------------------------------------------------------------ */
+  function isFollowing() { return performance.now() > userUntil; }
+
+  function markUser() {
+    userUntil = performance.now() + 6000;
+    if (!audio.paused) followBtn.hidden = false;
+    clearTimeout(resumeTimer);
+    resumeTimer = setTimeout(resumeFollow, 6100);
+  }
+  function resumeFollow() {
+    clearTimeout(resumeTimer);
+    userUntil = 0;
+    followBtn.hidden = true;
+    scrollToActive();
+  }
+  ['wheel', 'touchstart', 'touchmove', 'pointerdown', 'keydown'].forEach(function (ev) {
+    lyricsEl.addEventListener(ev, markUser, { passive: true });
+  });
+  followBtn.addEventListener('click', resumeFollow);
+
+  /* ------------------------------------------------------------
+     Loading and playback
+     ------------------------------------------------------------ */
+  function fmt(t) {
+    if (!isFinite(t) || t < 0) t = 0;
+    var m = Math.floor(t / 60), s = Math.floor(t % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function loadSong(i, autoplay) {
+    current = i;
+    var song = songs[i];
+    notice.textContent = '';
+    audio.src = song.file;
+    audio.load();
+
+    titleEl.textContent = song.title;
+    moodEl.textContent = song.mood;
+    document.title = song.title + ' \u2014 Our Wedding Songs';
+    if (!reduceMotion && titleEl.animate) {
+      titleEl.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }],
+                      { duration: 800, easing: 'ease-out' });
+    }
+
+    Array.prototype.forEach.call(tracksEl.querySelectorAll('.track'), function (b, k) {
+      b.setAttribute('aria-current', k === i ? 'true' : 'false');
+    });
+
+    renderLyrics(song);
+    buildSchedule(song);
+    active = -1;
+    userUntil = 0; followBtn.hidden = true;
+    lyricsEl.scrollTop = 0;
+    setActive(0);
+    scrollToActive(true);
+
+    seek.value = 0; seek.style.setProperty('--p', '0%');
+    cur.textContent = '0:00'; dur.textContent = '0:00';
+    setMediaSession(song);
+
+    if (autoplay) play();
+    else setPlayingUI(false);
+  }
+
+  function play() {
+    var p = audio.play();
+    if (p && p.catch) {
+      p.catch(function (err) {
+        if (err && err.name === 'NotAllowedError') return;
+        showMissing();
+      });
+    }
+  }
+  function pause() { audio.pause(); }
+  function toggle() { audio.paused ? play() : pause(); }
+
+  function setPlayingUI(on) {
+    playBtn.classList.toggle('on', on);
+    playBtn.setAttribute('aria-label', on ? 'Pause' : 'Play');
+    stage.classList.toggle('is-playing', on);
+    if (!on) followBtn.hidden = true;
+    if ('mediaSession' in navigator) {
+      try { navigator.mediaSession.playbackState = on ? 'playing' : 'paused'; } catch (e) {}
+    }
+  }
+
+  function showMissing() {
+    notice.textContent = 'This song could not be loaded. Keep the \u201csong\u201d folder next to this page (' + songs[current].file + ').';
+  }
+
+  function step(dir, autoplay) {
+    loadSong((current + dir + songs.length) % songs.length, autoplay);
+  }
+
+  /* ------------------------------------------------------------
+     Progress and lyrics position
+     ------------------------------------------------------------ */
+  var scrubbing = false;
+
+  function update() {
+    var d = audio.duration, t = audio.currentTime;
+    var frac = (isFinite(d) && d > 0) ? t / d : 0;
+    if (!scrubbing) {
+      seek.value = Math.round(frac * 1000);
+      seek.style.setProperty('--p', (frac * 100) + '%');
+    }
+    cur.textContent = fmt(t);
+    dur.textContent = isFinite(d) ? fmt(d) : '0:00';
+    setActive(indexAt(frac));
+  }
+
+  function loop() {
+    update();
+    if (!audio.paused) rafId = requestAnimationFrame(loop);
+  }
+
+  seek.addEventListener('input', function () {
+    scrubbing = true;
+    var d = audio.duration;
+    if (isFinite(d) && d > 0) {
+      audio.currentTime = (seek.value / 1000) * d;
+    }
+    seek.style.setProperty('--p', (seek.value / 10) + '%');
+    update();
+  });
+  seek.addEventListener('change', function () { scrubbing = false; update(); });
+
+  audio.addEventListener('play', function () {
+    setPlayingUI(true);
+    cancelAnimationFrame(rafId);
+    loop();
+  });
+  audio.addEventListener('pause', function () { setPlayingUI(false); update(); });
+  audio.addEventListener('timeupdate', update);
+  audio.addEventListener('loadedmetadata', update);
+  audio.addEventListener('error', showMissing);
+  audio.addEventListener('ended', function () {
+    if (current < songs.length - 1) {
+      loadSong(current + 1, true);
+    } else {
+      audio.currentTime = 0;
+      setPlayingUI(false);
+      update();
+    }
+  });
+
+  /* ------------------------------------------------------------
+     Controls
+     ------------------------------------------------------------ */
+  playBtn.addEventListener('click', toggle);
+  nextBtn.addEventListener('click', function () { step(1, !audio.paused); });
+  prevBtn.addEventListener('click', function () {
+    if (audio.currentTime > 3) { audio.currentTime = 0; update(); }
+    else step(-1, !audio.paused);
+  });
+
+  volume.addEventListener('input', function () {
+    audio.volume = parseFloat(volume.value);
+    audio.muted = audio.volume === 0;
+    volWrap.classList.toggle('muted', audio.muted);
+    volume.style.setProperty('--p', (volume.value * 100) + '%');
+  });
+  muteBtn.addEventListener('click', function () {
+    audio.muted = !audio.muted;
+    volWrap.classList.toggle('muted', audio.muted);
+    muteBtn.setAttribute('aria-label', audio.muted ? 'Unmute' : 'Mute');
+  });
+  volume.style.setProperty('--p', '100%');
+
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target.tagName || '').toLowerCase();
+    if (tag === 'button') return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      toggle();
+    } else if (tag !== 'input' && (e.key === 'ArrowRight' || e.key === 'ArrowLeft') && isFinite(audio.duration)) {
+      audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (e.key === 'ArrowRight' ? 5 : -5)));
+      update();
+    }
+  });
+
+  window.addEventListener('resize', function () { if (isFollowing()) scrollToActive(true); });
+
+  /* ------------------------------------------------------------
+     Lock-screen / media key support
+     ------------------------------------------------------------ */
+  function setMediaSession(song) {
+    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: song.title,
+        artist: 'Our Wedding',
+        artwork: [{ src: 'images/cover/us.png' }]
+      });
+      navigator.mediaSession.setActionHandler('play', play);
+      navigator.mediaSession.setActionHandler('pause', pause);
+      navigator.mediaSession.setActionHandler('previoustrack', function () { step(-1, !audio.paused); });
+      navigator.mediaSession.setActionHandler('nexttrack', function () { step(1, !audio.paused); });
+    } catch (e) {}
+  }
+
+  /* ------------------------------------------------------------
+     Start
+     ------------------------------------------------------------ */
+  loadSong(0, false);
+})();
+</script>
+</body>
+</html>
