@@ -221,6 +221,9 @@ function placeGiftFromHit(frame,hit){
   const pose=hit.getPose(state.refSpace);
   if(!pose){return;}
   const group=giftMesh();
+  // Keep gifts deliberately small: the original mesh was 22 cm wide.
+  // At 0.30 scale, the visible present is roughly 6.6 cm wide.
+  group.scale.setScalar(0.30);
   group.matrixAutoUpdate=false;
   group.matrix.fromArray(pose.transform.matrix);
   group.matrixWorldNeedsUpdate=true;
