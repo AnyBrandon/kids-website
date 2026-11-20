@@ -9,6 +9,7 @@
 :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d1d;color:#fff}
 body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+body.ar-active,body.ar-active #stage{background:transparent!important}
 #stage{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 35%,#263c70,#080d1d 70%);overflow:hidden}
 canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #ui{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 14px)}
@@ -150,6 +151,7 @@ function initThree(){
   state.camera=new THREE.PerspectiveCamera();
   state.renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
   state.renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  state.renderer.setClearColor(0x000000,0);
   state.renderer.setSize(innerWidth,innerHeight);
   state.renderer.xr.enabled=true;
   state.renderer.xr.setReferenceSpaceType('local');
@@ -174,6 +176,7 @@ async function startAR(){
       domOverlay:{root:document.body}
     });
     state.session=session;state.running=true;
+    document.body.classList.add('ar-active');
     state.anchorsAvailable=session.enabledFeatures?.includes('anchors') ?? false;
     await state.renderer.xr.setSession(session);
     state.refSpace=state.renderer.xr.getReferenceSpace();
@@ -181,6 +184,7 @@ async function startAR(){
     state.hitSource=await session.requestHitTestSource({space:state.viewerSpace});
     session.addEventListener('end',()=>{
       state.running=false;state.session=null;
+      document.body.classList.remove('ar-active');
       $('cover').classList.remove('hidden');
       setError('The AR session ended. Start a new hunt to place gifts again.');
       $('startBtn').textContent='Start a new hunt';
