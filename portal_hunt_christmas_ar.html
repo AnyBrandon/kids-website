@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#10152b">
+<title>Portal Hunt — Christmas AR</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d1d;color:#fff}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#stage{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 35%,#263c70,#080d1d 70%);overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#ui{position:absolute;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 14px)}
+header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.glass{background:#081126c9;border:1px solid #c7d5ff38;backdrop-filter:blur(12px);border-radius:16px;padding:10px 13px;box-shadow:0 8px 25px #0005}
+.brand{font-size:10px;letter-spacing:.16em;color:#b7c8ff;font-weight:900}
+#mode{font-weight:850;font-size:17px;margin-top:3px}
+#counter{text-align:right;font-size:14px;font-weight:800}
+#middle{align-self:center;text-align:center;margin:auto 0;max-width:420px;width:100%;text-shadow:0 2px 12px #000;pointer-events:none}
+#headline{font-size:22px;font-weight:900;letter-spacing:-.03em}
+#subline{font-size:13px;color:#e1e8ff;margin-top:6px;line-height:1.45}
+#bottom{pointer-events:auto;display:flex;flex-direction:column;gap:9px}
+.panel{background:#081126db;border:1px solid #c7d5ff38;border-radius:18px;padding:12px;backdrop-filter:blur(14px);box-shadow:0 10px 35px #0007}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{min-width:0}
+input,textarea{width:100%;background:#101d3a;border:1px solid #8299d855;border-radius:11px;padding:11px 12px;color:white;font:inherit;font-size:14px;outline:none}
+textarea{resize:none;min-height:42px}
+button{border:1px solid #a9bcff55;border-radius:13px;padding:12px 14px;background:#263967;color:#fff;font-weight:800;font-size:14px;cursor:pointer}
+button.primary{background:linear-gradient(110deg,#6558e9,#168fa9);border:0}
+button.gold{background:linear-gradient(110deg,#a96c1d,#d5a943);border:0;color:#1b1420}
+button:disabled{opacity:.38;cursor:not-allowed}
+button:active{transform:scale(.98)}
+.full{width:100%}.small{font-size:12px;color:#b8c7e9;line-height:1.4}
+.hidden{display:none!important}
+#cover{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:22px;background:linear-gradient(160deg,#090f24f5,#111936f5);overflow:auto}
+.card{width:min(100%,440px);background:#121d3b;border:1px solid #b4c8ff38;border-radius:25px;padding:24px;box-shadow:0 25px 90px #000a;text-align:center}
+.emblem{width:72px;height:72px;margin:0 auto 14px;border-radius:23px;display:grid;place-items:center;font-size:36px;background:radial-gradient(circle at 30% 25%,#fff3c4,#d7a94a 30%,#6b3e91 75%);box-shadow:0 0 40px #d6a84c66}
+h1{font-size:29px;letter-spacing:-.05em;margin:0 0 8px}
+p{color:#c2cdeb;font-size:14px;line-height:1.55;margin:8px 0 18px}
+#error{color:#ffb7bd;font-size:12px;line-height:1.4;margin-top:10px;min-height:16px}
+#compassWrap{display:flex;align-items:center;gap:12px}
+#compass{width:54px;height:54px;flex:none;border-radius:50%;border:2px solid #dce8ff8c;display:grid;place-items:center;background:radial-gradient(circle,#263c6b,#101a35)}
+#needle{font-size:28px;line-height:1;display:block;color:#ffd978;filter:drop-shadow(0 0 8px #ffcf62);transform:rotate(0deg)}
+#compassText{flex:1}
+#prizeModal{position:absolute;z-index:8;inset:0;background:#050918d9;display:flex;align-items:center;justify-content:center;padding:24px}
+#prizeCard{width:min(100%,370px);border-radius:24px;padding:24px;text-align:center;background:linear-gradient(160deg,#27365d,#12172d);border:1px solid #f7d78a88;box-shadow:0 0 60px #e3b64d44}
+#prizeIcon{font-size:64px;filter:drop-shadow(0 0 18px #ffd56d)}
+#prizeTitle{font-size:25px;font-weight:950;color:#ffe5a4;margin:10px 0}
+#prizeMessage{font-size:15px;line-height:1.5;color:#fff}
+#reticleHint{font-size:11px;color:#c7d7ff;text-align:center}
+#compat{font-size:11px;color:#9baed5;margin-top:14px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="ui">
+    <header>
+      <div class="glass"><div class="brand">PORTAL HUNT · CHRISTMAS</div><div id="mode">Master mode</div></div>
+      <div class="glass" id="counter">GIFTS<br><span id="count" style="font-size:21px">0 / 5</span></div>
+    </header>
+    <div id="middle">
+      <div id="headline">Prepare the magic</div>
+      <div id="subline">Find a flat surface and place your first gift.</div>
+    </div>
+    <div id="bottom">
+      <div id="masterPanel" class="panel">
+        <div class="row">
+          <input id="prizeName" maxlength="45" placeholder="Prize name (e.g. New headphones)">
+        </div>
+        <div style="height:7px"></div>
+        <input id="prizeMessageInput" maxlength="120" placeholder="Prize message or clue (optional)">
+        <div style="height:9px"></div>
+        <div class="row">
+          <button id="placeBtn" class="primary" style="flex:1" disabled>＋ Place gift here</button>
+          <button id="undoBtn" disabled>Undo</button>
+        </div>
+        <div style="height:8px"></div>
+        <button id="doneBtn" class="gold full" disabled>Lock gifts & hand to Hunter</button>
+        <div id="reticleHint">Move your phone until the placement reticle finds a surface.</div>
+      </div>
+      <div id="hunterPanel" class="panel hidden">
+        <div id="compassWrap">
+          <div id="compass"><span id="needle">➤</span></div>
+          <div id="compassText"><div id="heat" style="font-weight:900;font-size:17px">Searching…</div><div id="distance" class="small">Move slowly around the room</div></div>
+        </div>
+        <div style="height:10px"></div>
+        <button id="openBtn" class="gold full" disabled>Find a gift to open</button>
+        <div class="small" style="text-align:center;margin-top:7px" id="foundCount">0 of 5 gifts discovered</div>
+      </div>
+      <button id="endBtn" class="full" style="background:#101a35" >End AR session</button>
+    </div>
+  </div>
+
+  <div id="cover">
+    <div class="card">
+      <div class="emblem">🎁</div>
+      <h1>Portal Hunt</h1>
+      <p>Christmas Treasure Hunt<br>One phone. Two players. Five hidden gifts.</p>
+      <button id="startBtn" class="primary full">Start Master mode</button>
+      <div id="error"></div>
+      <div id="compat">Requires HTTPS, Chrome on a supported ARCore Android device, and WebXR immersive AR. Keep this page open when handing the phone to the Hunter.</div>
+      <p class="small" style="margin:14px 0 0">Camera images are processed by your phone. This prototype does not upload or record video.</p>
+    </div>
+  </div>
+
+  <div id="prizeModal" class="hidden">
+    <div id="prizeCard">
+      <div id="prizeIcon">🎁</div>
+      <div class="brand">TREASURE DISCOVERED</div>
+      <div id="prizeTitle">A Christmas surprise!</div>
+      <div id="prizeMessage"></div>
+      <div style="height:18px"></div>
+      <button id="closePrize" class="gold full">Continue hunting</button>
+    </div>
+  </div>
+</div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+const $ = id => document.getElementById(id);
+const state = {
+  session:null, refSpace:null, viewerSpace:null, hitSource:null, lastHit:null,
+  renderer:null, scene:null, camera:null, reticle:null,
+  gifts:[], opened: new Set(), mode:'master', pendingPlace:false,
+  pendingUndo:false, anchorsAvailable:false, framePose:null, nearest:null,
+  hitPoseMatrix:null, running:false
+};
+const MAX_GIFTS=5;
+function setStatus(title,sub){$('headline').textContent=title;$('subline').textContent=sub;}
+function setError(msg){$('error').textContent=msg;}
+function giftMesh(){
+  const root=new THREE.Group();
+  const boxMat=new THREE.MeshStandardMaterial({color:0xb51f39,metalness:.18,roughness:.32,emissive:0x25030a});
+  const lidMat=new THREE.MeshStandardMaterial({color:0xe1b64e,metalness:.68,roughness:.25,emissive:0x3d2600});
+  const box=new THREE.Mesh(new THREE.BoxGeometry(.22,.17,.22),boxMat); box.position.y=.095; root.add(box);
+  const lid=new THREE.Mesh(new THREE.BoxGeometry(.235,.045,.235),lidMat); lid.position.y=.205; root.add(lid);
+  const ribbonMat=new THREE.MeshStandardMaterial({color:0xffdf83,metalness:.5,roughness:.25,emissive:0x65420a});
+  const ribbon1=new THREE.Mesh(new THREE.BoxGeometry(.045,.18,.226),ribbonMat); ribbon1.position.y=.105; root.add(ribbon1);
+  const ribbon2=new THREE.Mesh(new THREE.BoxGeometry(.226,.18,.045),ribbonMat); ribbon2.position.y=.105; root.add(ribbon2);
+  const bow1=new THREE.Mesh(new THREE.TorusGeometry(.045,.009,8,20),ribbonMat); bow1.scale.set(1,.65,1); bow1.position.set(-.035,.24,0); root.add(bow1);
+  const bow2=bow1.clone(); bow2.position.x=.035; root.add(bow2);
+  const glow=new THREE.PointLight(0xffc85a,1.1,.9); glow.position.y=.35; root.add(glow);
+  const halo=new THREE.Mesh(new THREE.SphereGeometry(.27,16,12),new THREE.MeshBasicMaterial({color:0xffd56a,transparent:true,opacity:.12,wireframe:true}));
+  halo.position.y=.14; root.add(halo);
+  return root;
+}
+function initThree(){
+  state.scene=new THREE.Scene();
+  state.camera=new THREE.PerspectiveCamera();
+  state.renderer=new THREE.WebGLRenderer({alpha:true,antialias:true});
+  state.renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  state.renderer.setSize(innerWidth,innerHeight);
+  state.renderer.xr.enabled=true;
+  state.renderer.xr.setReferenceSpaceType('local');
+  state.renderer.outputColorSpace=THREE.SRGBColorSpace;
+  state.renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  $('stage').insertBefore(state.renderer.domElement,$('ui'));
+  state.scene.add(new THREE.HemisphereLight(0xdce8ff,0x42304c,1.6));
+  const light=new THREE.DirectionalLight(0xffe3ae,1.2);light.position.set(1,3,2);state.scene.add(light);
+  state.reticle=new THREE.Mesh(new THREE.RingGeometry(.075,.095,32),new THREE.MeshBasicMaterial({color:0x8fffe0,side:THREE.DoubleSide}));
+  state.reticle.rotation.x=-Math.PI/2;state.reticle.matrixAutoUpdate=false;state.reticle.visible=false;state.scene.add(state.reticle);
+}
+async function startAR(){
+  setError('');
+  if(!navigator.xr){setError('WebXR is not available in this browser. Try an up-to-date Chrome browser on a supported ARCore Android phone.');return;}
+  try{
+    const supported=await navigator.xr.isSessionSupported('immersive-ar');
+    if(!supported){setError('This phone/browser does not currently support immersive AR. The game needs a compatible ARCore device and Chrome.');return;}
+    initThree();
+    const session=await navigator.xr.requestSession('immersive-ar',{
+      requiredFeatures:['hit-test'],
+      optionalFeatures:['anchors','dom-overlay'],
+      domOverlay:{root:document.body}
+    });
+    state.session=session;state.running=true;
+    state.anchorsAvailable=session.enabledFeatures?.includes('anchors') ?? false;
+    await state.renderer.xr.setSession(session);
+    state.refSpace=state.renderer.xr.getReferenceSpace();
+    state.viewerSpace=await session.requestReferenceSpace('viewer');
+    state.hitSource=await session.requestHitTestSource({space:state.viewerSpace});
+    session.addEventListener('end',()=>{
+      state.running=false;state.session=null;
+      $('cover').classList.remove('hidden');
+      setError('The AR session ended. Start a new hunt to place gifts again.');
+      $('startBtn').textContent='Start a new hunt';
+    });
+    $('cover').classList.add('hidden');
+    $('endBtn').classList.remove('hidden');
+    state.renderer.setAnimationLoop(renderFrame);
+    setStatus('Prepare the magic','Point at a floor, table or shelf. Tap Place gift here when the reticle appears.');
+    $('placeBtn').disabled=true;
+    $('undoBtn').disabled=true;
+    $('doneBtn').disabled=true;
+    $('count').textContent='0 / 5';
+  }catch(err){
+    console.error(err);
+    setError(err.name==='NotAllowedError'?'Camera/AR permission was denied. Allow camera access and try again.':'Could not start AR: '+(err.message||err));
+  }
+}
+function matrixPosition(matrix){
+  return new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().fromArray(matrix));
+}
+function updateGiftPoses(frame){
+  for(const gift of state.gifts){
+    if(gift.anchor){
+      const pose=frame.getPose(gift.anchor.anchorSpace,state.refSpace);
+      if(pose){gift.group.matrix.fromArray(pose.transform.matrix);gift.group.matrixWorldNeedsUpdate=true;gift.worldPos.setFromMatrixPosition(gift.group.matrix);}
+    }else if(gift.fallbackMatrix){
+      gift.group.matrix.fromArray(gift.fallbackMatrix);gift.group.matrixWorldNeedsUpdate=true;gift.worldPos.setFromMatrixPosition(gift.group.matrix);
+    }
+  }
+}
+function placeGiftFromHit(frame,hit){
+  const name=$('prizeName').value.trim();
+  if(!name){setStatus('Name this gift first','Enter the prize name, then place it on the selected surface.');return;}
+  const pose=hit.getPose(state.refSpace);
+  if(!pose){return;}
+  const group=giftMesh();
+  group.matrixAutoUpdate=false;
+  group.matrix.fromArray(pose.transform.matrix);
+  group.matrixWorldNeedsUpdate=true;
+  state.scene.add(group);
+  const gift={id:crypto.randomUUID(),name,message:$('prizeMessageInput').value.trim(),group,anchor:null,fallbackMatrix:Array.from(pose.transform.matrix),worldPos:matrixPosition(pose.transform.matrix),opened:false};
+  state.gifts.push(gift);
+  if(typeof hit.createAnchor==='function'){
+    hit.createAnchor().then(anchor=>{gift.anchor=anchor;gift.fallbackMatrix=null;}).catch(err=>console.warn('Anchor unavailable; using session reference pose',err));
+  }
+  $('prizeName').value='';$('prizeMessageInput').value='';
+  updateMasterUI();
+  setStatus('Gift placed!','Move to another surface and place the next gift.');
+}
+function updateMasterUI(){
+  const n=state.gifts.length;
+  $('count').textContent=n+' / '+MAX_GIFTS;
+  $('placeBtn').disabled=!state.lastHit||n>=MAX_GIFTS;
+  $('undoBtn').disabled=n===0;
+  $('doneBtn').disabled=n!==MAX_GIFTS;
+  if(n===MAX_GIFTS)setStatus('All gifts are hidden!','Press Lock gifts & hand to Hunter when you are ready.');
+}
+function undoGift(){
+  const gift=state.gifts.pop();if(!gift)return;
+  if(gift.anchor)gift.anchor.delete();
+  state.scene.remove(gift.group);
+  updateMasterUI();
+  setStatus('Last gift removed','You can place it somewhere else.');
+}
+function switchToHunter(){
+  if(state.gifts.length!==MAX_GIFTS)return;
+  state.mode='hunter';
+  $('mode').textContent='Hunter mode';
+  $('masterPanel').classList.add('hidden');
+  $('hunterPanel').classList.remove('hidden');
+  $('count').textContent='0 / 5';
+  for(const g of state.gifts)g.group.visible=false;
+  setStatus('The hunt begins!','Follow the magical compass. Keep moving slowly and scan the room.');
+}
+function updateCompass(viewerPose){
+  const remaining=state.gifts.filter(g=>!g.opened);
+  $('foundCount').textContent=state.opened.size+' of '+MAX_GIFTS+' gifts discovered';
+  if(!remaining.length){state.nearest=null;$('heat').textContent='All treasures found!';$('distance').textContent='Christmas magic restored.';$('openBtn').disabled=true;setStatus('Hunt complete!','You found every Christmas gift. Merry Christmas!');return;}
+  const vp=viewerPose.transform.position;
+  const camPos=new THREE.Vector3(vp.x,vp.y,vp.z);
+  const camQuat=new THREE.Quaternion(viewerPose.transform.orientation.x,viewerPose.transform.orientation.y,viewerPose.transform.orientation.z,viewerPose.transform.orientation.w);
+  let best=null,bestD=Infinity;
+  for(const g of remaining){
+    const d=camPos.distanceTo(g.worldPos);
+    if(d<bestD){bestD=d;best=g;}
+    g.group.visible=d<1.8;
+  }
+  state.nearest=best;
+  const to=best.worldPos.clone().sub(camPos);
+  const local=to.applyQuaternion(camQuat.clone().invert());
+  const angle=Math.atan2(local.x,-local.z)*180/Math.PI;
+  $('needle').style.transform=`rotate(${angle}deg)`;
+  if(bestD>4){$('heat').textContent='COLD ❄️';$('distance').textContent='A treasure is far away. Follow the arrow.';}
+  else if(bestD>2){$('heat').textContent='WARM 🌤️';$('distance').textContent='Getting closer… keep following the arrow.';}
+  else if(bestD>1.15){$('heat').textContent='HOT 🔥';$('distance').textContent='Very close! Look carefully around you.';}
+  else{$('heat').textContent='BURNING! ✨';$('distance').textContent='A gift is nearby. Tap to reveal it!';}
+  $('openBtn').disabled=bestD>1.35;
+  $('openBtn').textContent=bestD<=1.35?'✦ Open the gift':'Find a gift to open';
+}
+function renderFrame(time,frame){
+  if(!frame||!state.session)return;
+  const hits=frame.getHitTestResults(state.hitSource);
+  state.lastHit=hits.length?hits[0]:null;
+  if(state.mode==='master'){
+    if(state.lastHit){
+      const pose=state.lastHit.getPose(state.refSpace);
+      if(pose){state.reticle.visible=true;state.reticle.matrix.fromArray(pose.transform.matrix);state.reticle.matrixWorldNeedsUpdate=true;}
+    }else state.reticle.visible=false;
+    $('placeBtn').disabled=!state.lastHit||state.gifts.length>=MAX_GIFTS;
+    if(state.pendingPlace&&state.lastHit&&state.gifts.length<MAX_GIFTS){
+      state.pendingPlace=false;placeGiftFromHit(frame,state.lastHit);
+    }
+  }else{
+    state.reticle.visible=false;
+    updateGiftPoses(frame);
+    const viewerPose=frame.getViewerPose(state.refSpace);
+    if(viewerPose)updateCompass(viewerPose);
+  }
+  state.renderer.render(state.scene,state.camera);
+}
+$('startBtn').addEventListener('click',startAR);
+$('placeBtn').addEventListener('click',()=>{state.pendingPlace=true;});
+$('undoBtn').addEventListener('click',undoGift);
+$('doneBtn').addEventListener('click',switchToHunter);
+$('openBtn').addEventListener('click',()=>{
+  const g=state.nearest;if(!g||g.opened)return;
+  const viewer=state.framePose;
+  g.opened=true;state.opened.add(g.id);g.group.visible=true;
+  $('prizeTitle').textContent=g.name;
+  $('prizeMessage').textContent=g.message||'You found a Christmas surprise. Enjoy!';
+  if(state.opened.size===MAX_GIFTS){
+    $('prizeIcon').textContent='🎄';
+    $('prizeTitle').textContent='Christmas magic complete!';
+    $('prizeMessage').textContent='You found every gift. Merry Christmas!';
+  }
+  $('prizeModal').classList.remove('hidden');
+  $('count').textContent=state.opened.size+' / '+MAX_GIFTS;
+  $('openBtn').disabled=true;
+  $('heat').textContent='TREASURE FOUND! 🎁';
+});
+$('closePrize').addEventListener('click',()=>{
+  $('prizeModal').classList.add('hidden');
+  if(state.opened.size===MAX_GIFTS){
+    setStatus('Hunt complete!','You found every Christmas gift. Merry Christmas!');
+    $('heat').textContent='All treasures found! 🎄';
+    $('distance').textContent='Christmas magic restored.';
+    $('openBtn').disabled=true;
+  }
+});
+$('endBtn').addEventListener('click',()=>{if(state.session)state.session.end();});
+window.addEventListener('resize',()=>{if(state.renderer){state.renderer.setSize(innerWidth,innerHeight);}});
+</script>
+</body>
+</html>
