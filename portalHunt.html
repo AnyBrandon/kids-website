@@ -50,6 +50,7 @@ p{color:#c2cdeb;font-size:14px;line-height:1.55;margin:8px 0 18px}
   -webkit-mask-image:radial-gradient(circle,#000 8%,transparent 68%);mask-image:radial-gradient(circle,#000 8%,transparent 68%)}
 #prizeSparkles{position:absolute;left:50%;top:50%;width:min(86vw,390px);height:340px;transform:translate(-50%,-50%);pointer-events:none}
 .spark{position:absolute;left:var(--x);top:var(--y);font-size:var(--s);opacity:0}
+#errBanner{position:absolute;z-index:9;left:14px;right:14px;top:calc(env(safe-area-inset-top) + 84px);color:#ff8f9a;font-size:11px;line-height:1.3;text-align:center;pointer-events:none;text-shadow:0 1px 4px #000}
 #flash{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:0;background:radial-gradient(circle,#fffdf0,#ffe29a)}
 #flash.go{animation:flashAnim .7s ease-out}
 @keyframes flashAnim{0%{opacity:0}25%{opacity:.85}100%{opacity:0}}
@@ -133,6 +134,7 @@ p{color:#c2cdeb;font-size:14px;line-height:1.55;margin:8px 0 18px}
     </div>
   </div>
 
+  <div id="errBanner" class="hidden"></div>
   <div id="flash"></div>
   <div id="demoBar" class="hidden"><button id="replayBtn" class="gold">Replay opening</button></div>
 
@@ -151,7 +153,7 @@ p{color:#c2cdeb;font-size:14px;line-height:1.55;margin:8px 0 18px}
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
-const BUILD='v1.3-opening';
+const BUILD='v1.3.1-lockfix';
 const GIFT_SCALE=0.2;       // about a 4.5 cm box
 const REVEAL_RADIUS=0.7;    // horizontal metres: a gift becomes visible
 const OPEN_RADIUS=0.35;     // horizontal metres: the gift can be opened
@@ -162,6 +164,7 @@ const POP_SECONDS=0.35;
 const OPEN_ANIM={shake:0.9,rise:1.5,burst:1.5,reveal:2.3,end:3.3}; // seconds since the tap
 const SOUND_ENABLED=true;
 const DEMO=new URLSearchParams(location.search).get('demo')==='1';
+const DEMO_HUNT=new URLSearchParams(location.search).get('demo')==='hunt'; // headless regression harness
 console.log('Portal Hunt build',BUILD);
 
 const $ = id => document.getElementById(id);
@@ -181,6 +184,26 @@ function setText(el,v){if(el.textContent!==v)el.textContent=v;}
 function setDisabled(el,v){if(el.disabled!==v)el.disabled=v;}
 function setStatus(title,sub){setText($('headline'),title);setText($('subline'),sub);}
 function setError(msg){$('error').textContent=msg;}
+// Visible error banner: uncaught errors must never be silent on a phone.
+let errTimer=null,lastErrText='';
+function reportError(err,where,line){
+  try{
+    const msg=(err&&err.message)?err.message:String(err);
+    if(line==null){const m=/:(\d+):\d+\)?\s*$/m.exec(((err&&err.stack)||'').split('\n').find(l=>/:\d+:\d+/.test(l))||'');if(m)line=m[1];}
+    const text=(where?where+': ':'')+msg+(line?' (line '+line+')':'');
+    if(text!==lastErrText){console.error('[PortalHunt]',text,err);lastErrText=text;}
+    const b=$('errBanner');b.textContent=text;b.classList.remove('hidden');
+    if(errTimer)clearTimeout(errTimer);
+    errTimer=setTimeout(clearErrBanner,10000);
+  }catch(e2){console.error(e2);}
+}
+function clearErrBanner(){
+  if(errTimer){clearTimeout(errTimer);errTimer=null;}
+  lastErrText='';
+  const b=$('errBanner');b.textContent='';b.classList.add('hidden');
+}
+window.addEventListener('error',e=>reportError(e.error||e.message,'error',e.lineno));
+window.addEventListener('unhandledrejection',e=>reportError(e.reason,'promise'));
 
 // --- Pure math (plain numbers, no THREE) ---
 // Horizontal (x,z) distance and vertical delta (gift minus camera).
@@ -234,6 +257,7 @@ function resetGame(){
   state.gifts.length=0;
   state.opened.clear();
   state.mode='master';
+  clearErrBanner();
   state.opening=false;
   $('flash').classList.remove('go');
   $('prizeModal').classList.remove('reveal','grand');
@@ -374,7 +398,7 @@ function placeGiftFromHit(hit){
   }
   $('prizeName').value='';$('prizeMessageInput').value='';
   updateMasterUI();
-  setStatus('Gift placed!','Move to another surface and place the next gift.');
+  if(state.gifts.length<MAX_GIFTS)setStatus('Gift placed!','Move to another surface and place the next gift.');
 }
 function updateMasterUI(){
   const n=state.gifts.length;
@@ -398,7 +422,12 @@ function switchToHunter(){
   $('masterPanel').classList.add('hidden');
   $('hunterPanel').classList.remove('hidden');
   $('count').textContent='0 / 5';
-  for(const g of state.gifts){g.group.visible=false;g.shown=false;g.group.userData.halo.visible=false;g.group.userData.marker.visible=false;}
+  for(const g of state.gifts){
+    try{
+      g.shown=false;
+      if(g.group){g.group.visible=false;const u=g.group.userData;if(u?.halo)u.halo.visible=false;if(u?.marker)u.marker.visible=false;}
+    }catch(e){reportError(e,'lock');}
+  }
   setStatus('The hunt begins!','Gifts are tiny and well hidden. Search slowly, high and low. Get very close to open one.');
 }
 // ---------- Gift opening sequence ----------
@@ -611,7 +640,8 @@ function tickOpening(time){
     if(g.opening&&!g.removed&&g.anim)animateOpen(g,time);
   }
 }
-// ---------- end opening sequence ----------function easeOutBack(x){const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);}
+// ---------- end opening sequence ----------
+function easeOutBack(x){const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);}
 function updateHunter(viewerPose,time){
   const remaining=state.gifts.filter(g=>!g.opened&&!g.removed&&!g.opening);
   setText($('foundCount'),state.opened.size+' of '+MAX_GIFTS+' gifts discovered');
@@ -658,7 +688,8 @@ function updateHunter(viewerPose,time){
   setText($('heat'),heat);setText($('distance'),hint);
   setDisabled($('openBtn'),!canOpen);
   setText($('openBtn'),canOpen?'✦ Open the gift':'Find a gift to open');
-}function renderFrame(time,frame){
+}
+function renderFrameInner(time,frame){
   if(!frame||!state.session||!state.renderer)return;
   const hits=frame.getHitTestResults(state.hitSource);
   let hit=hits.length?hits[0]:null;
@@ -684,6 +715,9 @@ function updateHunter(viewerPose,time){
     if(viewerPose)updateHunter(viewerPose,time);
   }
   state.renderer.render(state.scene,state.camera);
+}
+function renderFrame(time,frame){
+  try{renderFrameInner(time,frame);}catch(e){reportError(e,'frame');}
 }
 $('startBtn').addEventListener('click',startAR);
 $('placeBtn').addEventListener('click',()=>{state.pendingPlace=true;});
@@ -744,6 +778,93 @@ function startDemo(){
   const loop=time=>{tickOpening(time);r.render(state.scene,state.camera);requestAnimationFrame(loop);};
   requestAnimationFrame(loop);
 }
-if(DEMO)startDemo();</script>
+// ---------- Headless regression harness (?demo=hunt): no WebXR, calls the real game functions ----------
+function startDemoHunt(){
+  initThree();
+  const r=state.renderer;
+  r.xr.enabled=false;r.setAnimationLoop(null);
+  state.camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.01,30);
+  state.camera.position.set(0,3,4);state.camera.lookAt(0,0,-1);
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,8).rotateX(-Math.PI/2),new THREE.MeshStandardMaterial({color:0x2a3a66,roughness:.9}));
+  floor.position.y=-0.001;state.scene.add(floor);
+  $('cover').classList.add('hidden');
+  const results=[];window.__results=results;window.__done=false;
+  const check=(name,ok,detail)=>{results.push({name,pass:!!ok,detail:String(detail??'')});};
+  // 1. place 5 gifts through the real placeGiftFromHit with a fake hit
+  const spots=[[-1.5,-1],[1.2,-1.5],[0.3,-2.5],[-0.8,-3],[1.6,-0.2]];
+  state.lastHit={};
+  spots.forEach(([x,z],i)=>{
+    const m=[1,0,0,0, 0,1,0,0, 0,0,1,0, x,0,z,1];
+    $('prizeName').value='Prize '+(i+1);$('prizeMessageInput').value='Message '+(i+1);
+    placeGiftFromHit({getPose:()=>({transform:{matrix:m}})});
+  });
+  check('5 gifts placed',state.gifts.length===5,state.gifts.length+' gifts');
+  check('headline after 5th gift',$('headline').textContent==='All gifts are hidden!',$('headline').textContent);
+  check('lock button enabled',!$('doneBtn').disabled,'');
+  // 2. real lock handler, two clicks
+  $('doneBtn').click();
+  check('1st tap changes label',$('doneBtn').textContent==='Tap again to lock (final!)',$('doneBtn').textContent);
+  $('doneBtn').click();
+  check('2nd tap switches to hunter',state.mode==='hunter'&&!$('masterPanel').offsetParent&&!!$('hunterPanel').offsetParent,'mode='+state.mode);
+  check('lock label restored',$('doneBtn').textContent==='Lock gifts & hand to Hunter',$('doneBtn').textContent);
+  check('all gifts hidden at hunt start',state.gifts.every(g=>!g.group.visible),'');
+  // 3. walk the hunter to each gift
+  const cam={x:3,y:1.4,z:2};
+  const vpose=()=>({transform:{position:{x:cam.x,y:cam.y,z:cam.z},orientation:{x:0,y:0,z:0,w:1}}});
+  const order=state.gifts.slice();
+  let gi=0,phase='walk',last=null,phaseT=0,heatSeen=new Set(),sawPop=false,popped=false;
+  const fakeFrame={getPose:()=>null};
+  const loop=time=>{
+    requestAnimationFrame(loop);
+    const dt=last===null?0.016:Math.min((time-last)/1000,0.1);last=time;
+    updateGiftPoses(fakeFrame);
+    tickOpening(time);
+    updateHunter(vpose(),time);
+    r.render(state.scene,state.camera);
+    heatSeen.add($('heat').textContent);
+    if(window.__done)return;
+    const g=order[gi];
+    if(!g){return;}
+    if(phase==='walk'){
+      const dx=g.worldPos.x-cam.x,dz=g.worldPos.z-cam.z,d=Math.hypot(dx,dz);
+      if(d>0.2){const s=Math.min(1.5*dt,d-0.2);cam.x+=dx/d*s;cam.z+=dz/d*s;}
+      if(d>REVEAL_RADIUS+0.15&&g.group.visible&&!g.opening)check('gift '+(gi+1)+' hidden outside reveal radius',false,'d='+d.toFixed(2));
+      if(d<REVEAL_RADIUS-0.05&&g.group.visible)sawPop=true;
+      if(d<=0.2+1e-6){
+        phase='settle';phaseT=time;
+        check('gift '+(gi+1)+' pops in within reveal radius',sawPop&&g.group.visible,'');
+        sawPop=false;
+      }
+    }else if(phase==='settle'&&time-phaseT>500){
+      const body=g.group.userData.body;
+      check('gift '+(gi+1)+' pop-in finishes at GIFT_SCALE',Math.abs(body.scale.x-GIFT_SCALE)<1e-6,body.scale.x.toFixed(3));
+      check('gift '+(gi+1)+' open button enabled',!$('openBtn').disabled,$('openBtn').textContent);
+      check('gift '+(gi+1)+' heat label RIGHT THERE',$('heat').textContent.startsWith('RIGHT THERE'),$('heat').textContent);
+      $('openBtn').click();
+      check('gift '+(gi+1)+' sequence started',state.opening&&g.opening,'');
+      $('openBtn').click(); // second tap must be ignored
+      phase='opening';phaseT=time;
+    }else if(phase==='opening'){
+      if(g.removed){
+        check('gift '+(gi+1)+' removed after sequence',!g.group.parent&&!state.opening,'t='+((time-phaseT)/1000).toFixed(2)+'s');
+        check('gift '+(gi+1)+' prize modal shown',!$('prizeModal').classList.contains('hidden'),'');
+        if(gi===4){
+          check('5th modal is grand',$('prizeModal').classList.contains('grand')&&$('prizeTitle').textContent==='Christmas magic complete!',$('prizeTitle').textContent);
+          check('counter 5 / 5',$('count').textContent==='5 / 5',$('count').textContent);
+        }
+        $('closePrize').click();
+        gi++;phase='walk';
+        if(gi>=5){
+          check('heat label changed during hunt',heatSeen.size>=3,[...heatSeen].join(' | '));
+          setTimeout(()=>{check('hunt complete status',$('headline').textContent==='Hunt complete!',$('headline').textContent);window.__done=true;},300);
+          gi=5;
+        }
+      }else if(time-phaseT>6000){check('gift '+(gi+1)+' removed after sequence',false,'timeout');window.__done=true;}
+    }
+  };
+  requestAnimationFrame(loop);
+}
+if(DEMO)startDemo();
+if(DEMO_HUNT)startDemoHunt();</script>
 </body>
 </html>
