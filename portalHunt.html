@@ -43,8 +43,39 @@ p{color:#c2cdeb;font-size:14px;line-height:1.55;margin:8px 0 18px}
 #heat{font-weight:900;font-size:26px;text-align:center}
 #distance{text-align:center;margin-top:3px}
 #prizeModal{position:absolute;z-index:8;inset:0;background:#050918d9;display:flex;align-items:center;justify-content:center;padding:24px}
-#prizeCard{width:min(100%,370px);border-radius:24px;padding:24px;text-align:center;background:linear-gradient(160deg,#27365d,#12172d);border:1px solid #f7d78a88;box-shadow:0 0 60px #e3b64d44}
-#prizeIcon{font-size:64px;filter:drop-shadow(0 0 18px #ffd56d)}
+#prizeCard{position:relative;overflow:hidden;width:min(100%,370px);border-radius:24px;padding:24px;text-align:center;background:linear-gradient(160deg,#27365d,#12172d);border:1px solid #f7d78a88;box-shadow:0 0 60px #e3b64d44}
+#prizeIcon{position:relative;display:inline-block;isolation:isolate;font-size:64px;filter:drop-shadow(0 0 18px #ffd56d)}
+#prizeIcon::before{content:'';position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;z-index:-1;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg,#ffd56a66 0deg 10deg,transparent 10deg 30deg);
+  -webkit-mask-image:radial-gradient(circle,#000 8%,transparent 68%);mask-image:radial-gradient(circle,#000 8%,transparent 68%)}
+#prizeSparkles{position:absolute;left:50%;top:50%;width:min(86vw,390px);height:340px;transform:translate(-50%,-50%);pointer-events:none}
+.spark{position:absolute;left:var(--x);top:var(--y);font-size:var(--s);opacity:0}
+#flash{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:0;background:radial-gradient(circle,#fffdf0,#ffe29a)}
+#flash.go{animation:flashAnim .7s ease-out}
+@keyframes flashAnim{0%{opacity:0}25%{opacity:.85}100%{opacity:0}}
+#demoBar{position:absolute;z-index:6;top:calc(env(safe-area-inset-top) + 70px);left:50%;transform:translateX(-50%)}
+@media (prefers-reduced-motion:no-preference){
+  #prizeModal.reveal{animation:pmFade .3s ease-out both}
+  #prizeModal.reveal #prizeCard{animation:pmPop .6s cubic-bezier(.2,1.5,.35,1) both}
+  #prizeModal.reveal #prizeIcon{animation:iconPop .55s cubic-bezier(.2,1.6,.35,1) .15s both,glowPulse 1.6s ease-in-out .7s infinite}
+  #prizeModal.reveal #prizeIcon::before{animation:raySpin 14s linear infinite}
+  #prizeModal.reveal.grand #prizeIcon::before{animation-duration:5s}
+  #prizeModal.reveal #prizeTitle{animation:fadeUp .5s ease-out .2s both}
+  #prizeModal.reveal #prizeMessage{animation:fadeUp .5s ease-out .4s both}
+  #prizeModal.reveal #prizeCard::after{content:'';position:absolute;top:0;bottom:0;left:-70%;width:40%;pointer-events:none;background:linear-gradient(100deg,transparent,#ffffff55,transparent);transform:skewX(-20deg);animation:shineSweep 1.1s ease-in-out .5s 1 both}
+  #prizeModal.reveal #closePrize{animation:fadeIn .5s ease-out .8s both}
+  #prizeModal.reveal .spark{animation:sparkFloat var(--d) ease-out var(--dl) infinite}
+}
+@media (prefers-reduced-motion:reduce){.spark{display:none}#flash.go{animation-duration:.01s}}
+@keyframes pmFade{from{background-color:#05091800}to{background-color:#050918d9}}
+@keyframes pmPop{0%{transform:scale(.5) rotate(-6deg);opacity:0}55%{transform:scale(1.05) rotate(3deg);opacity:1}80%{transform:scale(.99) rotate(-1deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes iconPop{0%{transform:scale(0) rotate(-30deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes glowPulse{0%,100%{filter:drop-shadow(0 0 12px #ffd56d)}50%{filter:drop-shadow(0 0 30px #ffe9a8)}}
+@keyframes raySpin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes shineSweep{from{left:-70%}to{left:130%}}
+@keyframes sparkFloat{0%{opacity:0;transform:translateY(20px) scale(.4)}20%{opacity:1}100%{opacity:0;transform:translateY(-110px) scale(1.1)}}
 #prizeTitle{font-size:25px;font-weight:950;color:#ffe5a4;margin:10px 0}
 #prizeMessage{font-size:15px;line-height:1.5;color:#fff}
 #reticleHint{font-size:11px;color:#c7d7ff;text-align:center}
@@ -102,6 +133,9 @@ p{color:#c2cdeb;font-size:14px;line-height:1.55;margin:8px 0 18px}
     </div>
   </div>
 
+  <div id="flash"></div>
+  <div id="demoBar" class="hidden"><button id="replayBtn" class="gold">Replay opening</button></div>
+
   <div id="prizeModal" class="hidden">
     <div id="prizeCard">
       <div id="prizeIcon">🎁</div>
@@ -111,6 +145,7 @@ p{color:#c2cdeb;font-size:14px;line-height:1.55;margin:8px 0 18px}
       <div style="height:18px"></div>
       <button id="closePrize" class="gold full">Continue hunting</button>
     </div>
+    <div id="prizeSparkles"></div>
   </div>
 </div>
 <script type="module">
@@ -124,6 +159,9 @@ const OPEN_MAX_DY=2.2;      // unchanged
 const HEAT={burning:REVEAL_RADIUS,hot:1.6,warm:3.2};
 const SHOW_HEAT_HINT=true;  // false = hunter gets no distance hints at all
 const POP_SECONDS=0.35;
+const OPEN_ANIM={shake:0.9,rise:1.5,burst:1.5,reveal:2.3,end:3.3}; // seconds since the tap
+const SOUND_ENABLED=true;
+const DEMO=new URLSearchParams(location.search).get('demo')==='1';
 console.log('Portal Hunt build',BUILD);
 
 const $ = id => document.getElementById(id);
@@ -131,7 +169,7 @@ const state = {
   session:null, refSpace:null, viewerSpace:null, hitSource:null, lastHit:null,
   renderer:null, scene:null, camera:null, reticle:null,
   gifts:[], opened: new Set(), mode:'master', pendingPlace:false,
-  anchorsAvailable:false, nearest:null, running:false
+  anchorsAvailable:false, nearest:null, running:false, opening:false
 };
 const MAX_GIFTS=5;
 const HEADLINE0='Prepare the magic', SUBLINE0='Find a flat surface and place your first gift.';
@@ -170,6 +208,7 @@ function giftMesh(){
   halo.position.y=.14; body.add(halo);
   root.userData.halo=halo;
   root.userData.body=body;
+  root.userData.parts={body,box,lid,ribbons:[ribbon1,ribbon2],bows:[bow1,bow2],mats:[boxMat,lidMat,ribbonMat]};
   const marker=new THREE.Mesh(new THREE.RingGeometry(.045,.06,32),new THREE.MeshBasicMaterial({color:0x8fffe0,transparent:true,opacity:.85,side:THREE.DoubleSide}));
   marker.geometry.rotateX(-Math.PI/2);marker.position.y=.002;root.add(marker);
   root.userData.marker=marker;
@@ -184,6 +223,8 @@ function disposeObject(obj){
 function removeGift(gift){
   if(gift.removed)return;
   gift.removed=true;
+  if(gift.anim&&gift.anim.stopAudio){try{gift.anim.stopAudio();}catch(e){}}
+  gift.opening=false;
   if(gift.anchor){try{gift.anchor.delete();}catch(e){}gift.anchor=null;}
   if(gift.group.parent)gift.group.parent.remove(gift.group);
   disposeObject(gift.group);
@@ -193,6 +234,9 @@ function resetGame(){
   state.gifts.length=0;
   state.opened.clear();
   state.mode='master';
+  state.opening=false;
+  $('flash').classList.remove('go');
+  $('prizeModal').classList.remove('reveal','grand');
   state.pendingPlace=false;state.lastHit=null;state.nearest=null;
   if(state.hitSource){try{state.hitSource.cancel();}catch(e){}state.hitSource=null;}
   state.refSpace=null;state.viewerSpace=null;
@@ -357,11 +401,222 @@ function switchToHunter(){
   for(const g of state.gifts){g.group.visible=false;g.shown=false;g.group.userData.halo.visible=false;g.group.userData.marker.visible=false;}
   setStatus('The hunt begins!','Gifts are tiny and well hidden. Search slowly, high and low. Get very close to open one.');
 }
-function easeOutBack(x){const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);}
+// ---------- Gift opening sequence ----------
+const clamp01=x=>Math.min(Math.max(x,0),1);
+const easeOutCubic=x=>1-Math.pow(1-x,3);
+const easeInBack=x=>{const c1=1.70158,c3=c1+1;return c3*x*x*x-c1*x*x;};
+const FX_LIFT=0.14;       // metres: height of the particle burst above the surface
+let audioCtx=null;
+function startSound(){
+  if(!SOUND_ENABLED)return null;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return null;
+    if(!audioCtx)audioCtx=new AC();
+    if(audioCtx.state==='suspended')audioCtx.resume();
+    const ctx=audioCtx,t0=ctx.currentTime+0.02,tb=t0+OPEN_ANIM.burst;
+    const master=ctx.createGain();master.gain.value=0.25;master.connect(ctx.destination);
+    const nodes=[];
+    // rising tone during the shake
+    const o=ctx.createOscillator();o.type='triangle';
+    o.frequency.setValueAtTime(200,t0);o.frequency.exponentialRampToValueAtTime(900,t0+OPEN_ANIM.shake);
+    const og=ctx.createGain();
+    og.gain.setValueAtTime(0.001,t0);og.gain.exponentialRampToValueAtTime(0.6,t0+OPEN_ANIM.shake);og.gain.exponentialRampToValueAtTime(0.001,t0+OPEN_ANIM.shake+0.12);
+    o.connect(og);og.connect(master);o.start(t0);o.stop(t0+OPEN_ANIM.shake+0.15);nodes.push(o);
+    // whoosh: filtered noise
+    const len=Math.floor(ctx.sampleRate*0.7),buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+    const ns=ctx.createBufferSource();ns.buffer=buf;
+    const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.2;
+    bp.frequency.setValueAtTime(500,tb);bp.frequency.exponentialRampToValueAtTime(4000,tb+0.5);
+    const ng=ctx.createGain();ng.gain.setValueAtTime(0.7,tb);ng.gain.exponentialRampToValueAtTime(0.001,tb+0.65);
+    ns.connect(bp);bp.connect(ng);ng.connect(master);ns.start(tb);nodes.push(ns);
+    // arpeggio C6 E6 G6 C7
+    [1046.5,1318.5,1568,2093].forEach((f,i)=>{
+      const s=tb+i*0.09,n=ctx.createOscillator();n.type='sine';n.frequency.value=f;
+      const g=ctx.createGain();g.gain.setValueAtTime(0.001,s);g.gain.exponentialRampToValueAtTime(0.5,s+0.01);g.gain.exponentialRampToValueAtTime(0.001,s+0.7);
+      n.connect(g);g.connect(master);n.start(s);n.stop(s+0.75);nodes.push(n);
+    });
+    return ()=>{
+      try{master.gain.cancelScheduledValues(ctx.currentTime);master.gain.setValueAtTime(0,ctx.currentTime);}catch(e){}
+      nodes.forEach(n=>{try{n.stop();}catch(e){}});
+      setTimeout(()=>{try{master.disconnect();}catch(e){}},100);
+    };
+  }catch(e){console.warn('Sound unavailable',e);return null;}
+}
+function buildFx(){
+  const fx=new THREE.Group();
+  fx.position.y=FX_LIFT;fx.visible=false;
+  const N=220,pos=new Float32Array(N*3),col=new Float32Array(N*3),vel=new Float32Array(N*3);
+  const palette=[0xffc94a,0xff3b4a,0xffffff,0x4dff88].map(c=>new THREE.Color(c));
+  for(let i=0;i<N;i++){
+    let x,y,z,l;
+    do{x=Math.random()*2-1;y=Math.random()*2-1;z=Math.random()*2-1;l=x*x+y*y+z*z;}while(l>1||l<0.01);
+    l=Math.sqrt(l);x/=l;y/=l;z/=l;
+    y=Math.abs(y)*0.7+y*0.3+0.15; // bias upward
+    const n=Math.hypot(x,y,z),sp=0.5+Math.random()*0.9;
+    vel[i*3]=x/n*sp;vel[i*3+1]=y/n*sp;vel[i*3+2]=z/n*sp;
+    const c=palette[i%4];col[i*3]=c.r;col[i*3+1]=c.g;col[i*3+2]=c.b;
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const points=new THREE.Points(geo,new THREE.PointsMaterial({size:0.014,sizeAttenuation:true,vertexColors:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:1}));
+  points.frustumCulled=false;
+  fx.add(points);
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1.2,24,1,true),new THREE.MeshBasicMaterial({color:0xffe9a8,transparent:true,opacity:0.6,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  beam.position.y=0.6-FX_LIFT;
+  fx.add(beam);
+  const ringGeo=new THREE.RingGeometry(0.85,1,48);ringGeo.rotateX(-Math.PI/2);
+  const ring=new THREE.Mesh(ringGeo,new THREE.MeshBasicMaterial({color:0xffe9a8,transparent:true,opacity:0.8,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  ring.position.y=0.003-FX_LIFT;
+  fx.add(ring);
+  return {fx,points,beam,ring,vel,pos};
+}
+function startOpenSequence(gift){
+  if(state.opening||gift.opening||gift.opened||gift.removed)return;
+  state.opening=true;gift.opening=true;
+  setDisabled($('openBtn'),true);setText($('heat'),'✨');
+  const root=gift.group,P=root.userData.parts;
+  P.body.scale.setScalar(GIFT_SCALE);P.body.rotation.set(0,0,0);P.body.position.y=0;
+  gift.shown=true;gift.revealStart=null;root.visible=true;
+  root.userData.marker.visible=false;
+  root.userData.halo.visible=true;
+  // lid, ribbons and bows fade, so their materials must be transparent
+  P.mats[1].transparent=true;P.mats[2].transparent=true;
+  const f=buildFx();root.add(f.fx);
+  const orig=new Map();
+  for(const m of [P.lid,...P.ribbons,...P.bows])orig.set(m,m.position.clone());
+  const scatter=[...P.ribbons,...P.bows].map(m=>({m,ang:Math.random()*Math.PI*2,spin:3+Math.random()*5}));
+  gift.anim={t0:null,burst:false,revealed:false,fx:f,orig,scatter,flashed:false,stopAudio:startSound()};
+}
+function wobblePhase(t){
+  const S=OPEN_ANIM.shake;
+  if(t<=S)return 2*Math.PI*(8*t+7/S*t*t);
+  return 2*Math.PI*(8*S+7*S+22*(t-S));
+}
+function showPrize(g){
+  g.opened=true;state.opened.add(g.id);
+  $('prizeTitle').textContent=g.name;
+  $('prizeMessage').textContent=g.message||'You found a Christmas surprise. Enjoy!';
+  const grand=state.opened.size===MAX_GIFTS;
+  if(grand){
+    $('prizeIcon').textContent='🎄';
+    $('prizeTitle').textContent='Christmas magic complete!';
+    $('prizeMessage').textContent='You found every gift. Merry Christmas!';
+  }else $('prizeIcon').textContent='🎁';
+  const sp=$('prizeSparkles');sp.textContent='';
+  const n=grand?24:12;
+  for(let i=0;i<n;i++){
+    const s=document.createElement('span');s.className='spark';s.textContent='✨';
+    s.style.setProperty('--x',(Math.random()*92)+'%');
+    s.style.setProperty('--y',(25+Math.random()*70)+'%');
+    s.style.setProperty('--s',(12+Math.random()*16)+'px');
+    s.style.setProperty('--d',(1.6+Math.random()*1.6)+'s');
+    s.style.setProperty('--dl',(Math.random()*2)+'s');
+    sp.appendChild(s);
+  }
+  const m=$('prizeModal');
+  m.classList.remove('hidden');m.classList.remove('reveal','grand');
+  void m.offsetWidth; // force reflow so the CSS animations restart
+  if(grand)m.classList.add('grand');
+  m.classList.add('reveal');
+  $('count').textContent=state.opened.size+' / '+MAX_GIFTS;
+  $('openBtn').disabled=true;
+  $('heat').textContent='TREASURE FOUND! 🎁';
+}
+function burstEffects(){
+  const fl=$('flash');fl.classList.remove('go');void fl.offsetWidth;fl.classList.add('go');
+  try{navigator.vibrate?.([40,60,120]);}catch(e){}
+}
+function animateOpen(g,time){
+  const a=g.anim,A=OPEN_ANIM,P=g.group.userData.parts;
+  if(a.t0===null)a.t0=time;
+  const t=Math.max((time-a.t0)/1000,0);
+  const halo=g.group.userData.halo;
+  // a) shake
+  const k=clamp01(t/A.shake);
+  const em=1+3*k;
+  for(const m of P.mats)m.emissiveIntensity=em;
+  if(t<A.shake+0.12){
+    const amp=t<A.shake?0.35*k:0.35*(1-(t-A.shake)/0.12);
+    const ph=wobblePhase(t);
+    P.body.rotation.x=amp*Math.sin(ph);
+    P.body.rotation.z=amp*Math.cos(ph*1.13+1);
+  }else{P.body.rotation.x=0;P.body.rotation.z=0;}
+  if(t<A.burst){
+    halo.visible=true;
+    halo.material.opacity=(0.12+0.38*k)*(0.8+0.2*Math.sin(t*18));
+    halo.scale.setScalar(1+0.6*k);
+  }
+  // b) rise + spin
+  if(t>=A.shake){
+    const D=A.rise-A.shake,s=t-A.shake;
+    P.body.position.y=0.12*easeOutCubic(clamp01(s/D));
+    P.body.rotation.y=2*Math.PI*(t<A.rise?s*s/D:D+2*(t-A.rise));
+  }
+  // c) burst
+  const f=a.fx;
+  if(t>=A.burst){
+    const tb=t-A.burst;
+    if(!a.burst){a.burst=true;f.fx.visible=true;burstEffects();}
+    // lid
+    const lidO=a.orig.get(P.lid),lk=clamp01(tb/0.8);
+    P.lid.position.y=lidO.y+(0.3/GIFT_SCALE)*easeOutCubic(lk);
+    P.lid.rotation.set(tb*5,tb*11,tb*3);
+    P.mats[1].opacity=1-lk;
+    P.lid.visible=lk<1;
+    // ribbons and bows
+    for(const s of a.scatter){
+      const o=a.orig.get(s.m),e=easeOutCubic(lk),d=0.25/GIFT_SCALE*e;
+      s.m.position.set(o.x+Math.cos(s.ang)*d,o.y+(0.15/GIFT_SCALE)*e,o.z+Math.sin(s.ang)*d);
+      s.m.rotation.set(tb*s.spin,tb*s.spin*0.7,tb*s.spin*0.4);
+      s.m.visible=lk<1;
+    }
+    P.mats[2].opacity=1-lk;
+    // box
+    const bk=clamp01(tb/0.25);
+    P.box.scale.setScalar(Math.max(1-easeInBack(bk),0));
+    if(bk>=1)P.box.visible=false;
+    // halo fades out
+    const hk=clamp01(tb/0.8);
+    halo.material.opacity=0.5*(1-hk);halo.scale.setScalar(1.6+0.6*hk);
+    if(hk>=1)halo.visible=false;
+    // particles
+    if(tb<1.6){
+      const pos=f.pos,vel=f.vel,floor=0.002-FX_LIFT;
+      for(let i=0;i<220;i++){
+        pos[i*3]=vel[i*3]*tb;
+        pos[i*3+1]=Math.max(vel[i*3+1]*tb-0.6*tb*tb,floor);
+        pos[i*3+2]=vel[i*3+2]*tb;
+      }
+      f.points.geometry.attributes.position.needsUpdate=true;
+      f.points.material.opacity=1-tb/1.6;
+    }else f.points.visible=false;
+    // beam
+    if(tb<1.0){const bk2=tb/1.0;f.beam.material.opacity=0.6*(1-bk2);f.beam.scale.set(1+bk2,1,1+bk2);}else f.beam.visible=false;
+    // shockwave
+    if(tb<0.7){const rk=tb/0.7;f.ring.scale.setScalar(0.05+0.85*rk);f.ring.material.opacity=0.8*(1-rk);}else f.ring.visible=false;
+  }
+  // d) reveal
+  if(t>=A.reveal&&!a.revealed){a.revealed=true;showPrize(g);}
+  // e) end
+  if(t>=A.end){
+    state.opening=false;
+    removeGift(g);
+  }
+}
+function tickOpening(time){
+  for(const g of state.gifts){
+    if(g.opening&&!g.removed&&g.anim)animateOpen(g,time);
+  }
+}
+// ---------- end opening sequence ----------function easeOutBack(x){const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);}
 function updateHunter(viewerPose,time){
-  const remaining=state.gifts.filter(g=>!g.opened&&!g.removed);
+  const remaining=state.gifts.filter(g=>!g.opened&&!g.removed&&!g.opening);
   setText($('foundCount'),state.opened.size+' of '+MAX_GIFTS+' gifts discovered');
   if(!remaining.length){
+    if(state.opening)return;
     state.nearest=null;
     setText($('heat'),'All treasures found!');setText($('distance'),'Christmas magic restored.');
     setDisabled($('openBtn'),true);
@@ -391,6 +646,7 @@ function updateHunter(viewerPose,time){
     }
   }
   state.nearest=best;
+  if(state.opening)return;
   const canOpen=bestH<=OPEN_RADIUS&&Math.abs(bestDy)<=OPEN_MAX_DY;
   let heat,hint;
   if(!SHOW_HEAT_HINT){heat='Search the room';hint='';}
@@ -423,6 +679,7 @@ function updateHunter(viewerPose,time){
     }
   }else{
     state.reticle.visible=false;
+    tickOpening(time);
     const viewerPose=frame.getViewerPose(state.refSpace);
     if(viewerPose)updateHunter(viewerPose,time);
   }
@@ -437,21 +694,9 @@ $('doneBtn').addEventListener('click',()=>{
   lockTimer=setTimeout(resetLockConfirm,4000);
 });
 $('openBtn').addEventListener('click',()=>{
-  const g=state.nearest;if(!g||g.opened)return;
-  g.opened=true;state.opened.add(g.id);removeGift(g);
-  $('prizeTitle').textContent=g.name;
-  $('prizeMessage').textContent=g.message||'You found a Christmas surprise. Enjoy!';
-  if(state.opened.size===MAX_GIFTS){
-    $('prizeIcon').textContent='🎄';
-    $('prizeTitle').textContent='Christmas magic complete!';
-    $('prizeMessage').textContent='You found every gift. Merry Christmas!';
-  }
-  $('prizeModal').classList.remove('hidden');
-  $('count').textContent=state.opened.size+' / '+MAX_GIFTS;
-  $('openBtn').disabled=true;
-  $('heat').textContent='TREASURE FOUND! 🎁';
-});
-$('closePrize').addEventListener('click',()=>{
+  const g=state.nearest;if(!g||g.opened||g.opening||g.removed||state.opening)return;
+  startOpenSequence(g);
+});$('closePrize').addEventListener('click',()=>{
   $('prizeModal').classList.add('hidden');
   if(state.opened.size===MAX_GIFTS){
     setStatus('Hunt complete!','You found every Christmas gift. Merry Christmas!');
@@ -462,6 +707,43 @@ $('closePrize').addEventListener('click',()=>{
 });
 $('endBtn').addEventListener('click',()=>{if(state.session)state.session.end();});
 window.addEventListener('resize',()=>{if(state.renderer){state.renderer.setSize(innerWidth,innerHeight);}});
-</script>
+// ---------- Desktop demo mode (?demo=1): no WebXR ----------
+function startDemo(){
+  initThree();
+  const r=state.renderer;
+  r.xr.enabled=false;
+  r.setAnimationLoop(null);
+  state.camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.01,20);
+  state.camera.position.set(0,0.35,0.7);
+  state.camera.lookAt(0,0,0);
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(3,3).rotateX(-Math.PI/2),new THREE.MeshStandardMaterial({color:0x2a3a66,roughness:.9}));
+  floor.position.y=-0.001;
+  state.scene.add(floor);
+  state.mode='hunter';
+  $('cover').classList.add('hidden');
+  $('bottom').classList.add('hidden');
+  $('demoBar').classList.remove('hidden');
+  $('mode').textContent='Demo mode';
+  setStatus('Demo mode','Tap Replay opening to watch the gift sequence.');
+  const spawn=()=>{
+    for(const g of state.gifts)removeGift(g);
+    state.gifts.length=0;state.opening=false;
+    const group=giftMesh();
+    group.userData.marker.visible=false;group.userData.halo.visible=false;
+    state.scene.add(group);
+    const gift={id:'demo-'+Math.random().toString(36).slice(2),name:'Demo prize',message:'This is how the prize reveal looks!',group,anchor:null,fallbackMatrix:null,worldPos:new THREE.Vector3(),opened:false,removed:false,shown:true,revealStart:null};
+    state.gifts.push(gift);
+    return gift;
+  };
+  spawn();
+  $('replayBtn').addEventListener('click',()=>{
+    $('prizeModal').classList.add('hidden');
+    startOpenSequence(spawn());
+  });
+  window.addEventListener('resize',()=>{state.camera.aspect=innerWidth/innerHeight;state.camera.updateProjectionMatrix();});
+  const loop=time=>{tickOpening(time);r.render(state.scene,state.camera);requestAnimationFrame(loop);};
+  requestAnimationFrame(loop);
+}
+if(DEMO)startDemo();</script>
 </body>
 </html>
