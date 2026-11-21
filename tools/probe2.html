@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARmemos probe-2</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #111; color: #eee; font-family: system-ui, sans-serif; }
+  #panel { padding: 8px; box-sizing: border-box; max-width: 100vw; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  button { font-size: 17px; padding: 12px 12px; margin: 3px 3px 3px 0; border-radius: 8px; border: 0; background: #2d6cdf; color: #fff; }
+  button.on { background: #1b7f3b; }
+  button.warnb { background: #8a5a00; }
+  .row { display: flex; flex-wrap: wrap; }
+  #stats { font: bold 18px/1.35 ui-monospace, Menlo, Consolas, monospace; background: rgba(0,0,0,.78); padding: 8px; border-radius: 8px; margin: 6px 0; white-space: pre-wrap; }
+  #preview { width: 160px; border: 1px solid #666; background: #000; display: block; margin-top: 4px; }
+  #log, #report { font: 17px/1.35 ui-monospace, Menlo, Consolas, monospace; background: rgba(0,0,0,.78); padding: 8px; border-radius: 8px; margin: 6px 0; white-space: pre-wrap; word-break: break-word; max-height: 38vh; overflow: auto; }
+  .err { color: #ff8a80; } .ok { color: #8be28b; } .warn { color: #ffd54f; }
+</style>
+</head>
+<body>
+<div id="panel">
+  <h1>ARmemos probe &mdash; BUILD <span id="build">probe-2</span></h1>
+  <div class="row">
+    <button id="btnAR">Start AR</button>
+    <button id="btnCV">Load OpenCV</button>
+    <button id="btnScan">Start scan</button>
+    <button id="btnBuild">Build map</button>
+    <button id="btnTest">Test localization</button>
+    <button id="btnSave">Save map</button>
+    <button id="btnLoad">Load map</button>
+    <button id="btnFlip">Flip Y: ON</button>
+    <button id="btnCopy">Copy report</button>
+  </div>
+  <div id="stats">starting...</div>
+  <canvas id="preview" width="160" height="120"></canvas>
+  <div id="log"></div>
+  <div id="report" hidden></div>
+</div>
+
+<script src="./mapcore.js?v=probe-2"></script>
+<script>
+(function () {
+  'use strict';
+  var BUILD = 'probe-2';
+  var $ = function (id) { return document.getElementById(id); };
+  var logEl = $('log'), statsEl = $('stats');
+  var MC = window.MapCore;
+
+  var S = {
+    enabledFeatures: null, cameraAccess: 'not started', camera: null, K: null, flipY: true, tracking: false, frames: 0,
+    cv: { loaded: false, loadMs: undefined },
+    scan: false, test: false,
+    keyframes: [], lastKfSkip: null,
+    map: null, mapSizeMB: null, buildMs: null, buildStats: null, building: false,
+    locAttempts: [], lastLoc: null, readbackMs: [], status: '',
+    errors: []
+  };
+  var xr = { session: null, gl: null, binding: null, fb: null, refSpace: null, busy: false, buf: null, gray: null, lastTestT: -1e9 };
+  var orb = null;
+
+  // ---------- log / errors ----------
+  function log(msg, cls) {
+    var d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = new Date().toTimeString().slice(0, 8) + ' ' + msg;
+    logEl.appendChild(d);
+    while (logEl.childNodes.length > 250) logEl.removeChild(logEl.firstChild);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function err(msg) { S.errors.push(String(msg)); log('ERROR: ' + msg, 'err'); }
+  window.addEventListener('error', function (e) { err((e.message || 'error') + (e.filename ? ' @' + e.filename + ':' + e.lineno : '')); });
+  window.addEventListener('unhandledrejection', function (e) { err('unhandled: ' + (e.reason && e.reason.message || e.reason)); });
+  if (!MC) err('mapcore.js failed to load (tools/mapcore.js must sit next to probe2.html). Nothing will work.');
+
+  // ---------- stats panel ----------
+  function f(v, d) { return v === null || v === undefined ? '-' : (typeof v === 'number' ? v.toFixed(d === undefined ? 1 : d) : v); }
+  function mean(a) { return a.length ? a.reduce(function (x, y) { return x + y; }, 0) / a.length : null; }
+  function renderStats() {
+    var A = S.locAttempts, ok = A.filter(function (a) { return a.ok; });
+    var tr = MC ? MC.statsSummary(ok.map(function (a) { return a.transCm; })) : {};
+    var ro = MC ? MC.statsSummary(ok.map(function (a) { return a.rotDeg; })) : {};
+    var ms = MC ? MC.statsSummary(A.map(function (a) { return a.ms; })) : {};
+    var lm = S.map ? S.map.lm.n : 0;
+    var L = [
+      'camera-access : ' + S.cameraAccess + '   tracking: ' + (S.tracking ? 'GOOD' : 'no'),
+      'camera image  : ' + (S.camera ? S.camera.width + 'x' + S.camera.height : '-') + '   readback ms ' + f(mean(S.readbackMs)),
+      'intrinsics    : ' + (S.K ? 'fx ' + f(S.K.fx, 1) + ' fy ' + f(S.K.fy, 1) + ' cx ' + f(S.K.cx, 1) + ' cy ' + f(S.K.cy, 1) : '-'),
+      'OpenCV        : ' + (S.cv.loaded ? 'loaded ' + f(S.cv.loadMs, 0) + ' ms' : 'not loaded'),
+      'SCAN          : ' + (S.scan ? 'ON ' : 'off') + '  KEYFRAMES ' + S.keyframes.length + '/150' + (S.lastKfSkip ? '  (' + S.lastKfSkip + ')' : ''),
+      'MAP           : landmarks ' + lm + (S.buildStats ? '  kf-coverage min/mean/max ' + S.buildStats.coverage.min + '/' + f(S.buildStats.coverage.mean) + '/' + S.buildStats.coverage.max + '  build ' + f(S.buildMs, 0) + ' ms' : '') + (S.mapSizeMB !== null ? '  size ' + f(S.mapSizeMB, 2) + ' MB' : ''),
+      'LOCALIZE test : ' + (S.test ? 'ON ' : 'off') + '  attempts ' + A.length + '  success ' + (A.length ? f(ok.length / A.length * 100, 0) + '%' : '-'),
+      '  last        : ' + (S.lastLoc ? (S.lastLoc.ok ? 'OK inl ' + S.lastLoc.inliers + ' m ' + S.lastLoc.matches + '  ' + f(S.lastLoc.transCm) + ' cm  ' + f(S.lastLoc.rotDeg, 2) + ' deg  ' + f(S.lastLoc.ms, 0) + ' ms' : 'FAIL ' + S.lastLoc.reason + ' (inl ' + S.lastLoc.inliers + ', m ' + S.lastLoc.matches + ')') : '-'),
+      '  trans cm    : mean ' + f(tr.mean) + ' med ' + f(tr.median) + ' p90 ' + f(tr.p90),
+      '  rot deg     : mean ' + f(ro.mean, 2) + ' med ' + f(ro.median, 2) + ' p90 ' + f(ro.p90, 2),
+      '  ms          : mean ' + f(ms.mean, 0) + ' med ' + f(ms.median, 0) + ' p90 ' + f(ms.p90, 0),
+      S.status ? 'STATUS: ' + S.status : ''
+    ];
+    statsEl.textContent = L.filter(Boolean).join('\n');
+    $('btnScan').textContent = S.scan ? 'Stop scan' : 'Start scan';
+    $('btnScan').className = S.scan ? 'on' : '';
+    $('btnTest').textContent = S.test ? 'Stop test' : 'Test localization';
+    $('btnTest').className = S.test ? 'on' : '';
+    $('btnFlip').textContent = 'Flip Y: ' + (S.flipY ? 'ON' : 'OFF');
+  }
+  setInterval(renderStats, 250);
+
+  // ---------- OpenCV (same loader as probe.html) ----------
+  var cvPromise = null;
+  function loadOpenCV() {
+    if (cvPromise) return cvPromise;
+    var t0 = performance.now();
+    log('Loading ../vendor/opencv.js ...');
+    cvPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = '../vendor/opencv.js?v=' + BUILD;
+      s.onerror = function () { reject(new Error('could not load ../vendor/opencv.js')); };
+      s.onload = function () {
+        var cv = window.cv;
+        if (!cv) return reject(new Error('opencv.js loaded but window.cv is missing'));
+        if (typeof cv.then === 'function') {
+          cv.then(function (m) { var mod = m || window.cv; try { delete mod.then; } catch (e) { mod.then = undefined; } resolve(mod); }, reject);
+        } else if (typeof cv.Mat === 'function') resolve(cv);
+        else cv.onRuntimeInitialized = function () { resolve(window.cv); };
+      };
+      document.head.appendChild(s);
+    }).then(function (cv) {
+      window.cvReady = cv;
+      S.cv.loadMs = performance.now() - t0; S.cv.loaded = true;
+      var need = ['ORB', 'solvePnPRansac', 'Rodrigues'], miss = need.filter(function (n) { return typeof cv[n] !== 'function'; });
+      if (miss.length) err('OpenCV is missing: ' + miss.join(', '));
+      log('OpenCV ready in ' + S.cv.loadMs.toFixed(0) + ' ms', 'ok');
+      return cv;
+    }).catch(function (e) { cvPromise = null; err('OpenCV load failed: ' + (e && e.message || e)); throw e; });
+    return cvPromise;
+  }
+  function getORB() { if (!orb) orb = new window.cvReady.ORB(1000); return orb; }
+
+  // ---------- AR session (same as probe.html) ----------
+  function startAR() {
+    if (!navigator.xr) { S.cameraAccess = 'WebXR unavailable'; err('navigator.xr is missing (need Chrome on ARCore Android over https)'); return; }
+    navigator.xr.isSessionSupported('immersive-ar').then(function (ok) {
+      if (!ok) { err('immersive-ar not supported on this device/browser'); return null; }
+      log('Requesting immersive-ar session ...');
+      return navigator.xr.requestSession('immersive-ar', {
+        requiredFeatures: ['hit-test'], optionalFeatures: ['camera-access', 'anchors', 'dom-overlay'], domOverlay: { root: document.body }
+      });
+    }).then(function (session) { if (session) onSession(session); })
+      .catch(function (e) { err('requestSession failed: ' + (e && e.message || e)); });
+  }
+  function onSession(session) {
+    xr.session = session;
+    var feats = session.enabledFeatures ? Array.prototype.slice.call(session.enabledFeatures) : null;
+    S.enabledFeatures = feats;
+    log('enabledFeatures: ' + (feats ? JSON.stringify(feats) : '(not exposed)'), 'ok');
+    var hasCam = feats ? feats.indexOf('camera-access') >= 0 : null;
+    S.cameraAccess = hasCam === false ? 'NOT granted' : (hasCam ? 'granted' : 'unknown');
+    if (hasCam === false) log('camera-access NOT granted: scanning and localization cannot work.', 'err');
+    if (typeof XRWebGLBinding === 'undefined') { S.cameraAccess = 'XRWebGLBinding missing'; err('XRWebGLBinding is missing'); }
+    var canvas = document.createElement('canvas');
+    var gl = canvas.getContext('webgl2', { xrCompatible: true, alpha: true }) || canvas.getContext('webgl', { xrCompatible: true });
+    if (!gl) { err('WebGL unavailable'); return; }
+    xr.gl = gl; xr.fb = gl.createFramebuffer();
+    session.addEventListener('end', function () { log('session ended'); xr.session = null; S.scan = false; S.test = false; });
+    Promise.resolve(gl.makeXRCompatible ? gl.makeXRCompatible() : null).then(function () {
+      session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+      try { xr.binding = new XRWebGLBinding(session, gl); } catch (e) { xr.binding = null; err('XRWebGLBinding ctor failed: ' + e.message); }
+      return session.requestReferenceSpace('local');
+    }).then(function (rs) { xr.refSpace = rs; session.requestAnimationFrame(onFrame); log('frame loop started'); })
+      .catch(function (e) { err('session setup failed: ' + (e && e.message || e)); });
+  }
+
+  // Read the camera texture back as grayscale. Row 0 of the result is the TOP image row (readPixels is bottom-up,
+  // so with Flip Y ON the rows are reversed to match the camera intrinsics / OpenCV pixel convention).
+  function grabGray(view) {
+    if (!xr.binding || typeof xr.binding.getCameraImage !== 'function') { S.cameraAccess = 'getCameraImage missing'; return null; }
+    var cam = view.camera, w = cam.width, h = cam.height, gl = xr.gl, t0 = performance.now();
+    var tex = xr.binding.getCameraImage(cam);
+    if (!tex) return null;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, xr.fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    var st = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (st !== gl.FRAMEBUFFER_COMPLETE) { gl.bindFramebuffer(gl.FRAMEBUFFER, null); err('camera framebuffer incomplete: 0x' + st.toString(16)); return null; }
+    if (!xr.buf || xr.buf.length !== w * h * 4) xr.buf = new Uint8Array(w * h * 4);
+    gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, xr.buf);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (!xr.gray || xr.gray.length !== w * h) xr.gray = new Uint8Array(w * h);
+    MC.rgbaToGray(xr.buf, w, h, xr.gray, S.flipY);
+    var rb = performance.now() - t0;
+    S.camera = { width: w, height: h }; S.cameraAccess = 'working';
+    S.readbackMs.push(rb); if (S.readbackMs.length > 200) S.readbackMs.shift();
+    drawPreview(xr.gray, w, h);
+    return { gray: xr.gray.slice(), w: w, h: h };
+  }
+  var pvCanvas = $('preview'), pvCtx = pvCanvas.getContext('2d');
+  function drawPreview(g, w, h) {
+    try {
+      var pw = 160, ph = Math.max(1, Math.round(160 * h / w));
+      if (pvCanvas.height !== ph) pvCanvas.height = ph;
+      var id = pvCtx.createImageData(pw, ph), d = id.data;
+      for (var y = 0; y < ph; y++) for (var x = 0; x < pw; x++) {
+        var v = g[Math.floor(y * h / ph) * w + Math.floor(x * w / pw)], o = (y * pw + x) * 4;
+        d[o] = d[o + 1] = d[o + 2] = v; d[o + 3] = 255;
+      }
+      pvCtx.putImageData(id, 0, 0);
+    } catch (e) { /* preview is cosmetic */ }
+  }
+
+  // ---------- frame loop ----------
+  var lastKf = null; // { pose, tMs } of the last stored keyframe
+  function onFrame(t, frame) {
+    var session = xr.session;
+    if (!session) return;
+    session.requestAnimationFrame(onFrame);
+    S.frames++;
+    try {
+      var vp = frame.getViewerPose(xr.refSpace);
+      S.tracking = !!vp && !vp.emulatedPosition;
+      if (!vp) return;
+      var view = null;
+      for (var i = 0; i < vp.views.length; i++) if (vp.views[i].camera) { view = vp.views[i]; break; }
+      if (!view) { if (S.cameraAccess === 'granted') S.cameraAccess = 'granted but view.camera is null'; return; }
+      if (!MC || xr.busy) return;
+      var wantScan = S.scan, wantTest = S.test && (t - xr.lastTestT >= 500);
+      if (!wantScan && !wantTest) return;
+      if (!S.cv.loaded) { S.status = 'Load OpenCV first (button)'; return; }
+
+      var matrix = Array.prototype.slice.call(view.transform.matrix);
+      var pose = MC.xrMatrixToPose(matrix);
+      var K = MC.intrinsicsFromProjection(Array.prototype.slice.call(view.projectionMatrix), view.camera.width, view.camera.height);
+
+      if (wantScan) {
+        var dec = MC.shouldCaptureKeyframe(lastKf, { pose: pose, tMs: t }, { tracking: S.tracking, count: S.keyframes.length });
+        S.status = dec.capture ? '' : 'scan: ' + dec.reason;
+        S.lastKfSkip = dec.capture ? null : dec.reason;
+        if (!dec.capture) return;
+        var g = grabGray(view);
+        if (!g) return;
+        lastKf = { pose: pose, tMs: t };            // attempt time: avoids hammering when a frame is rejected
+        xr.busy = true;
+        setTimeout(function () {
+          try {
+            var feat = MC.extractORB(window.cvReady, getORB(), g.gray, g.w, g.h);
+            if (feat.n < 30) { log('keyframe skipped: only ' + feat.n + ' keypoints (low texture)', 'warn'); }
+            else {
+              if (!S.K) S.K = K;
+              else if (Math.abs(S.K.fx - K.fx) / S.K.fx > 0.01) log('warning: intrinsics changed during scan (fx ' + S.K.fx.toFixed(1) + ' -> ' + K.fx.toFixed(1) + ')', 'warn');
+              S.keyframes.push({ pose: pose, matrix: matrix, tMs: t, n: feat.n, xy: feat.xy, desc: feat.desc });
+              if (S.keyframes.length % 10 === 1) log('keyframe ' + S.keyframes.length + ' (' + feat.n + ' kp, ' + feat.ms.toFixed(0) + ' ms, ' + dec.reason + ')');
+              if (S.keyframes.length >= 150) { S.scan = false; log('keyframe cap (150) reached, scan stopped', 'warn'); }
+            }
+          } catch (e) { err('keyframe extraction failed: ' + (e && e.message || e)); }
+          xr.busy = false;
+        }, 0);
+      } else if (wantTest) {
+        if (!S.map || !S.map.lm.n) { S.status = 'no map: Build map or Load map first'; return; }
+        xr.lastTestT = t;
+        var g2 = grabGray(view);
+        if (!g2) return;
+        xr.busy = true;
+        setTimeout(function () {
+          try {
+            var feat = MC.extractORB(window.cvReady, getORB(), g2.gray, g2.w, g2.h);
+            var res = MC.localize(window.cvReady, S.map.lm, feat, K, { ratio: 0.75, reprojPx: 4, minInliers: 25 });
+            var rec = { ok: !!res.ok, ms: res.ms + feat.ms, inliers: res.inliers || 0, matches: res.matches || 0, reason: res.reason, kp: feat.n };
+            if (res.ok) { var e = MC.poseError(res.pose, pose); rec.transCm = e.transCm; rec.rotDeg = e.rotDeg; }
+            S.lastLoc = rec; S.locAttempts.push(rec); if (S.locAttempts.length > 500) S.locAttempts.shift();
+          } catch (e) { err('localization failed: ' + (e && e.message || e)); }
+          xr.busy = false;
+        }, 0);
+      }
+    } catch (e) { err('frame error: ' + (e && e.message || e)); }
+  }
+
+  // ---------- buttons ----------
+  function toggleScan() {
+    if (!MC) return;
+    if (S.scan) { S.scan = false; log('scan stopped, ' + S.keyframes.length + ' keyframes'); return; }
+    if (!xr.session) { log('Start AR first.', 'warn'); return; }
+    if (!S.cv.loaded) { log('Load OpenCV first.', 'warn'); return; }
+    S.test = false;
+    if (S.keyframes.length) log('discarding ' + S.keyframes.length + ' old keyframes', 'warn');
+    S.keyframes = []; lastKf = null; S.locAttempts = []; S.lastLoc = null;
+    S.scan = true; log('scan started: walk slowly around the area.', 'ok');
+  }
+
+  function mapSizeMB(map) { try { return MC.serializeMap(map).length / 1048576; } catch (e) { return null; } }
+  function currentMapObject(lm) {
+    return { meta: { build: BUILD, createdAt: new Date().toISOString(), keyframes: S.keyframes.length, camera: S.camera, flipY: S.flipY, buildStats: S.buildStats },
+      K: S.K, keyframePoses: S.keyframes.map(function (k) { return k.matrix; }), lm: lm };
+  }
+
+  async function buildMapNow() {
+    if (!MC) return;
+    if (S.building) { log('already building', 'warn'); return; }
+    S.scan = false;
+    if (S.keyframes.length < 2) { err('Build map: need at least 2 keyframes (have ' + S.keyframes.length + '). Scan first.'); return; }
+    if (!S.K) { err('Build map: no intrinsics (no keyframe was captured with a camera view).'); return; }
+    S.building = true; S.test = false;
+    log('building map from ' + S.keyframes.length + ' keyframes ...');
+    var t0 = performance.now();
+    try {
+      var res = await MC.buildMap(S.keyframes, S.K, {}, {
+        yield: function () { return new Promise(function (r) { setTimeout(r, 0); }); },
+        progress: function (m) { S.status = m; }
+      });
+      S.buildMs = performance.now() - t0; S.buildStats = res.stats; S.status = '';
+      S.map = currentMapObject(res.lm);
+      S.map.meta.buildMs = S.buildMs; S.map.meta.buildStats = res.stats;
+      S.mapSizeMB = mapSizeMB(S.map);
+      var r = res.stats;
+      log('map built in ' + S.buildMs.toFixed(0) + ' ms: ' + r.landmarks + ' landmarks from ' + r.keyframes + ' keyframes, ' + r.pairs + ' pairs, matches ' + r.rawMatches + ' -> epipolar ' + r.afterEpipolar + ' -> triangulated ' + r.pairTriangulated, r.landmarks ? 'ok' : 'err');
+      log('rejected: ' + JSON.stringify(r.rejected));
+      log('coverage landmarks/keyframe: min ' + r.coverage.min + ' mean ' + r.coverage.mean + ' max ' + r.coverage.max + ', keyframes with none: ' + r.coverage.zeroKeyframes);
+      if (!r.landmarks) err('Build map produced 0 landmarks. Likely causes: wrong image orientation (try Flip Y toggle and rescan), too little motion, or wrong intrinsics.');
+    } catch (e) { err('Build map failed: ' + (e && e.message || e)); }
+    S.building = false;
+  }
+
+  function toggleTest() {
+    if (S.test) { S.test = false; log('localization test stopped'); return; }
+    if (!xr.session) { log('Start AR first.', 'warn'); return; }
+    if (!S.cv.loaded) { log('Load OpenCV first.', 'warn'); return; }
+    if (!S.map || !S.map.lm.n) { err('No map: Build map (or Load map) first.'); return; }
+    if (S.map.meta && S.map.meta.loadedFromStorage) log('Note: this map was loaded from storage. Errors are only meaningful if ARCore session space is unchanged (same session). Expect large errors otherwise.', 'warn');
+    S.scan = false; S.test = true; xr.lastTestT = -1e9;
+    log('localization test started: hold the phone looking at the scanned area.', 'ok');
+  }
+
+  // ---------- IndexedDB ----------
+  function idb() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) return reject(new Error('IndexedDB unavailable'));
+      var rq = indexedDB.open('armemos-probe', 1);
+      rq.onupgradeneeded = function () { rq.result.createObjectStore('maps'); };
+      rq.onsuccess = function () { resolve(rq.result); };
+      rq.onerror = function () { reject(rq.error || new Error('IndexedDB open failed')); };
+    });
+  }
+  function idbPut(key, val) {
+    return idb().then(function (db) { return new Promise(function (res, rej) {
+      var tx = db.transaction('maps', 'readwrite'); tx.objectStore('maps').put(val, key);
+      tx.oncomplete = function () { db.close(); res(); }; tx.onerror = tx.onabort = function () { rej(tx.error || new Error('IndexedDB write failed')); };
+    }); });
+  }
+  function idbGet(key) {
+    return idb().then(function (db) { return new Promise(function (res, rej) {
+      var rq = db.transaction('maps', 'readonly').objectStore('maps').get(key);
+      rq.onsuccess = function () { db.close(); res(rq.result); }; rq.onerror = function () { rej(rq.error || new Error('IndexedDB read failed')); };
+    }); });
+  }
+  function saveMap() {
+    if (!MC) return Promise.resolve();
+    if (!S.map || !S.map.lm.n) { err('Save map: there is no map. Build map first.'); return Promise.resolve(); }
+    try {
+      var bytes = MC.serializeMap(S.map);
+      return idbPut('map', bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)).then(function () {
+        S.mapSizeMB = bytes.length / 1048576;
+        log('map saved to IndexedDB: ' + S.mapSizeMB.toFixed(2) + ' MB, ' + S.map.lm.n + ' landmarks', 'ok');
+      }).catch(function (e) { err('Save map failed: ' + (e && e.message || e)); });
+    } catch (e) { err('Save map failed: ' + (e && e.message || e)); return Promise.resolve(); }
+  }
+  function loadMap() {
+    if (!MC) return Promise.resolve();
+    return idbGet('map').then(function (buf) {
+      if (!buf) { err('Load map: nothing saved yet.'); return; }
+      var map = MC.deserializeMap(new Uint8Array(buf));
+      map.meta = map.meta || {}; map.meta.loadedFromStorage = true;
+      S.map = map; S.mapSizeMB = buf.byteLength / 1048576;
+      if (map.meta.buildStats) { S.buildStats = map.meta.buildStats; S.buildMs = map.meta.buildMs === undefined ? null : map.meta.buildMs; }
+      log('map loaded: ' + map.lm.n + ' landmarks, ' + (map.keyframePoses || []).length + ' keyframe poses, ' + S.mapSizeMB.toFixed(2) + ' MB, built ' + (map.meta.createdAt || '?') + ' by ' + (map.meta.build || '?'), 'ok');
+    }).catch(function (e) { err('Load map failed: ' + (e && e.message || e)); });
+  }
+
+  // ---------- report ----------
+  function currentReport() {
+    var rep = MC.buildReport2({
+      build: BUILD, userAgent: navigator.userAgent, enabledFeatures: S.enabledFeatures, camera: S.camera, K: S.K, flipY: S.flipY,
+      keyframes: S.keyframes.length || (S.map && S.map.keyframePoses ? S.map.keyframePoses.length : 0), landmarks: S.map ? S.map.lm.n : 0,
+      mapSizeMB: S.mapSizeMB === null ? null : Math.round(S.mapSizeMB * 100) / 100,
+      buildMs: S.buildMs === null ? null : Math.round(S.buildMs), buildStats: S.buildStats, opencvLoadMs: S.cv.loadMs,
+      locAttempts: S.locAttempts, errors: S.errors
+    });
+    rep.readbackMsMean = mean(S.readbackMs) === null ? null : Math.round(mean(S.readbackMs) * 10) / 10;
+    rep.cameraAccess = S.cameraAccess;
+    var fails = {};
+    S.locAttempts.forEach(function (a) { if (!a.ok) { var k = String(a.reason || 'unknown').replace(/\d+/g, 'N'); fails[k] = (fails[k] || 0) + 1; } });
+    rep.localization.failureReasons = fails;
+    return rep;
+  }
+  function copyReport() {
+    if (!MC) { err('Cannot build report: mapcore.js missing'); return; }
+    var text = JSON.stringify(currentReport(), null, 2);
+    var el = $('report'); el.hidden = false; el.textContent = text;
+    var done = function () { log('report copied to clipboard', 'ok'); };
+    var fallback = function () {
+      try { var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+        var ok = document.execCommand('copy'); document.body.removeChild(ta);
+        if (ok) done(); else log('clipboard copy failed; select the report text manually', 'warn');
+      } catch (e) { log('clipboard copy failed; select the report text manually', 'warn'); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+  }
+
+  $('btnAR').onclick = startAR;
+  $('btnCV').onclick = function () { loadOpenCV().catch(function () {}); };
+  $('btnScan').onclick = toggleScan;
+  $('btnBuild').onclick = function () { buildMapNow(); };
+  $('btnTest').onclick = toggleTest;
+  $('btnSave').onclick = function () { saveMap(); };
+  $('btnLoad').onclick = function () { loadMap(); };
+  $('btnFlip').onclick = function () { S.flipY = !S.flipY; log('Flip Y is now ' + (S.flipY ? 'ON' : 'OFF') + '. Check the grey preview: it must look upright (not upside down). Keyframes scanned with the other setting are inconsistent: rescan.', 'warn'); };
+  $('btnCopy').onclick = copyReport;
+
+  window.__probe2 = { S: S, MC: MC, loadOpenCV: loadOpenCV, buildMapNow: buildMapNow, saveMap: saveMap, loadMap: loadMap, report: function () { return currentReport(); } };
+  log('BUILD ' + BUILD + ' ready. UA: ' + navigator.userAgent);
+  log(navigator.xr ? 'WebXR present' : 'WebXR NOT present (AR cannot start here)', navigator.xr ? 'ok' : 'warn');
+  renderStats();
+})();
+</script>
+</body>
+</html>
