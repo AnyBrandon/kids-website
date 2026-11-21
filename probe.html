@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ARmemos probe-1</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #111; color: #eee; font-family: system-ui, sans-serif; }
+  #panel { padding: 10px; box-sizing: border-box; max-width: 100vw; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  button { font-size: 20px; padding: 14px 16px; margin: 4px 4px 4px 0; border-radius: 8px; border: 0; background: #2d6cdf; color: #fff; }
+  button:disabled { background: #444; color: #999; }
+  .row { display: flex; flex-wrap: wrap; }
+  #stats { font: bold 20px/1.4 ui-monospace, Menlo, Consolas, monospace; background: rgba(0,0,0,.75); padding: 8px; border-radius: 8px; margin: 6px 0; white-space: pre-wrap; }
+  #meter { display: inline-block; padding: 2px 10px; border-radius: 6px; background: #555; }
+  #meter.low { background: #b3261e; } #meter.ok { background: #b08900; } #meter.good { background: #1b7f3b; }
+  #log, #report { font: 18px/1.35 ui-monospace, Menlo, Consolas, monospace; background: rgba(0,0,0,.75); padding: 8px; border-radius: 8px; margin: 6px 0; white-space: pre-wrap; word-break: break-word; max-height: 40vh; overflow: auto; }
+  .err { color: #ff8a80; } .ok { color: #8be28b; } .warn { color: #ffd54f; }
+</style>
+</head>
+<body>
+<div id="panel">
+  <h1>ARmemos probe &mdash; BUILD <span id="build">probe-1</span></h1>
+  <div class="row">
+    <button id="btnAR">Start AR</button>
+    <button id="btnCV">Load OpenCV</button>
+    <button id="btnCopy">Copy report</button>
+  </div>
+  <div id="stats">starting...</div>
+  <div id="log"></div>
+  <div id="report" hidden></div>
+</div>
+
+<script>
+// <lib>
+// Pure logic, unit-tested in Node (tests/probe.test.js extracts this block).
+var BUILD = 'probe-1';
+
+// RGBA (Uint8Array/Uint8ClampedArray) -> grayscale Uint8Array, BT.601 integer weights.
+// Optional flipY handles WebGL readPixels (bottom-up) output.
+function rgbaToGray(rgba, width, height, out, flipY) {
+  var n = width * height;
+  if (!rgba || rgba.length < n * 4) throw new Error('rgbaToGray: buffer too small');
+  var g = (out && out.length >= n) ? out : new Uint8Array(n);
+  for (var y = 0; y < height; y++) {
+    var sy = flipY ? (height - 1 - y) : y;
+    var si = sy * width * 4, di = y * width;
+    for (var x = 0; x < width; x++, si += 4) {
+      g[di + x] = (77 * rgba[si] + 150 * rgba[si + 1] + 29 * rgba[si + 2]) >> 8;
+    }
+  }
+  return g;
+}
+
+function Stat() { this.n = 0; this.sum = 0; this.min = Infinity; this.max = -Infinity; }
+Stat.prototype.add = function (v) {
+  if (typeof v !== 'number' || !isFinite(v)) return;
+  this.n++; this.sum += v;
+  if (v < this.min) this.min = v;
+  if (v > this.max) this.max = v;
+};
+Stat.prototype.mean = function () { return this.n ? this.sum / this.n : null; };
+function round1(v) { return v === null || v === undefined ? null : Math.round(v * 10) / 10; }
+Stat.prototype.summary = function () {
+  return this.n ? { n: this.n, min: round1(this.min), mean: round1(this.mean()), max: round1(this.max) }
+                : { n: 0, min: null, mean: null, max: null };
+};
+
+function textureLevel(kpCount) {
+  if (typeof kpCount !== 'number' || kpCount < 0) return 'n/a';
+  if (kpCount < 150) return 'low';
+  if (kpCount < 500) return 'ok';
+  return 'good';
+}
+
+// s: { userAgent, enabledFeatures, cameraAccess, camera:{width,height}, readback:Stat, opencv:{loaded,loadMs,functions},
+//      extraction:Stat, keypoints:Stat, errors:[] }
+function buildReport(s) {
+  s = s || {};
+  var cv = s.opencv || {};
+  var rb = s.readback || new Stat(), ex = s.extraction || new Stat(), kp = s.keypoints || new Stat();
+  return {
+    build: BUILD,
+    time: new Date().toISOString(),
+    userAgent: s.userAgent || null,
+    enabledFeatures: s.enabledFeatures || null,
+    cameraAccess: s.cameraAccess || 'unknown',
+    camera: s.camera && s.camera.width ? { width: s.camera.width, height: s.camera.height } : null,
+    readbackMsMean: round1(rb.mean()),
+    readbackSamples: rb.n,
+    opencvLoaded: !!cv.loaded,
+    opencvLoadMs: cv.loadMs === undefined ? null : round1(cv.loadMs),
+    opencvFunctions: cv.functions || null,
+    extractionMs: { mean: round1(ex.mean()), max: ex.n ? round1(ex.max) : null, samples: ex.n },
+    keypoints: { min: kp.n ? kp.min : null, avg: round1(kp.mean()), max: kp.n ? kp.max : null, samples: kp.n },
+    errors: (s.errors || []).slice(0, 50)
+  };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { BUILD: BUILD, rgbaToGray: rgbaToGray, Stat: Stat, textureLevel: textureLevel, buildReport: buildReport };
+}
+// </lib>
+</script>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var logEl = $('log'), statsEl = $('stats');
+  var FN_NAMES = ['ORB', 'AKAZE', 'BFMatcher', 'solvePnP', 'solvePnPRansac', 'findEssentialMat', 'triangulatePoints', 'Rodrigues'];
+
+  var S = {
+    enabledFeatures: null, cameraAccess: 'not started', camera: null,
+    readback: new Stat(), extraction: new Stat(), keypoints: new Stat(),
+    opencv: { loaded: false, loadMs: undefined, functions: null },
+    errors: [], liveKp: null, liveLevel: 'n/a', lastExMs: null, lastRbMs: null, frames: 0, processed: 0
+  };
+
+  function log(msg, cls) {
+    var d = document.createElement('div');
+    if (cls) d.className = cls;
+    d.textContent = new Date().toTimeString().slice(0, 8) + ' ' + msg;
+    logEl.appendChild(d);
+    while (logEl.childNodes.length > 200) logEl.removeChild(logEl.firstChild);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function err(msg) {
+    S.errors.push(String(msg));
+    log('ERROR: ' + msg, 'err');
+  }
+  window.addEventListener('error', function (e) { err((e.message || 'error') + (e.filename ? ' @' + e.filename + ':' + e.lineno : '')); });
+  window.addEventListener('unhandledrejection', function (e) { err('unhandled: ' + (e.reason && e.reason.message || e.reason)); });
+
+  function renderStats() {
+    var f = function (v, d) { return v === null || v === undefined ? '-' : (typeof v === 'number' ? v.toFixed(d === undefined ? 1 : d) : v); };
+    statsEl.innerHTML = '';
+    var t = document.createElement('div');
+    var lines = [
+      'camera-access : ' + S.cameraAccess,
+      'camera image  : ' + (S.camera ? S.camera.width + ' x ' + S.camera.height : '-'),
+      'readback ms   : last ' + f(S.lastRbMs) + '  mean ' + f(S.readback.mean()),
+      'OpenCV        : ' + (S.opencv.loaded ? 'loaded in ' + f(S.opencv.loadMs, 0) + ' ms' : 'not loaded'),
+      'ORB ms        : last ' + f(S.lastExMs) + '  mean ' + f(S.extraction.mean()) + '  max ' + f(S.extraction.n ? S.extraction.max : null),
+      'keypoints     : ' + f(S.liveKp, 0) + '  (min ' + f(S.keypoints.n ? S.keypoints.min : null, 0) + ' avg ' + f(S.keypoints.mean(), 0) + ' max ' + f(S.keypoints.n ? S.keypoints.max : null, 0) + ')',
+      'XR frames     : ' + S.frames + '  processed ' + S.processed
+    ];
+    t.textContent = lines.join('\n');
+    statsEl.appendChild(t);
+    var m = document.createElement('span');
+    m.id = 'meter'; m.className = S.liveLevel; m.textContent = 'texture: ' + S.liveLevel;
+    statsEl.appendChild(m);
+    if (S.opencv.functions) {
+      var fn = document.createElement('div');
+      FN_NAMES.forEach(function (n) {
+        var s = document.createElement('span');
+        var ok = S.opencv.functions[n];
+        s.className = ok ? 'ok' : 'err';
+        s.textContent = (ok ? '\u2713' : '\u2717') + n + '  ';
+        fn.appendChild(s);
+      });
+      statsEl.appendChild(fn);
+    }
+  }
+  setInterval(renderStats, 250);
+
+  // ---------- OpenCV ----------
+  var cvPromise = null;
+  function loadOpenCV() {
+    if (cvPromise) return cvPromise;
+    var t0 = performance.now();
+    log('Loading vendor/opencv.js ...');
+    cvPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = '../vendor/opencv.js?v=' + BUILD;
+      s.onerror = function () { reject(new Error('could not load ../vendor/opencv.js')); };
+      s.onload = function () {
+        var cv = window.cv;
+        if (!cv) return reject(new Error('opencv.js loaded but window.cv is missing'));
+        var done = false;
+        function ready(obj) {
+          if (done) return; done = true;
+          resolve(obj);
+        }
+        // Newer builds: cv is a thenable that resolves to the module. Never resolve with a thenable (loops).
+        if (typeof cv.then === 'function') {
+          cv.then(function (m) {
+            var mod = m || window.cv;
+            try { delete mod.then; } catch (e) { mod.then = undefined; }
+            ready(mod);
+          }, reject);
+        } else if (typeof cv.Mat === 'function') {
+          ready(cv);
+        } else {
+          cv.onRuntimeInitialized = function () { ready(window.cv); };
+        }
+      };
+      document.head.appendChild(s);
+    }).then(function (cv) {
+      window.cvReady = cv;
+      S.opencv.loadMs = performance.now() - t0;
+      S.opencv.loaded = true;
+      var fns = {};
+      FN_NAMES.forEach(function (n) { fns[n] = typeof cv[n] === 'function'; });
+      S.opencv.functions = fns;
+      log('OpenCV ready in ' + S.opencv.loadMs.toFixed(0) + ' ms', 'ok');
+      FN_NAMES.forEach(function (n) { log('  cv.' + n + ': ' + (fns[n] ? 'yes' : 'MISSING'), fns[n] ? 'ok' : 'err'); });
+      return cv;
+    }).catch(function (e) {
+      cvPromise = null;
+      err('OpenCV load failed: ' + (e && e.message || e));
+      throw e;
+    });
+    return cvPromise;
+  }
+
+  // ORB on grayscale Uint8Array. Returns { count, ms }.
+  var orb = null;
+  function runORB(gray, w, h) {
+    var cv = window.cvReady;
+    if (!cv) throw new Error('OpenCV not loaded');
+    if (!orb) orb = new cv.ORB(1000);
+    var mat = new cv.Mat(h, w, cv.CV_8UC1), mask = new cv.Mat(), kps = new cv.KeyPointVector(), des = new cv.Mat();
+    try {
+      mat.data.set(gray);
+      var t0 = performance.now();
+      orb.detectAndCompute(mat, mask, kps, des);
+      var ms = performance.now() - t0;
+      return { count: kps.size(), ms: ms };
+    } finally {
+      mat.delete(); mask.delete(); kps.delete(); des.delete();
+    }
+  }
+  function recordORB(r) {
+    S.liveKp = r.count; S.liveLevel = textureLevel(r.count);
+    S.lastExMs = r.ms; S.extraction.add(r.ms); S.keypoints.add(r.count);
+  }
+
+  // ---------- AR ----------
+  var xr = { session: null, gl: null, binding: null, fb: null, refSpace: null, lastT: 0, busy: false, buf: null, gray: null, flip: true };
+
+  function startAR() {
+    if (!navigator.xr) { S.cameraAccess = 'WebXR unavailable'; err('navigator.xr is missing (need Chrome on ARCore Android over https)'); return; }
+    navigator.xr.isSessionSupported('immersive-ar').then(function (ok) {
+      if (!ok) { err('immersive-ar not supported on this device/browser'); return null; }
+      log('Requesting immersive-ar session ...');
+      return navigator.xr.requestSession('immersive-ar', {
+        requiredFeatures: ['hit-test'],
+        optionalFeatures: ['camera-access', 'anchors', 'dom-overlay'],
+        domOverlay: { root: document.body }
+      });
+    }).then(function (session) {
+      if (!session) return;
+      onSession(session);
+    }).catch(function (e) { err('requestSession failed: ' + (e && e.message || e)); });
+  }
+
+  function onSession(session) {
+    xr.session = session;
+    var feats = session.enabledFeatures ? Array.prototype.slice.call(session.enabledFeatures) : null;
+    S.enabledFeatures = feats;
+    log('enabledFeatures: ' + (feats ? JSON.stringify(feats) : '(session.enabledFeatures not exposed)'), 'ok');
+    var hasCam = feats ? feats.indexOf('camera-access') >= 0 : null;
+    S.cameraAccess = hasCam === false ? 'NOT granted' : (hasCam ? 'granted' : 'unknown');
+    if (hasCam === false) log('camera-access was not granted: no pixels will be available.', 'warn');
+    if (typeof XRWebGLBinding === 'undefined') { S.cameraAccess = 'XRWebGLBinding missing'; err('XRWebGLBinding is missing'); }
+
+    var canvas = document.createElement('canvas');
+    var gl = canvas.getContext('webgl2', { xrCompatible: true, alpha: true }) || canvas.getContext('webgl', { xrCompatible: true });
+    if (!gl) { err('WebGL unavailable'); return; }
+    xr.gl = gl;
+    xr.fb = gl.createFramebuffer();
+    session.addEventListener('end', function () { log('session ended'); xr.session = null; $('btnAR').disabled = false; });
+    $('btnAR').disabled = true;
+
+    Promise.resolve(gl.makeXRCompatible ? gl.makeXRCompatible() : null).then(function () {
+      session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+      try { xr.binding = new XRWebGLBinding(session, gl); } catch (e) { xr.binding = null; err('XRWebGLBinding ctor failed: ' + e.message); }
+      return session.requestReferenceSpace('local');
+    }).then(function (rs) {
+      xr.refSpace = rs;
+      session.requestAnimationFrame(onFrame);
+      log('frame loop started');
+    }).catch(function (e) { err('session setup failed: ' + (e && e.message || e)); });
+  }
+
+  function onFrame(t, frame) {
+    var session = xr.session;
+    if (!session) return;
+    session.requestAnimationFrame(onFrame);
+    S.frames++;
+    if (t - xr.lastT < 500 || xr.busy) return;      // ~2 Hz
+    xr.lastT = t;
+    try {
+      var pose = frame.getViewerPose(xr.refSpace);
+      if (!pose) return;
+      var view = null;
+      for (var i = 0; i < pose.views.length; i++) { if (pose.views[i].camera) { view = pose.views[i]; break; } }
+      if (!view) {
+        if (S.cameraAccess === 'granted') S.cameraAccess = 'granted but view.camera is null';
+        return;
+      }
+      if (!xr.binding || typeof xr.binding.getCameraImage !== 'function') { S.cameraAccess = 'getCameraImage missing'; return; }
+      var cam = view.camera, w = cam.width, h = cam.height;
+      var gl = xr.gl;
+      var t0 = performance.now();
+      var tex = xr.binding.getCameraImage(cam);
+      if (!tex) { return; }
+      gl.bindFramebuffer(gl.FRAMEBUFFER, xr.fb);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+      var st = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+      if (st !== gl.FRAMEBUFFER_COMPLETE) { err('camera framebuffer incomplete: 0x' + st.toString(16)); return; }
+      if (!xr.buf || xr.buf.length !== w * h * 4) xr.buf = new Uint8Array(w * h * 4);
+      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, xr.buf);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      if (!xr.gray || xr.gray.length !== w * h) xr.gray = new Uint8Array(w * h);
+      rgbaToGray(xr.buf, w, h, xr.gray, xr.flip);
+      var rb = performance.now() - t0;
+      S.camera = { width: w, height: h };
+      S.cameraAccess = 'working';
+      S.lastRbMs = rb; S.readback.add(rb);
+      if (S.opencv.loaded) {
+        xr.busy = true;
+        var g = xr.gray.slice();                    // copy so the next readback can't race
+        setTimeout(function () {
+          try { recordORB(runORB(g, w, h)); S.processed++; }
+          catch (e) { err('ORB failed: ' + (e && e.message || e)); }
+          xr.busy = false;
+        }, 0);
+      }
+    } catch (e) {
+      err('frame error: ' + (e && e.message || e));
+    }
+  }
+
+  // ---------- report ----------
+  function currentReport() {
+    return buildReport({
+      userAgent: navigator.userAgent, enabledFeatures: S.enabledFeatures, cameraAccess: S.cameraAccess,
+      camera: S.camera, readback: S.readback, opencv: S.opencv, extraction: S.extraction, keypoints: S.keypoints, errors: S.errors
+    });
+  }
+  function copyReport() {
+    var text = JSON.stringify(currentReport(), null, 2);
+    var el = $('report'); el.hidden = false; el.textContent = text;
+    var done = function () { log('report copied to clipboard', 'ok'); };
+    var fallback = function () {
+      try {
+        var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+        ta.select(); var ok = document.execCommand('copy'); document.body.removeChild(ta);
+        if (ok) done(); else log('clipboard copy failed; select the report text above manually', 'warn');
+      } catch (e) { log('clipboard copy failed; select the report text above manually', 'warn'); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  }
+
+  $('btnAR').onclick = startAR;
+  $('btnCV').onclick = function () { loadOpenCV().catch(function () {}); };
+  $('btnCopy').onclick = copyReport;
+
+  // Hooks for the headless test.
+  window.__probe = { loadOpenCV: loadOpenCV, runORB: runORB, recordORB: recordORB, rgbaToGray: rgbaToGray, report: currentReport, state: S };
+
+  log('BUILD ' + BUILD + ' ready. UA: ' + navigator.userAgent);
+  log(navigator.xr ? 'WebXR present' : 'WebXR NOT present (AR cannot start here)', navigator.xr ? 'ok' : 'warn');
+  renderStats();
+})();
+</script>
+</body>
+</html>
